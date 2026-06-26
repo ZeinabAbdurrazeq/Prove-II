@@ -4,6 +4,7 @@ import { SignInButton, useUser } from "@clerk/react";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 import Navbar from "./Navbar";
+import ThemeSwitcher from "./ThemeSwitcher";
 
 // Shared top navigation for the public marketing pages (Home, About, Contact,
 // Pricing). Includes the EN/AR language toggle so visitors can switch language
@@ -79,6 +80,8 @@ function MarketingNav() {
               </span>
             </div>
           </button>
+
+          <ThemeSwitcher />
 
           <SignInButton mode="modal">
             <button className="group px-5 py-2.5 bg-gradient-to-r from-primary to-secondary rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2 rtl:flex-row-reverse">

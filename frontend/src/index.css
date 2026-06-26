@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: forest;
+  themes: proveit --default, forest, nord, night, business, luxury, dracula, emerald, cupcake, corporate, synthwave, retro, cyberpunk, valentine, halloween, garden, aqua, lofi, pastel, fantasy, wireframe, black, cmyk, autumn, acid, lemonade, coffee, winter, dim, sunset;
+}
+@plugin "daisyui/theme" {
+  name: "proveit";
+  default: true;
+  color-scheme: "light";
+  --color-primary: #0A2947;
+  --color-base-100: #F3E4C9;
+  --color-base-200: #D3D4C0;
+  --color-accent: #8B5E3C;
 }
 
 

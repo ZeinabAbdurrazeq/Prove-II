@@ -15,6 +15,7 @@ import {
   XIcon,
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
+import ThemeSwitcher from "./ThemeSwitcher";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
@@ -105,6 +106,7 @@ function Navbar() {
             </span>
           </button>
 
+          <ThemeSwitcher />
           <NotificationBell />
 
           {isAdminUser ? (
@@ -136,6 +138,7 @@ function Navbar() {
             </span>
           </button>
 
+          <ThemeSwitcher />
           <NotificationBell />
 
           <div className="flex items-center rounded-full border border-base-300 bg-base-100 p-1 shadow-sm">
