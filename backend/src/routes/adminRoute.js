@@ -1,0 +1,33 @@
+﻿import { Router } from "express";
+import {
+  adminLogin,
+  getDashboardStats,
+  getSessionsOverTime,
+  getInterviewsPerDay,
+  getAllUsers,
+  updateUserRole,
+  getAllSessions,
+  getAllAiInterviews,
+  getTopCandidates,
+  getProblemsStats,
+} from "../controllers/adminController.js";
+import { adminAuth } from "../middleware/adminAuth.js";
+
+const router = Router();
+
+router.post("/login", adminAuth, adminLogin);
+
+router.use(adminAuth);
+
+router.get("/stats/dashboard", getDashboardStats);
+router.get("/stats/sessions-over-time", getSessionsOverTime);
+router.get("/stats/interviews-per-day", getInterviewsPerDay);
+router.get("/users", getAllUsers);
+router.patch("/users/:userId/role", updateUserRole);
+router.get("/sessions", getAllSessions);
+router.get("/ai-interviews", getAllAiInterviews);
+router.get("/top-candidates", getTopCandidates);
+router.get("/problems-stats", getProblemsStats);
+
+export default router;
+
