@@ -27,7 +27,7 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const adminDashboardUrl =
     import.meta.env.VITE_ADMIN_DASHBOARD_URL ||
-    "https://admin-page-ckgq.onrender.com";
+    "https://proveit-dashboard-z3o7w.sevalla.app";
   const isAdminUser =
     isLoaded &&
     isSignedIn &&
