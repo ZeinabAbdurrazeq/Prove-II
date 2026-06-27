@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import path from "path";
 import cors from "cors";
 import { serve } from "inngest/express";
@@ -22,7 +22,7 @@ const app = express();
 const __dirname = path.resolve();
 const allowedOrigins = [
   ENV.CLIENT_URL,
-  "https://provelt-final.onrender.com",
+  "https://prove-it-b9lnm.sevalla.app",
   "https://admin-page-ckgq.onrender.com",
   "http://localhost:5173",
   "http://localhost:4200",

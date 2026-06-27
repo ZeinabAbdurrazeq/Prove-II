@@ -52,7 +52,7 @@ export const adminAuth = [
         return res.status(401).json({ msg: "Unauthorized" });
       }
 
-      const adminEmail = normalize(ENV.ADMIN_EMAIL || "gusionx40@gmail.com");
+      const adminEmail = normalize(ENV.ADMIN_EMAIL || "provelt.administrator@gmail.com");
       const authEmail = await getAuthEmail(clerkId, auth);
       const isAdminEmail = authEmail === adminEmail;
 

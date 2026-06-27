@@ -1,4 +1,4 @@
-﻿import { Inngest } from "inngest";
+import { Inngest } from "inngest";
 import { connectDB } from "./db.js";
 import User from "../models/User.js";
 import CandidateProfile from "../models/CandidateProfile.js";
@@ -14,7 +14,7 @@ const syncUser = inngest.createFunction(
 
     const { id, email_addresses, first_name, last_name, image_url } =
       event.data;
-    const adminEmail = String(process.env.ADMIN_EMAIL || "gusionx40@gmail.com")
+    const adminEmail = String(process.env.ADMIN_EMAIL || "provelt.administrator@gmail.com")
       .trim()
       .toLowerCase();
     const email = String(email_addresses[0]?.email_address || "")

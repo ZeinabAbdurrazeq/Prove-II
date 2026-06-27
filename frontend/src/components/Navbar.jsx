@@ -32,7 +32,7 @@ function Navbar() {
     isLoaded &&
     isSignedIn &&
     user?.primaryEmailAddress?.emailAddress?.trim().toLowerCase() ===
-      "gusionx40@gmail.com";
+      "provelt.administrator@gmail.com";
 
   const isActive = (path) => location.pathname === path;
 
