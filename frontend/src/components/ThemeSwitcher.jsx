@@ -27,7 +27,7 @@ export function ThemeSwitcher() {
       >
         <PaletteIcon className="size-4 text-base-content/70" />
         <span className="hidden sm:inline text-sm font-semibold capitalize">
-          {t(`theme.${theme}`) || theme}
+          {t(theme) || theme}
         </span>
       </div>
       <ul
