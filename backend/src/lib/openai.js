@@ -1,15 +1,10 @@
-import OpenAI from "openai";
 import { ENV, OPENAI_MOCK_MODE } from "./env.js";
 
 const MOCK_MODE = OPENAI_MOCK_MODE;
 
-// Single shared OpenAI client. The key lives in .env as OPENAI_API_KEY.
-export const openai =
-  !MOCK_MODE && ENV.OPENAI_API_KEY
-    ? new OpenAI({ apiKey: ENV.OPENAI_API_KEY })
-    : null;
-
-const MODEL = "gpt-4o-mini";
+const ITI_GATEWAY_URL = "http://apiaccess.iti.net.eg/api/v1/student/chat";
+const TEXT_MODEL = "deepseek.v3.2";
+const VISION_MODEL = "qwen.qwen3-vl-235b-a22b";
 
 const MOCK_FIELD_TEMPLATES = {
   frontend: {
@@ -130,8 +125,6 @@ function buildMockAnalysis(sourceText) {
   };
 }
 
-// Deterministic mock question set for MOCK_MODE. Biases toward weakTopics when
-// provided so the adaptive behaviour can be tested without calling OpenAI.
 function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
   const field = normalizeText(primaryField) || "fullstack";
   const arabic = isArabicLanguage(language);
@@ -173,7 +166,6 @@ function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
     },
   ];
 
-  // Prepend a weak-topic question for each provided weak topic (capped).
   const weakQuestions = (weakTopics || []).slice(0, 2).map((topic) => ({
     questionText: arabic
       ? `دعنا نتعمق في ${topic}. هل يمكنك شرحه مع مثال؟`
@@ -255,8 +247,6 @@ function mockFinalScorecard(questions, language = "en") {
   };
 }
 
-// GPT sometimes wraps JSON in ```json ... ``` fences even when asked not to.
-// Strip any leading/trailing markdown code fences before parsing.
 function stripCodeFences(text) {
   if (!text) return "";
   return text
@@ -266,25 +256,68 @@ function stripCodeFences(text) {
     .trim();
 }
 
-// Parse a GPT chat completion's text content into an object, throwing a clear
-// error if it is not valid JSON.
-function parseJsonResponse(completion, context) {
-  const raw = completion.choices?.[0]?.message?.content ?? "";
+function parseJsonResponse(rawResponse, context) {
+  // Try to flexibly extract the text payload from the ITI Gateway response format
+  let raw = "";
+  if (typeof rawResponse === "string") {
+    raw = rawResponse;
+  } else if (rawResponse?.choices?.[0]?.message?.content) {
+    raw = rawResponse.choices[0].message.content; // OpenAI format
+  } else if (rawResponse?.content) {
+    raw = rawResponse.content;
+  } else if (rawResponse?.text) {
+    raw = rawResponse.text;
+  } else if (rawResponse?.answer) {
+    raw = rawResponse.answer;
+  } else {
+    raw = JSON.stringify(rawResponse);
+  }
+
   const cleaned = stripCodeFences(raw);
 
   try {
     return JSON.parse(cleaned);
   } catch (error) {
-    console.error(`Failed to parse ${context} JSON from GPT:`, raw);
-    throw new Error(`OpenAI returned invalid JSON while ${context}`);
+    console.error(`Failed to parse ${context} JSON from ITI Gateway:`, raw);
+    throw new Error(`ITI Gateway returned invalid JSON while ${context}`);
+  }
+}
+
+/**
+ * Shared helper to call the ITI Bedrock Gateway
+ */
+async function callITIModel(messages, systemPrompt, isVision = false) {
+  const payload = {
+    model_id: isVision ? VISION_MODEL : TEXT_MODEL,
+    messages: messages,
+    system_prompt: systemPrompt || "",
+  };
+
+  try {
+    const response = await fetch(ITI_GATEWAY_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${ENV.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`ITI API Error (${response.status}):`, errorText);
+      throw new Error(`ITI Gateway Error: ${response.status} - ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Network/Connection Error to ITI Gateway:", error.message);
+    throw error;
   }
 }
 
 /**
  * Analyze a candidate's CV text and return a structured profile.
- *
- * @param {string} cvText Raw text extracted from the uploaded PDF.
- * @returns {Promise<object>}
  */
 export async function analyzeCv(cvText) {
   try {
@@ -292,37 +325,28 @@ export async function analyzeCv(cvText) {
       return buildMockAnalysis(cvText);
     }
 
-    const completion = await openai.chat.completions.create({
-      model: MODEL,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an expert technical recruiter. You analyze software " +
-            "engineering CVs and extract a concise structured summary. " +
-            "Respond with ONLY valid JSON and nothing else.",
-        },
-        {
-          role: "user",
-          content:
-            "Analyze the following CV and return a JSON object with this exact " +
-            "structure:\n" +
-            "{\n" +
-            '  "primaryField": string (one of: frontend, backend, fullstack, "data science", mobile, devops),\n' +
-            '  "yearsOfExperience": number,\n' +
-            '  "keySkills": string[],\n' +
-            '  "strongestAreas": string[],\n' +
-            '  "notableTechnologies": string[]\n' +
-            "}\n\n" +
-            "Respond with ONLY valid JSON and nothing else.\n\n" +
-            "CV:\n" +
-            cvText,
-        },
-      ],
-    });
+    const systemPrompt = "You are an expert technical recruiter. You analyze software engineering CVs and extract a concise structured summary. Respond with ONLY valid JSON and nothing else.";
+    const messages = [
+      {
+        role: "user",
+        content:
+          "Analyze the following CV and return a JSON object with this exact " +
+          "structure:\n" +
+          "{\n" +
+          '  "primaryField": string (one of: frontend, backend, fullstack, "data science", mobile, devops),\n' +
+          '  "yearsOfExperience": number,\n' +
+          '  "keySkills": string[],\n' +
+          '  "strongestAreas": string[],\n' +
+          '  "notableTechnologies": string[]\n' +
+          "}\n\n" +
+          "Respond with ONLY valid JSON and nothing else.\n\n" +
+          "CV:\n" +
+          cvText,
+      }
+    ];
 
-    return parseJsonResponse(completion, "analyzing the CV");
+    const responseData = await callITIModel(messages, systemPrompt, false);
+    return parseJsonResponse(responseData, "analyzing the CV");
   } catch (error) {
     console.error("analyzeCv error:", error.message);
     throw error;
@@ -330,12 +354,7 @@ export async function analyzeCv(cvText) {
 }
 
 /**
- * Analyze a candidate's CV from page images (used when the PDF has no text
- * layer, e.g. scanned or image-based CVs). Sends the page images to gpt-4o-mini,
- * which is multimodal, and returns the same structured profile as analyzeCv.
- *
- * @param {Buffer[]} imageBuffers PNG buffers, one per CV page.
- * @returns {Promise<object>}
+ * Analyze a candidate's CV from page images using Qwen Vision.
  */
 export async function analyzeCvFromImages(imageBuffers) {
   try {
@@ -343,7 +362,6 @@ export async function analyzeCvFromImages(imageBuffers) {
       return buildMockAnalysis(`mock image cv with ${imageBuffers?.length || 0} pages`);
     }
 
-    // Cap the number of pages we send to keep the request reasonable.
     const pages = (imageBuffers || []).slice(0, 5);
     if (pages.length === 0) {
       throw new Error("No CV page images to analyze");
@@ -356,41 +374,32 @@ export async function analyzeCvFromImages(imageBuffers) {
       },
     }));
 
-    const completion = await openai.chat.completions.create({
-      model: MODEL,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an expert technical recruiter. You read software " +
-            "engineering CVs from page images and extract a concise structured " +
-            "summary. Respond with ONLY valid JSON and nothing else.",
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text:
-                "Read the CV shown in the following image(s) and return a JSON " +
-                "object with this exact structure:\n" +
-                "{\n" +
-                '  "primaryField": string (one of: frontend, backend, fullstack, "data science", mobile, devops),\n' +
-                '  "yearsOfExperience": number,\n' +
-                '  "keySkills": string[],\n' +
-                '  "strongestAreas": string[],\n' +
-                '  "notableTechnologies": string[]\n' +
-                "}\n\n" +
-                "Respond with ONLY valid JSON and nothing else.",
-            },
-            ...imageContent,
-          ],
-        },
-      ],
-    });
+    const systemPrompt = "You are an expert technical recruiter. You read software engineering CVs from page images and extract a concise structured summary. Respond with ONLY valid JSON and nothing else.";
+    const messages = [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text:
+              "Read the CV shown in the following image(s) and return a JSON " +
+              "object with this exact structure:\n" +
+              "{\n" +
+              '  "primaryField": string (one of: frontend, backend, fullstack, "data science", mobile, devops),\n' +
+              '  "yearsOfExperience": number,\n' +
+              '  "keySkills": string[],\n' +
+              '  "strongestAreas": string[],\n' +
+              '  "notableTechnologies": string[]\n' +
+              "}\n\n" +
+              "Respond with ONLY valid JSON and nothing else.",
+          },
+          ...imageContent,
+        ],
+      }
+    ];
 
-    return parseJsonResponse(completion, "analyzing the CV images");
+    const responseData = await callITIModel(messages, systemPrompt, true);
+    return parseJsonResponse(responseData, "analyzing the CV images");
   } catch (error) {
     console.error("analyzeCvFromImages error:", error.message);
     throw error;
@@ -398,18 +407,7 @@ export async function analyzeCvFromImages(imageBuffers) {
 }
 
 /**
- * Generate a personalized set of spoken interview questions from the
- * candidate's CV summary and primary field, using GPT's own knowledge
- * (no external web calls). Questions are conversational and meant to be read
- * aloud and answered by voice, so they must NOT ask the candidate to write
- * code. When weakTopics are provided, the set is biased to probe those areas
- * more so future interviews adapt to the candidate's weaknesses.
- *
- * @param {object} params
- * @param {string} params.cvSummary   Short summary of the candidate's CV.
- * @param {string} params.primaryField The candidate's primary field.
- * @param {string[]} [params.weakTopics] Topics to emphasise (from past results).
- * @returns {Promise<Array<{questionText: string, topic: string, difficulty: string}>>}
+ * Generate a personalized set of spoken interview questions.
  */
 export async function generateInterviewQuestions({
   cvSummary,
@@ -428,56 +426,49 @@ export async function generateInterviewQuestions({
         : "";
 
     const arabic = isArabicLanguage(language);
-    const completion = await openai.chat.completions.create({
-      model: MODEL,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            arabic
-              ? "أنت محاور تقني خبير. أنت تُنشئ أسئلة مقابلة شفهية باللغة العربية. يجب أن تكون الأسئلة طبيعية ومناسبة للعرض الصوتي، ولا تطلب من المرشح كتابة الكود. أجب فقط بصيغة JSON صحيحة."
-              : "You are an expert technical interviewer preparing a SPOKEN interview. You generate up-to-date, relevant questions tailored to the candidate's tech stack using your own knowledge. The questions are read aloud and answered by voice, so they must be conversational and must NEVER ask the candidate to write or type code. Respond with ONLY valid JSON and nothing else.",
-        },
-        {
-          role: "user",
-          content:
-            arabic
-              ? `المجال الأساسي للمرشح: ${primaryField}\n\n` +
-                `الخلفية:\n${cvSummary}\n\n` +
-                weakTopicsLine +
-                "أنشئ بين 5 و7 أسئلة مقابلة شفهية مناسبة لهذا المرشح، من الأسهل إلى الأصعب. أرجع JSON بالمبنى التالي:\n" +
-                "{\n" +
-                '  "questions": [\n' +
-                "    {\n" +
-                '      "questionText": string,\n' +
-                '      "topic": string,\n' +
-                '      "difficulty": string (one of: easy, medium, hard)\n' +
-                "    }\n" +
-                "  ]\n" +
-                "}\n\n" +
-                "أجب فقط بصيغة JSON صحيحة."
-              : `Candidate primary field: ${primaryField}\n\n` +
-                `Candidate background:\n${cvSummary}\n\n` +
-                weakTopicsLine +
-                "Generate between 5 and 7 spoken interview questions tailored to " +
-                "this candidate's tech stack and experience, ramping from easier " +
-                "to harder. Return a JSON object with this exact structure:\n" +
-                "{\n" +
-                '  "questions": [\n' +
-                "    {\n" +
-                '      "questionText": string (a spoken question, no code writing),\n' +
-                '      "topic": string (a short kebab-case tag, e.g. "react-hooks", "system-design", "sql-indexing"),\n' +
-                '      "difficulty": string (one of: easy, medium, hard)\n' +
-                "    }\n" +
-                "  ]\n" +
-                "}\n\n" +
-                "Respond with ONLY valid JSON and nothing else.",
-        },
-      ],
-    });
+    const systemPrompt = arabic
+      ? "أنت محاور تقني خبير. أنت تُنشئ أسئلة مقابلة شفهية باللغة العربية. يجب أن تكون الأسئلة طبيعية ومناسبة للعرض الصوتي، ولا تطلب من المرشح كتابة الكود. أجب فقط بصيغة JSON صحيحة."
+      : "You are an expert technical interviewer preparing a SPOKEN interview. You generate up-to-date, relevant questions tailored to the candidate's tech stack using your own knowledge. The questions are read aloud and answered by voice, so they must be conversational and must NEVER ask the candidate to write or type code. Respond with ONLY valid JSON and nothing else.";
 
-    const parsed = parseJsonResponse(completion, "generating interview questions");
+    const messages = [
+      {
+        role: "user",
+        content: arabic
+          ? `المجال الأساسي للمرشح: ${primaryField}\n\n` +
+            `الخلفية:\n${cvSummary}\n\n` +
+            weakTopicsLine +
+            "أنشئ بين 5 و7 أسئلة مقابلة شفهية مناسبة لهذا المرشح، من الأسهل إلى الأصعب. أرجع JSON بالمبنى التالي:\n" +
+            "{\n" +
+            '  "questions": [\n' +
+            "    {\n" +
+            '      "questionText": string,\n' +
+            '      "topic": string,\n' +
+            '      "difficulty": string (one of: easy, medium, hard)\n' +
+            "    }\n" +
+            "  ]\n" +
+            "}\n\n" +
+            "أجب فقط بصيغة JSON صحيحة."
+          : `Candidate primary field: ${primaryField}\n\n` +
+            `Candidate background:\n${cvSummary}\n\n` +
+            weakTopicsLine +
+            "Generate between 5 and 7 spoken interview questions tailored to " +
+            "this candidate's tech stack and experience, ramping from easier " +
+            "to harder. Return a JSON object with this exact structure:\n" +
+            "{\n" +
+            '  "questions": [\n' +
+            "    {\n" +
+            '      "questionText": string (a spoken question, no code writing),\n' +
+            '      "topic": string (a short kebab-case tag, e.g. "react-hooks", "system-design", "sql-indexing"),\n' +
+            '      "difficulty": string (one of: easy, medium, hard)\n' +
+            "    }\n" +
+            "  ]\n" +
+            "}\n\n" +
+            "Respond with ONLY valid JSON and nothing else.",
+      }
+    ];
+
+    const responseData = await callITIModel(messages, systemPrompt, false);
+    const parsed = parseJsonResponse(responseData, "generating interview questions");
     const questions = Array.isArray(parsed) ? parsed : parsed.questions;
 
     return (questions || [])
@@ -496,17 +487,6 @@ export async function generateInterviewQuestions({
 
 /**
  * Evaluate a candidate's answer to a single interview question.
- *
- * @param {string} questionText The question that was asked.
- * @param {string} userAnswer   The candidate's transcribed answer.
- * @param {string} cvSummary    Short summary of the candidate's background.
- * @param {string} userField    The candidate's primary field.
- * @returns {Promise<{
- *   score: number,
- *   feedback: string,
- *   askFollowUp: boolean,
- *   followUpQuestion: string
- * }>}
  */
 export async function evaluateAnswer(
   questionText,
@@ -523,51 +503,44 @@ export async function evaluateAnswer(
     }
 
     const arabic = isArabicLanguage(language);
-    const completion = await openai.chat.completions.create({
-      model: MODEL,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            arabic
-              ? "أنت محاور تقني خبير. قيّم إجابة المرشح بعدالة وباختصار باللغة العربية. أجب فقط بصيغة JSON صحيحة."
-              : "You are an expert technical interviewer conducting a spoken interview. You evaluate the candidate's answer fairly and concisely. Respond with ONLY valid JSON and nothing else.",
-        },
-        {
-          role: "user",
-          content:
-            arabic
-              ? `خلفية المرشح:\n${cvSummary}\n\n` +
-                `المجال الأساسي للمرشح: ${userField}\n\n` +
-                `السؤال المطروح:\n${questionText}\n\n` +
-                `إجابة المرشح المنطوقة (مكتوبة نصيًا):\n${userAnswer}\n\n` +
-                "قيّم الإجابة وأعد JSON بالمبنى التالي:\n" +
-                "{\n" +
-                '  "score": number from 1 to 10,\n' +
-                '  "feedback": a 2-3 sentence specific response to their answer,\n' +
-                '  "askFollowUp": boolean,\n' +
-                '  "followUpQuestion": string\n' +
-                "}\n\n" +
-                "أجب فقط بصيغة JSON صحيحة."
-              : `Candidate background:\n${cvSummary}\n\n` +
-                `Candidate's primary field: ${userField}\n\n` +
-                `Question that was asked:\n${questionText}\n\n` +
-                `Candidate's spoken answer (transcribed):\n${userAnswer}\n\n` +
-                "Evaluate the answer and return a JSON object with this exact " +
-                "structure:\n" +
-                "{\n" +
-                '  "score": number from 1 to 10,\n' +
-                '  "feedback": a 2-3 sentence specific response to their answer,\n' +
-                '  "askFollowUp": boolean (true only if a follow-up would meaningfully probe deeper),\n' +
-                '  "followUpQuestion": string (the follow-up question if askFollowUp is true, else an empty string)\n' +
-                "}\n\n" +
-                "Respond with ONLY valid JSON and nothing else.",
-        },
-      ],
-    });
+    const systemPrompt = arabic
+      ? "أنت محاور تقني خبير. قيّم إجابة المرشح بعدالة وباختصار باللغة العربية. أجب فقط بصيغة JSON صحيحة."
+      : "You are an expert technical interviewer conducting a spoken interview. You evaluate the candidate's answer fairly and concisely. Respond with ONLY valid JSON and nothing else.";
 
-    return parseJsonResponse(completion, "evaluating the answer");
+    const messages = [
+      {
+        role: "user",
+        content: arabic
+          ? `خلفية المرشح:\n${cvSummary}\n\n` +
+            `المجال الأساسي للمرشح: ${userField}\n\n` +
+            `السؤال المطروح:\n${questionText}\n\n` +
+            `إجابة المرشح المنطوقة (مكتوبة نصيًا):\n${userAnswer}\n\n` +
+            "قيّم الإجابة وأعد JSON بالمبنى التالي:\n" +
+            "{\n" +
+            '  "score": number from 1 to 10,\n' +
+            '  "feedback": a 2-3 sentence specific response to their answer,\n' +
+            '  "askFollowUp": boolean,\n' +
+            '  "followUpQuestion": string\n' +
+            "}\n\n" +
+            "أجب فقط بصيغة JSON صحيحة."
+          : `Candidate background:\n${cvSummary}\n\n` +
+            `Candidate's primary field: ${userField}\n\n` +
+            `Question that was asked:\n${questionText}\n\n` +
+            `Candidate's spoken answer (transcribed):\n${userAnswer}\n\n` +
+            "Evaluate the answer and return a JSON object with this exact " +
+            "structure:\n" +
+            "{\n" +
+            '  "score": number from 1 to 10,\n' +
+            '  "feedback": a 2-3 sentence specific response to their answer,\n' +
+            '  "askFollowUp": boolean (true only if a follow-up would meaningfully probe deeper),\n' +
+            '  "followUpQuestion": string (the follow-up question if askFollowUp is true, else an empty string)\n' +
+            "}\n\n" +
+            "Respond with ONLY valid JSON and nothing else.",
+      }
+    ];
+
+    const responseData = await callITIModel(messages, systemPrompt, false);
+    return parseJsonResponse(responseData, "evaluating the answer");
   } catch (error) {
     console.error("evaluateAnswer error:", error.message);
     throw error;
@@ -576,16 +549,6 @@ export async function evaluateAnswer(
 
 /**
  * Generate the overall interview scorecard from all questions and answers.
- *
- * @param {Array<{questionText: string, userAnswer: string, score: number,
- *   aiFeedback: string}>} questions The completed question/answer records.
- * @param {string} cvSummary Short summary of the candidate's background.
- * @returns {Promise<{
- *   overallScore: number,
- *   overallFeedback: string,
- *   strengths: string[],
- *   weaknesses: string[]
- * }>}
  */
 export async function generateInterviewFeedback(questions, cvSummary, language = "en") {
   try {
@@ -604,51 +567,42 @@ export async function generateInterviewFeedback(questions, cvSummary, language =
       .join("\n\n");
 
     const arabic = isArabicLanguage(language);
-    const completion = await openai.chat.completions.create({
-      model: MODEL,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            arabic
-              ? "أنت محاور تقني خبير تكتب تقريرًا نهائيًا للمقابلة باللغة العربية. كن دقيقًا وبناءً. أجب فقط بصيغة JSON صحيحة."
-              : "You are an expert technical interviewer writing a final interview scorecard. Be specific and constructive. Respond with ONLY valid JSON and nothing else.",
-        },
-        {
-          role: "user",
-          content:
-            arabic
-              ? `خلفية المرشح:\n${cvSummary}\n\n` +
-                `النص الكامل للمقابلة مع الدرجات:\n${transcript}\n\n` +
-                "لخّص المقابلة وأعد JSON بالمبنى التالي:\n" +
-                "{\n" +
-                '  "overallScore": number,\n' +
-                '  "overallFeedback": string,\n' +
-                '  "strengths": string[],\n' +
-                '  "weaknesses": string[]\n' +
-                "}\n\n" +
-                "أجب فقط بصيغة JSON صحيحة."
-              : `Candidate background:\n${cvSummary}\n\n` +
-                `Full interview transcript with per-question scores:\n${transcript}\n\n` +
-                "Summarize the interview and return a JSON object with this exact " +
-                "structure:\n" +
-                "{\n" +
-                '  "overallScore": number (the average score across all questions, 1 to 10),\n' +
-                '  "overallFeedback": a 3-4 sentence overall assessment,\n' +
-                '  "strengths": string[] of up to 3 specific strong areas observed,\n' +
-                '  "weaknesses": string[] of up to 3 specific areas to improve\n' +
-                "}\n\n" +
-                "Respond with ONLY valid JSON and nothing else.",
-        },
-      ],
-    });
+    const systemPrompt = arabic
+      ? "أنت محاور تقني خبير تكتب تقريرًا نهائيًا للمقابلة باللغة العربية. كن دقيقًا وبناءً. أجب فقط بصيغة JSON صحيحة."
+      : "You are an expert technical interviewer writing a final interview scorecard. Be specific and constructive. Respond with ONLY valid JSON and nothing else.";
 
-    return parseJsonResponse(completion, "generating interview feedback");
+    const messages = [
+      {
+        role: "user",
+        content: arabic
+          ? `خلفية المرشح:\n${cvSummary}\n\n` +
+            `النص الكامل للمقابلة مع الدرجات:\n${transcript}\n\n` +
+            "لخّص المقابلة وأعد JSON بالمبنى التالي:\n" +
+            "{\n" +
+            '  "overallScore": number,\n' +
+            '  "overallFeedback": string,\n' +
+            '  "strengths": string[],\n' +
+            '  "weaknesses": string[]\n' +
+            "}\n\n" +
+            "أجب فقط بصيغة JSON صحيحة."
+          : `Candidate background:\n${cvSummary}\n\n` +
+            `Full interview transcript with per-question scores:\n${transcript}\n\n` +
+            "Summarize the interview and return a JSON object with this exact " +
+            "structure:\n" +
+            "{\n" +
+            '  "overallScore": number (the average score across all questions, 1 to 10),\n' +
+            '  "overallFeedback": a 3-4 sentence overall assessment,\n' +
+            '  "strengths": string[] of up to 3 specific strong areas observed,\n' +
+            '  "weaknesses": string[] of up to 3 specific areas to improve\n' +
+            "}\n\n" +
+            "Respond with ONLY valid JSON and nothing else.",
+      }
+    ];
+
+    const responseData = await callITIModel(messages, systemPrompt, false);
+    return parseJsonResponse(responseData, "generating interview feedback");
   } catch (error) {
     console.error("generateInterviewFeedback error:", error.message);
     throw error;
   }
 }
-
-
