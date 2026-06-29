@@ -28,11 +28,13 @@ function Navbar() {
   const adminDashboardUrl =
     import.meta.env.VITE_ADMIN_DASHBOARD_URL ||
     "https://proveit-dashboard-z3o7w.sevalla.app";
+  const adminEmail =
+    import.meta.env.VITE_ADMIN_EMAIL || "provelt.administrator@gmail.com";
   const isAdminUser =
     isLoaded &&
     isSignedIn &&
     user?.primaryEmailAddress?.emailAddress?.trim().toLowerCase() ===
-      "provelt.administrator@gmail.com";
+      adminEmail.trim().toLowerCase();
 
   const isActive = (path) => location.pathname === path;
 
