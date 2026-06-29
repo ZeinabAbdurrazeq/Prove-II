@@ -23,7 +23,7 @@ const __dirname = path.resolve();
 const allowedOrigins = [
   ENV.CLIENT_URL,
   "https://prove-it-b9lnm.sevalla.app",
-  "https://proveit-dashboard-z3o7w.sevalla.app",
+  "https://proveit-dashboard-qq9q6.sevalla.page",
   "http://localhost:5173",
   "http://localhost:4200",
 ].filter(Boolean);

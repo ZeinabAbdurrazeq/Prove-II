@@ -27,7 +27,7 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const adminDashboardUrl =
     import.meta.env.VITE_ADMIN_DASHBOARD_URL ||
-    "https://proveit-dashboard-z3o7w.sevalla.app";
+    "https://proveit-dashboard-qq9q6.sevalla.page";
   const adminEmail =
     import.meta.env.VITE_ADMIN_EMAIL || "provelt.administrator@gmail.com";
   const isAdminUser =
