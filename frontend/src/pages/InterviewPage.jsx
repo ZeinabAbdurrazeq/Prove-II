@@ -79,6 +79,23 @@ function InterviewPage() {
     navigate(`/ai-interview/results/${sessionId}`);
   }, [cancelSpeech, navigate, sessionId]);
 
+  // Voice recognition: auto-submit after the silence window.
+  const {
+    isSupported,
+    isListening,
+    transcript,
+    setTranscript,
+    start: startListening,
+    stop: stopListening,
+    reset: resetTranscript,
+  } = useSpeechRecognition({
+    silenceTimeout: 2500,
+    language: interviewLanguage,
+    onSilence: (finalText) => {
+      if (finalText && finalText.trim()) submitAnswer(finalText);
+    },
+  });
+
   // Submit the current answer text. Shared by voice auto-submit, the
   // "Done" button, and typing mode.
   const submitAnswer = useCallback(
@@ -147,23 +164,6 @@ function InterviewPage() {
       transitionMessage,
     ],
   );
-
-  // Voice recognition: auto-submit after the silence window.
-  const {
-    isSupported,
-    isListening,
-    transcript,
-    setTranscript,
-    start: startListening,
-    stop: stopListening,
-    reset: resetTranscript,
-  } = useSpeechRecognition({
-    silenceTimeout: 2500,
-    language: interviewLanguage,
-    onSilence: (finalText) => {
-      if (finalText && finalText.trim()) submitAnswer(finalText);
-    },
-  });
 
   // If we didn't arrive with the first question in router state, fetch the
   // session once (read-only) so a page refresh still works.
