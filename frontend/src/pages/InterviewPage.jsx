@@ -2,19 +2,29 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { Loader2Icon } from "lucide-react";
 import Navbar from "../components/Navbar";
-import MicIndicator from "../components/interview/MicIndicator";
-import StatusBadge from "../components/interview/StatusBadge";
-import InterviewProgress from "../components/interview/InterviewProgress";
-import QuestionTimer from "../components/interview/QuestionTimer";
-import TranscriptArea from "../components/interview/TranscriptArea";
-import InterviewControls from "../components/interview/InterviewControls";
 import BrowserUnsupportedNotice from "../components/interview/BrowserUnsupportedNotice";
+import ZaraInterviewWorkspace from "../components/interview/ZaraInterviewWorkspace";
 import useSpeechRecognition from "../hooks/useSpeechRecognition";
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
 import { useSubmitAnswer } from "../hooks/useAiInterview";
 import { aiInterviewApi } from "../api/aiInterview";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
+
+const STAGE_LABELS = {
+  intro: "Interview setup",
+  cv_review: "CV review",
+  jd_review: "Role alignment",
+  behavioral: "Behavioral screen",
+  technical: "Technical depth",
+  coding_challenge: "Problem solving",
+  evaluation: "Answer evaluation",
+  final_feedback: "Final feedback",
+};
+
+function getStageLabel(stage) {
+  return STAGE_LABELS[stage] || "Interview";
+}
 
 // The interview is driven by a small state machine:
 //   speaking  -> AI reads the question, mic is off
@@ -47,6 +57,14 @@ function InterviewPage() {
   const [isTypingMode, setIsTypingMode] = useState(false);
   const [isFollowUp, setIsFollowUp] = useState(false);
   const [loading, setLoading] = useState(!state?.firstQuestion);
+  const [stage, setStage] = useState(state?.stage || "intro");
+  const [stageLabel, setStageLabel] = useState(
+    state?.stageLabel || getStageLabel(state?.stage || "intro"),
+  );
+  const [transitionMessage, setTransitionMessage] = useState(
+    state?.transitionMessage || t("aiInterview.defaultTransition"),
+  );
+  const interviewerName = state?.interviewerName || "Zara";
 
   // Keep the latest elapsed seconds for the current question.
   const timeSpentRef = useRef(0);
@@ -89,6 +107,9 @@ function InterviewPage() {
             if (data.askFollowUp && data.followUpQuestion) {
               setIsFollowUp(true);
               setCurrentQuestion(data.followUpQuestion);
+              setStage(data.stage || stage);
+              setStageLabel(data.stageLabel || stageLabel);
+              setTransitionMessage(data.transitionMessage || transitionMessage);
               setStatus("speaking");
               return;
             }
@@ -101,6 +122,9 @@ function InterviewPage() {
             setIsFollowUp(false);
             setQuestionIndex(data.questionIndex);
             setCurrentQuestion(data.nextQuestion);
+            setStage(data.stage || stage);
+            setStageLabel(data.stageLabel || stageLabel);
+            setTransitionMessage(data.transitionMessage || transitionMessage);
             setStatus("speaking");
           },
           onError: () => {
@@ -110,7 +134,18 @@ function InterviewPage() {
         },
       );
     },
-    [finishInterview, isFollowUp, questionIndex, sessionId, submitMutation],
+    [
+      finishInterview,
+      isFollowUp,
+      questionIndex,
+      resetTranscript,
+      sessionId,
+      stage,
+      stageLabel,
+      setTranscript,
+      submitMutation,
+      transitionMessage,
+    ],
   );
 
   // Voice recognition: auto-submit after the silence window.
@@ -155,15 +190,24 @@ function InterviewPage() {
         setTotalQuestions(questions.length);
         const resumeIndex = questions.findIndex((q) => !q.userAnswer);
         const index = resumeIndex === -1 ? 0 : resumeIndex;
+        const current = questions[index];
+        const resumedStage = current?.stage || session.currentStage || "intro";
         setQuestionIndex(index);
-        setCurrentQuestion(questions[index]?.questionText || "");
+        setCurrentQuestion(current?.questionText || "");
+        setStage(resumedStage);
+        setStageLabel(getStageLabel(resumedStage));
+        setTransitionMessage(
+          session.currentStage
+            ? t("aiInterview.resumeTransition")
+            : t("aiInterview.defaultTransition"),
+        );
         setStatus("speaking");
       })
       .catch(() => {
         /* handled below by the empty-question guard */
       })
       .finally(() => setLoading(false));
-  }, [appLanguage, currentQuestion, navigate, sessionId]);
+  }, [appLanguage, currentQuestion, navigate, sessionId, t]);
 
   // Speak each new question, then start listening (voice mode only).
   useEffect(() => {
@@ -242,71 +286,31 @@ function InterviewPage() {
   return (
     <div className="min-h-screen bg-base-300">
       <Navbar />
-
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <InterviewProgress current={questionIndex} total={totalQuestions} />
-
-        <div className="flex items-center justify-between mt-4 mb-6">
-          <span className="font-semibold">
-            {t("aiInterview.question")}{" "}
-            {Math.min(questionIndex + 1, totalQuestions || questionIndex + 1)}
-            {totalQuestions ? ` / ${totalQuestions}` : ""}
-            {isFollowUp && (
-              <span className="badge badge-secondary badge-sm ms-2">
-                {t("aiInterview.followUp")}
-              </span>
-            )}
-          </span>
-          <div className="flex items-center gap-3">
-            <QuestionTimer
-              resetKey={`${questionIndex}-${isFollowUp}`}
-              running={status !== "processing"}
-              onTick={(s) => {
-                timeSpentRef.current = s;
-              }}
-            />
-            <StatusBadge status={uiStatus} t={t} />
-          </div>
-        </div>
-
-        <div className="card bg-base-100 border border-base-300 mb-6">
-          <div className="card-body">
-            <p className="text-lg font-medium">{currentQuestion}</p>
-          </div>
-        </div>
-
-        {!isTypingMode && (
-          <div className="flex justify-center my-8">
-            <MicIndicator isListening={isListening} isSpeaking={isSpeaking} />
-          </div>
-        )}
-
-        <div className="mb-6">
-          <TranscriptArea
-            transcript={transcript}
-            isTypingMode={isTypingMode}
-            onTypedChange={setTranscript}
-            disabled={status === "processing"}
-            t={t}
-          />
-        </div>
-
-        <InterviewControls
-          isTypingMode={isTypingMode}
-          onToggleTypingMode={handleToggleTypingMode}
-          onDoneSpeaking={handleDoneSpeaking}
-          onSkip={handleSkip}
-          canSubmit={!!transcript.trim()}
-          disabled={status === "processing" || isSpeaking}
-          t={t}
-        />
-
-        {status === "processing" && (
-          <p className="text-center text-sm text-base-content/60 mt-6">
-            {t("aiInterview.feedbackGenerating")}
-          </p>
-        )}
-      </div>
+      <ZaraInterviewWorkspace
+        currentQuestion={currentQuestion}
+        disabled={status === "processing"}
+        interviewerName={interviewerName}
+        isFollowUp={isFollowUp}
+        isListening={isListening}
+        isSpeaking={isSpeaking}
+        isSupported={isSupported}
+        isTypingMode={isTypingMode}
+        onDoneSpeaking={handleDoneSpeaking}
+        onSkip={handleSkip}
+        onTick={(seconds) => {
+          timeSpentRef.current = seconds;
+        }}
+        onToggleTypingMode={handleToggleTypingMode}
+        onTypedChange={setTranscript}
+        questionIndex={questionIndex}
+        resetKey={`${questionIndex}-${isFollowUp}`}
+        stageLabel={stageLabel}
+        status={uiStatus}
+        t={t}
+        totalQuestions={totalQuestions}
+        transcript={transcript}
+        transitionMessage={transitionMessage}
+      />
     </div>
   );
 }

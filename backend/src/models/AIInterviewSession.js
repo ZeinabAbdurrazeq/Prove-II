@@ -23,6 +23,10 @@ const questionSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    stage: {
+      type: String,
+      default: "technical",
+    },
     // The transcribed speech (or typed text) of the candidate's answer.
     userAnswer: {
       type: String,
@@ -71,6 +75,22 @@ const aiInterviewSessionSchema = new mongoose.Schema(
       enum: ["en", "ar"],
       default: "en",
     },
+    interviewerName: {
+      type: String,
+      default: "Zara",
+    },
+    currentStage: {
+      type: String,
+      default: "intro",
+    },
+    targetRole: {
+      type: String,
+      default: "",
+    },
+    jobDescription: {
+      type: String,
+      default: "",
+    },
     questions: {
       type: [questionSchema],
       default: [],
@@ -94,6 +114,18 @@ const aiInterviewSessionSchema = new mongoose.Schema(
     },
     weaknesses: {
       type: [String],
+      default: [],
+    },
+    recommendation: {
+      type: String,
+      default: "",
+    },
+    reportSummary: {
+      type: String,
+      default: "",
+    },
+    stageHistory: {
+      type: [Object],
       default: [],
     },
   },

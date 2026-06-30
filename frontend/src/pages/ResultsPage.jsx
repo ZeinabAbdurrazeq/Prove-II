@@ -88,6 +88,16 @@ function ResultsPage() {
                 {session.overallFeedback}
               </p>
             )}
+            {session.recommendation && (
+              <div className="mt-5 rounded-lg border border-base-300 bg-base-200 px-5 py-4 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wide text-base-content/50">
+                  {t("aiInterview.recommendation")}
+                </p>
+                <p className="mt-2 text-sm text-base-content/80">
+                  {session.recommendation}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

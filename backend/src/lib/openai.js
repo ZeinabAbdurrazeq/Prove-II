@@ -1,10 +1,16 @@
-import { ENV, OPENAI_MOCK_MODE } from "./env.js";
+import { OPENAI_MOCK_MODE } from "./env.js";
+import { callWithFallback } from "../ai/providers/fallbackProvider.js";
+import {
+  buildQuestionPlanPrompt,
+  buildZaraSystemPrompt,
+} from "../ai/prompts/zaraRecruiterPrompt.js";
+import {
+  buildEvaluationSystemPrompt,
+  buildEvaluationUserPrompt,
+} from "../ai/prompts/evaluationPrompt.js";
+import { buildFinalFeedbackPrompt } from "../ai/prompts/followUpPrompt.js";
 
 const MOCK_MODE = OPENAI_MOCK_MODE;
-
-const ITI_GATEWAY_URL = "http://apiaccess.iti.net.eg/api/v1/student/chat";
-const TEXT_MODEL = "deepseek.v3.2";
-const VISION_MODEL = "qwen.qwen3-vl-235b-a22b";
 
 const MOCK_FIELD_TEMPLATES = {
   frontend: {
@@ -135,6 +141,7 @@ function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
         : `Tell me about a project where you used ${field} and what you owned.`,
       topic: `${field}-experience`,
       difficulty: "easy",
+      stage: "intro",
     },
     {
       questionText: arabic
@@ -142,6 +149,7 @@ function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
         : "Walk me through how you debug an issue you cannot reproduce locally.",
       topic: "debugging",
       difficulty: "medium",
+      stage: "cv_review",
     },
     {
       questionText: arabic
@@ -149,6 +157,7 @@ function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
         : "How do you decide between two competing technical approaches?",
       topic: "trade-offs",
       difficulty: "medium",
+      stage: "jd_review",
     },
     {
       questionText: arabic
@@ -156,6 +165,7 @@ function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
         : "Describe a time you improved the performance of something you built.",
       topic: "performance",
       difficulty: "hard",
+      stage: "behavioral",
     },
     {
       questionText: arabic
@@ -163,6 +173,23 @@ function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
         : "How do you keep your code maintainable as a project grows?",
       topic: "maintainability",
       difficulty: "medium",
+      stage: "technical",
+    },
+    {
+      questionText: arabic
+        ? "Explain a technical trade-off from a recent project and why you chose that direction."
+        : "Explain a technical trade-off from a recent project and why you chose that direction.",
+      topic: "technical-tradeoff",
+      difficulty: "hard",
+      stage: "technical",
+    },
+    {
+      questionText: arabic
+        ? "Imagine a key production feature has become slow. How would you investigate and narrow down the cause step by step?"
+        : "Imagine a key production feature has become slow. How would you investigate and narrow down the cause step by step?",
+      topic: "problem-solving",
+      difficulty: "hard",
+      stage: "coding_challenge",
     },
   ];
 
@@ -172,6 +199,7 @@ function buildMockQuestions(primaryField, weakTopics = [], language = "en") {
       : `Let's go deeper on ${topic}. Can you explain it and give an example?`,
     topic,
     difficulty: "medium",
+    stage: "technical",
   }));
 
   return [...weakQuestions, ...base].slice(0, 7);
@@ -287,29 +315,8 @@ function parseJsonResponse(rawResponse, context) {
  * Shared helper to call the ITI Bedrock Gateway
  */
 async function callITIModel(messages, systemPrompt, isVision = false) {
-  const payload = {
-    model_id: isVision ? VISION_MODEL : TEXT_MODEL,
-    messages: messages,
-    system_prompt: systemPrompt || "",
-  };
-
   try {
-    const response = await fetch(ITI_GATEWAY_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${ENV.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`ITI API Error (${response.status}):`, errorText);
-      throw new Error(`ITI Gateway Error: ${response.status} - ${errorText}`);
-    }
-
-    return await response.json();
+    return await callWithFallback(messages, systemPrompt, { isVision });
   } catch (error) {
     console.error("Network/Connection Error to ITI Gateway:", error.message);
     throw error;
@@ -414,6 +421,8 @@ export async function generateInterviewQuestions({
   primaryField,
   weakTopics = [],
   language = "en",
+  jobDescription = "",
+  targetRole = "",
 } = {}) {
   try {
     if (MOCK_MODE) {
@@ -467,7 +476,23 @@ export async function generateInterviewQuestions({
       }
     ];
 
-    const responseData = await callITIModel(messages, systemPrompt, false);
+    const responseData = await callITIModel(
+      [
+        {
+          role: "user",
+          content: buildQuestionPlanPrompt({
+            cvSummary,
+            primaryField,
+            weakTopics,
+            language,
+            jobDescription,
+            targetRole,
+          }),
+        },
+      ],
+      buildZaraSystemPrompt(language),
+      false,
+    );
     const parsed = parseJsonResponse(responseData, "generating interview questions");
     const questions = Array.isArray(parsed) ? parsed : parsed.questions;
 
@@ -477,6 +502,7 @@ export async function generateInterviewQuestions({
         questionText: String(q.questionText),
         topic: String(q.topic || "general"),
         difficulty: String(q.difficulty || "medium").toLowerCase(),
+        stage: String(q.stage || ""),
       }))
       .slice(0, 7);
   } catch (error) {
@@ -494,6 +520,7 @@ export async function evaluateAnswer(
   cvSummary,
   userField,
   language = "en",
+  context = {},
 ) {
   try {
     if (MOCK_MODE) {
@@ -539,7 +566,24 @@ export async function evaluateAnswer(
       }
     ];
 
-    const responseData = await callITIModel(messages, systemPrompt, false);
+    const responseData = await callITIModel(
+      [
+        {
+          role: "user",
+          content: buildEvaluationUserPrompt({
+            stage: context.stage,
+            questionText,
+            userAnswer,
+            cvSummary,
+            userField,
+            topic: context.topic,
+            difficulty: context.difficulty,
+          }),
+        },
+      ],
+      buildEvaluationSystemPrompt(language),
+      false,
+    );
     return parseJsonResponse(responseData, "evaluating the answer");
   } catch (error) {
     console.error("evaluateAnswer error:", error.message);
@@ -599,7 +643,20 @@ export async function generateInterviewFeedback(questions, cvSummary, language =
       }
     ];
 
-    const responseData = await callITIModel(messages, systemPrompt, false);
+    const responseData = await callITIModel(
+      [
+        {
+          role: "user",
+          content: buildFinalFeedbackPrompt({
+            cvSummary,
+            transcript,
+            language,
+          }),
+        },
+      ],
+      buildZaraSystemPrompt(language),
+      false,
+    );
     return parseJsonResponse(responseData, "generating interview feedback");
   } catch (error) {
     console.error("generateInterviewFeedback error:", error.message);

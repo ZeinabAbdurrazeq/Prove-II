@@ -5,12 +5,15 @@ import Subscription from "../models/Subscription.js";
 import {
   analyzeCv,
   analyzeCvFromImages,
-  evaluateAnswer,
-  generateInterviewFeedback,
-  generateInterviewQuestions,
 } from "../lib/openai.js";
+import {
+  buildFinalInterviewFeedback,
+  buildQuestionResponseMeta,
+  evaluateInterviewAnswer,
+  prepareInterviewQuestions,
+} from "../ai/aiInterviewService.js";
 import { inngest } from "../lib/inngest.js";
-import { ENV, OPENAI_MOCK_MODE } from "../lib/env.js";
+import { OPENAI_MOCK_MODE } from "../lib/env.js";
 
 // Minimum number of questions an interview must have to be valid.
 const MIN_QUESTIONS = 5;
@@ -247,12 +250,15 @@ export async function startInterview(req, res) {
       : "en";
 
     let selected;
+    const targetRole = String(req.body.targetRole || profile.primaryField || "");
+    const jobDescription = String(req.body.jobDescription || "");
     try {
-      selected = await generateInterviewQuestions({
-        cvSummary: profile.cvSummary,
-        primaryField: profile.primaryField,
+      selected = await prepareInterviewQuestions({
+        profile,
         weakTopics,
         language,
+        targetRole,
+        jobDescription,
       });
     } catch (genError) {
       console.error("Question generation failed:", genError.message);
@@ -281,15 +287,29 @@ export async function startInterview(req, res) {
         questionText: q.questionText,
         topic: q.topic || "general",
         difficulty: q.difficulty || "medium",
+        stage: q.stage || "technical",
       })),
       language,
+      interviewerName: "Zara",
+      currentStage: selected[0]?.stage || "intro",
+      targetRole,
+      jobDescription,
+      stageHistory: [
+        {
+          stage: selected[0]?.stage || "intro",
+          questionIndex: 0,
+          enteredAt: new Date(),
+        },
+      ],
       status: "in-progress",
     });
+    const firstMeta = buildQuestionResponseMeta(session.questions[0], 0);
 
     res.status(201).json({
       sessionId: session._id,
       totalQuestions: session.questions.length,
       firstQuestion: session.questions[0].questionText,
+      ...firstMeta,
     });
   } catch (error) {
     console.error("Error in startInterview controller:", error.message);
@@ -346,27 +366,30 @@ export async function submitAnswer(req, res) {
       const cvSummary = session.cvAnalysis?.cvSummary || "";
       const userField = session.cvAnalysis?.primaryField || "fullstack";
 
-      const evaluation = await evaluateAnswer(
-        current.questionText,
+      const evaluation = await evaluateInterviewAnswer({
+        question: current,
         answer,
         cvSummary,
         userField,
-        session.language || "en",
-      );
+        language: session.language || "en",
+      });
 
       current.userAnswer = answer;
       current.aiFeedback = evaluation.feedback || "";
       current.score = Math.max(0, Math.min(10, Number(evaluation.score) || 0));
       current.timeSpent = Number(timeSpent) || 0;
       current.followUpAsked = !!evaluation.askFollowUp;
+      session.currentStage = current.stage || session.currentStage;
       await session.save();
 
       if (evaluation.askFollowUp && evaluation.followUpQuestion) {
+        const meta = buildQuestionResponseMeta(current, index);
         return res.status(200).json({
           askFollowUp: true,
           followUpQuestion: evaluation.followUpQuestion,
           questionIndex: index,
           isComplete: false,
+          ...meta,
         });
       }
     }
@@ -374,16 +397,36 @@ export async function submitAnswer(req, res) {
     // Move to the next main question, if any.
     const nextIndex = index + 1;
     if (nextIndex < session.questions.length) {
+      const nextQuestion = session.questions[nextIndex];
+      const meta = buildQuestionResponseMeta(nextQuestion, nextIndex);
+      session.currentStage = meta.stage;
+      session.stageHistory = session.stageHistory || [];
+      session.stageHistory.push({
+        stage: meta.stage,
+        questionIndex: nextIndex,
+        enteredAt: new Date(),
+      });
+      await session.save();
+
       return res.status(200).json({
         askFollowUp: false,
         isComplete: false,
         questionIndex: nextIndex,
-        nextQuestion: session.questions[nextIndex].questionText,
+        nextQuestion: nextQuestion.questionText,
+        ...meta,
       });
     }
 
     // No more questions: the interview is complete.
-    return res.status(200).json({ askFollowUp: false, isComplete: true });
+    return res.status(200).json({
+      askFollowUp: false,
+      isComplete: true,
+      interviewerName: "Zara",
+      stage: "final_feedback",
+      stageLabel: "Final feedback",
+      transitionMessage:
+        "I am preparing a structured summary with strengths, gaps, and readiness.",
+    });
   } catch (error) {
     console.error("Error in submitAnswer controller:", error.message);
     res.status(500).json({ msg: "Failed to submit answer" });
@@ -430,12 +473,7 @@ export async function getResults(req, res) {
       return res.status(200).json({ session });
     }
 
-    const cvSummary = session.cvAnalysis?.cvSummary || "";
-    const scorecard = await generateInterviewFeedback(
-      session.questions,
-      cvSummary,
-      session.language || "en",
-    );
+    const scorecard = await buildFinalInterviewFeedback(session);
 
     // Trust our own per-question average for overallScore rather than GPT's,
     // so it always matches the displayed per-question scores.
@@ -449,6 +487,9 @@ export async function getResults(req, res) {
     session.overallFeedback = scorecard.overallFeedback || "";
     session.strengths = scorecard.strengths || [];
     session.weaknesses = scorecard.weaknesses || [];
+    session.recommendation = scorecard.recommendation || "";
+    session.reportSummary = scorecard.reportSummary || "";
+    session.currentStage = "final_feedback";
     session.status = "completed";
     await session.save();
 
@@ -487,9 +528,3 @@ export async function getHistory(req, res) {
     res.status(500).json({ msg: "Internal Server Error" });
   }
 }
-
-
-
-
-
-

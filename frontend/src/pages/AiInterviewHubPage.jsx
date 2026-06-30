@@ -94,6 +94,10 @@ function AiInterviewHubPage() {
               firstQuestion: data.firstQuestion,
               totalQuestions: data.totalQuestions,
               language,
+              stage: data.stage,
+              stageLabel: data.stageLabel,
+              transitionMessage: data.transitionMessage,
+              interviewerName: data.interviewerName,
             },
           });
         },
@@ -349,5 +353,4 @@ function AiInterviewHubPage() {
 }
 
 export default AiInterviewHubPage;
-
 

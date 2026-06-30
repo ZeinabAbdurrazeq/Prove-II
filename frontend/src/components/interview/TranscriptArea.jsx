@@ -10,7 +10,7 @@ function TranscriptArea({
   if (isTypingMode) {
     return (
       <textarea
-        className="textarea textarea-bordered w-full min-h-40 text-base"
+        className="textarea textarea-bordered w-full min-h-28 text-base lg:min-h-32"
         placeholder={t("aiInterview.typePlaceholder")}
         value={transcript}
         onChange={(e) => onTypedChange(e.target.value)}
@@ -20,7 +20,7 @@ function TranscriptArea({
   }
 
   return (
-    <div className="w-full min-h-40 rounded-xl bg-base-200 border border-base-300 p-4">
+    <div className="w-full min-h-28 rounded-lg bg-base-200 border border-base-300 p-4 lg:min-h-32">
       {transcript ? (
         <p className="text-base leading-relaxed whitespace-pre-wrap">
           {transcript}
