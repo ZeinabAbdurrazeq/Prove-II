@@ -496,7 +496,7 @@ export async function generateInterviewQuestions({
     const parsed = parseJsonResponse(responseData, "generating interview questions");
     const questions = Array.isArray(parsed) ? parsed : parsed.questions;
 
-    return (questions || [])
+    const normalizedQuestions = (questions || [])
       .filter((q) => q && q.questionText)
       .map((q) => ({
         questionText: String(q.questionText),
@@ -505,9 +505,18 @@ export async function generateInterviewQuestions({
         stage: String(q.stage || ""),
       }))
       .slice(0, 7);
+
+    if (normalizedQuestions.length < 5) {
+      console.error(
+        "ITI Gateway returned too few interview questions; using local Zara fallback.",
+      );
+      return buildMockQuestions(primaryField, weakTopics, language);
+    }
+
+    return normalizedQuestions;
   } catch (error) {
     console.error("generateInterviewQuestions error:", error.message);
-    throw error;
+    return buildMockQuestions(primaryField, weakTopics, language);
   }
 }
 
