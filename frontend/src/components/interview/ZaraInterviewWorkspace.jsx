@@ -58,7 +58,7 @@ function ZaraInterviewWorkspace({
                 <BriefcaseIcon className="size-4 text-primary" />
                 {stageLabel}
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-base-content/70">
+              <p className="ai-message mt-2 text-sm leading-relaxed text-base-content/70">
                 {transitionMessage}
               </p>
             </div>
@@ -103,7 +103,7 @@ function ZaraInterviewWorkspace({
             <p className="text-sm font-semibold uppercase tracking-wide text-base-content/50">
               {t("aiInterview.currentQuestion")}
             </p>
-            <h2 className="mt-3 text-2xl font-black leading-tight text-base-content md:text-4xl">
+            <h2 className="ai-message mt-3 text-2xl font-bold leading-tight text-base-content md:text-4xl">
               {currentQuestion}
             </h2>
           </div>

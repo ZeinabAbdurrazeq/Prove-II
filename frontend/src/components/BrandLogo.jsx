@@ -76,7 +76,7 @@ function BrandLogo({ compact = false, className = "" }) {
       <LogoMark compact={compact} />
       {!compact && (
         <div className="flex flex-col leading-none">
-          <span className="font-mono text-xl font-black tracking-wider text-base-content">
+          <span className="text-xl font-extrabold tracking-wider text-base-content">
             ProveIt
           </span>
           <span className="mt-1 text-xs font-medium text-base-content/60">

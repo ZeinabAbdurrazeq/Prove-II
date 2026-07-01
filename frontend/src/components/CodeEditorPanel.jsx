@@ -59,6 +59,7 @@ function CodeEditorPanel({
           onChange={onCodeChange}
           theme="vs-dark"
           options={{
+            fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
             fontSize: 16,
             lineNumbers: "on",
             scrollBeyondLastLine: false,

@@ -84,7 +84,7 @@ function ResultsPage() {
             </div>
             <h1 className="text-2xl font-black mt-4">{t("aiInterview.interviewComplete")}</h1>
             {session.overallFeedback && (
-              <p className="text-base-content/70 max-w-2xl mt-2">
+              <p className="ai-message text-base-content/70 max-w-2xl mt-2">
                 {session.overallFeedback}
               </p>
             )}
@@ -93,7 +93,7 @@ function ResultsPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-base-content/50">
                   {t("aiInterview.recommendation")}
                 </p>
-                <p className="mt-2 text-sm text-base-content/80">
+                <p className="ai-message mt-2 text-sm text-base-content/80">
                   {session.recommendation}
                 </p>
               </div>
@@ -154,7 +154,7 @@ function ResultsPage() {
               <div key={i} className="card bg-base-100 border border-base-300">
                 <div className="card-body">
                   <div className="flex items-start justify-between gap-4">
-                    <p className="font-semibold">
+                    <p className="ai-message font-medium">
                       {i + 1}. {q.questionText}
                     </p>
                     <span
@@ -168,7 +168,7 @@ function ResultsPage() {
                     <p className="text-xs uppercase opacity-60 mb-1">
                       {t("aiInterview.yourAnswer")}
                     </p>
-                    <p className="text-sm text-base-content/80 whitespace-pre-wrap">
+                    <p className="ai-message text-sm text-base-content/80 whitespace-pre-wrap">
                       {q.userAnswer || t("aiInterview.noneRecorded")}
                     </p>
                   </div>
@@ -178,7 +178,7 @@ function ResultsPage() {
                       <p className="text-xs uppercase opacity-60 mb-1">
                         {t("aiInterview.feedback")}
                       </p>
-                      <p className="text-sm text-base-content/80">
+                      <p className="ai-message text-sm text-base-content/80">
                         {q.aiFeedback}
                       </p>
                     </div>

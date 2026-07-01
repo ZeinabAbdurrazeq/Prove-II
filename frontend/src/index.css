@@ -12,20 +12,69 @@
   --color-accent: #8B5E3C;
 }
 
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
 
 @layer base {
+  :root {
+    --font-ui: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
-}
-
-@layer base {
+  
   html, body, #root {
     min-height: 100%;
   }
 
   body {
+    font-family: var(--font-ui);
+    font-weight: 400;
     overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+
+  button,
+  .btn,
+  input,
+  select,
+  textarea {
+    font-family: var(--font-ui);
+  }
+
+  button,
+  .btn {
+    font-weight: 500;
+  }
+
+  nav,
+  nav a,
+  nav button {
+    font-weight: 600;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp,
+  .font-mono,
+  .monaco-editor,
+  .monaco-editor * {
+    font-family: var(--font-code);
+  }
+
+  .ai-message {
+    font-family: var(--font-ui);
+    font-weight: 500;
   }
 }
