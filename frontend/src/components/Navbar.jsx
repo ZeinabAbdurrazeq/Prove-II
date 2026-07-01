@@ -5,8 +5,8 @@ import {
   BookOpenIcon,
   CalendarClockIcon,
   CalendarPlusIcon,
-  CompassIcon,
   CreditCardIcon,
+  HomeIcon,
   LayoutDashboardIcon,
   LanguagesIcon,
   MailIcon,
@@ -105,9 +105,12 @@ function Navbar() {
           <NotificationBell />
 
           <details className="dropdown dropdown-end">
-            <summary className="btn btn-ghost btn-sm gap-1.5 rounded-xl px-2 text-base-content/70 hover:text-base-content xl:px-3">
-              <CompassIcon className="size-4" />
-              <span className="hidden xl:inline">Public</span>
+            <summary
+              className="btn btn-ghost btn-sm size-8 rounded-xl p-0 text-base-content/70 hover:text-base-content"
+              aria-label="Public pages"
+              title="Public pages"
+            >
+              <HomeIcon className="size-4" />
             </summary>
             <ul className="menu dropdown-content z-[1000] mt-3 w-48 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl">
               {publicLinks.map((link) => (

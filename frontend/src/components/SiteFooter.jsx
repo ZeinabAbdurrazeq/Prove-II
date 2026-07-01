@@ -10,6 +10,18 @@ import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 import BrandLogo from "./BrandLogo";
 
+function FooterLink({ to, children }) {
+  return (
+    <Link
+      to={to}
+      onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "smooth" })}
+      className="text-sm text-base-content/75 transition-colors duration-200 hover:text-primary"
+    >
+      {children}
+    </Link>
+  );
+}
+
 function SiteFooter() {
   const { isSignedIn } = useUser();
   const { language } = useLanguage();
@@ -24,11 +36,6 @@ function SiteFooter() {
   ];
 
   const appLinks = [
-    { label: t("marketing.home"), to: "/" },
-    { label: t("marketing.blog"), to: "/blog" },
-    { label: t("marketing.pricing"), to: "/pricing" },
-    { label: t("marketing.about"), to: "/about" },
-    { label: t("marketing.contact"), to: "/contact" },
     { label: t("nav.dashboard"), to: "/dashboard" },
     { label: t("nav.problems"), to: "/problems" },
     { label: t("nav.availability"), to: "/availability/settings" },
@@ -45,12 +52,8 @@ function SiteFooter() {
           links: appLinks,
         },
         {
-          title: t("footer.company"),
-          links: [
-            { label: t("marketing.about"), to: "/about" },
-            { label: t("marketing.blog"), to: "/blog" },
-            { label: t("marketing.contact"), to: "/contact" },
-          ],
+          title: t("footer.explore"),
+          links: publicLinks,
         },
       ]
     : [
@@ -111,13 +114,12 @@ function SiteFooter() {
 
               <div className="grid grid-cols-2 gap-3 md:flex md:flex-col">
                 {section.links.map((link) => (
-                  <Link
+                  <FooterLink
                     key={link.to}
                     to={link.to}
-                    className="text-sm text-base-content/75 transition-colors duration-200 hover:text-primary"
                   >
                     {link.label}
-                  </Link>
+                  </FooterLink>
                 ))}
               </div>
             </div>
