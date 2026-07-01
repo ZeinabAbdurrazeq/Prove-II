@@ -11,11 +11,11 @@ import {
   MailIcon,
   MenuIcon,
   MicIcon,
-  SparklesIcon,
   XIcon,
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
 import ThemeSwitcher from "./ThemeSwitcher";
+import BrandLogo from "./BrandLogo";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
@@ -59,23 +59,7 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-base-300/60 bg-base-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
-        <Link
-          to="/"
-          className="group flex shrink-0 items-center gap-3 transition-transform duration-200 hover:scale-[1.03]"
-        >
-          <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-r from-primary via-secondary to-accent shadow-lg">
-            <SparklesIcon className="size-6 text-white" />
-          </div>
-
-          <div className="flex flex-col leading-none">
-            <span className="font-black text-xl tracking-wider bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text font-mono text-transparent">
-              Provelt
-            </span>
-            <span className="mt-1 text-xs font-medium text-base-content/60">
-              {t("nav.tagline")}
-            </span>
-          </div>
-        </Link>
+        <BrandLogo />
 
         <div className="hidden min-w-0 flex-1 justify-center lg:flex">
           <div className="flex min-w-0 flex-wrap items-center justify-center gap-1 rounded-2xl border border-base-300/70 bg-base-200/30 p-1 shadow-sm xl:flex-nowrap">

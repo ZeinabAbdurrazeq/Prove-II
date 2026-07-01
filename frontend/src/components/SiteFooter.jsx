@@ -5,10 +5,10 @@ import {
   GlobeIcon,
   LinkIcon,
   MailIcon,
-  SparklesIcon,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
+import BrandLogo from "./BrandLogo";
 
 function SiteFooter() {
   const { isSignedIn } = useUser();
@@ -19,11 +19,13 @@ function SiteFooter() {
     { label: t("marketing.home"), to: "/" },
     { label: t("marketing.pricing"), to: "/pricing" },
     { label: t("marketing.about"), to: "/about" },
+    { label: t("marketing.blog"), to: "/blog" },
     { label: t("marketing.contact"), to: "/contact" },
   ];
 
   const appLinks = [
     { label: t("marketing.home"), to: "/" },
+    { label: t("marketing.blog"), to: "/blog" },
     { label: t("nav.dashboard"), to: "/dashboard" },
     { label: t("nav.problems"), to: "/problems" },
     { label: t("nav.availability"), to: "/availability/settings" },
@@ -44,6 +46,7 @@ function SiteFooter() {
           title: t("footer.company"),
           links: [
             { label: t("marketing.about"), to: "/about" },
+            { label: t("marketing.blog"), to: "/blog" },
             { label: t("marketing.contact"), to: "/contact" },
           ],
         },
@@ -57,6 +60,7 @@ function SiteFooter() {
           title: t("footer.company"),
           links: [
             { label: t("marketing.about"), to: "/about" },
+            { label: t("marketing.blog"), to: "/blog" },
             { label: t("marketing.contact"), to: "/contact" },
           ],
         },
@@ -68,20 +72,7 @@ function SiteFooter() {
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr_1fr]">
           {/* Brand Section */}
           <div className="rounded-3xl border border-base-300/50 bg-base-100/40 p-6 text-center backdrop-blur-sm lg:text-left">
-            <div className="inline-flex items-center gap-3 mx-auto lg:mx-0">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-r from-primary via-secondary to-accent shadow-lg">
-                <SparklesIcon className="size-6 text-white" />
-              </div>
-              <div>
-                <p className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text font-mono text-2xl font-black tracking-wider text-transparent">
-                  Provelt
-                </p>
-
-                <p className="text-sm text-base-content/60">
-                  {t("footer.tagline")}
-                </p>
-              </div>
-            </div>
+            <BrandLogo className="mx-auto lg:mx-0" />
 
             <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-base-content/70 lg:mx-0 md:text-base">
               {t("footer.description")}

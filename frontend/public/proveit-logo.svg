@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bg { fill: #fff7e6; }
+    .ink { color: #0b2d52; }
+    .mid { fill: #2563eb; }
+    .accent { fill: #14b8a6; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f172a; }
+      .ink { color: #e0f2fe; }
+      .mid { fill: #60a5fa; }
+      .accent { fill: #5eead4; }
+    }
+  </style>
+  <rect class="bg" width="128" height="128" rx="28"/>
+  <path class="ink" d="M55 15A50 50 0 0 0 23 100" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+  <path class="ink" d="M73 15A50 50 0 0 1 105 100" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+  <path class="ink" d="M50 108A50 50 0 0 0 56 111" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+  <path class="ink" d="M78 111A50 50 0 0 0 84 108" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+  <circle class="ink" cx="64" cy="16" r="6" fill="currentColor"/>
+  <circle class="ink" cx="56" cy="111" r="5.5" fill="currentColor"/>
+  <circle class="mid" cx="64" cy="113" r="5.5"/>
+  <circle class="accent" cx="72" cy="111" r="5.5"/>
+  <path class="ink" d="M48 48 32 64l16 16" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="ink" d="M80 48 96 64 80 80" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="ink" d="M70 39 58 89" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+</svg>

@@ -8,6 +8,7 @@ export const translations = {
     "marketing.home": "Home",
     "marketing.pricing": "Pricing",
     "marketing.about": "About Us",
+    "marketing.blog": "Blog",
     "marketing.contact": "Contact Us",
     "marketing.getStarted": "Get Started",
 
@@ -52,7 +53,7 @@ export const translations = {
     "home.pricingSeeAll": "See full pricing",
 
     // About page
-    "about.title": "About Provelt",
+    "about.title": "About ProveIt",
     "about.subtitle":
       "We help developers prove their skills through real collaboration and realistic, AI-powered practice.",
     "about.missionTitle": "Our Mission",
@@ -105,7 +106,7 @@ export const translations = {
     "footer.workspace": "Workspace",
     "footer.company": "Company",
     "footer.explore": "Explore",
-    "footer.rights": "© {year} Provelt. Built for modern interviews.",
+    "footer.rights": "© {year} ProveIt. Built for modern interviews.",
 
     // Common
     "common.save": "Save",
@@ -398,6 +399,7 @@ export const translations = {
     "marketing.home": "الرئيسية",
     "marketing.pricing": "الأسعار",
     "marketing.about": "من نحن",
+    "marketing.blog": "Blog",
     "marketing.contact": "اتصل بنا",
     "marketing.getStarted": "ابدأ الآن",
 
@@ -442,7 +444,7 @@ export const translations = {
     "home.pricingSeeAll": "عرض جميع الأسعار",
 
     // About page
-    "about.title": "عن Provelt",
+    "about.title": "عن ProveIt",
     "about.subtitle":
       "نساعد المطورين على إثبات مهاراتهم من خلال التعاون الحقيقي والتدريب الواقعي المدعوم بالذكاء الاصطناعي.",
     "about.missionTitle": "مهمتنا",
@@ -495,7 +497,7 @@ export const translations = {
     "footer.workspace": "مساحة العمل",
     "footer.company": "الشركة",
     "footer.explore": "استكشف",
-    "footer.rights": "© {year} Provelt. مبنية لمقابلات عصرية.",
+    "footer.rights": "© {year} ProveIt. مبنية لمقابلات عصرية.",
 
     // Common
     "common.save": "حفظ",

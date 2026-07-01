@@ -17,6 +17,7 @@ import InterviewPage from "./pages/InterviewPage";
 import ResultsPage from "./pages/ResultsPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
+import BlogPage from "./pages/BlogPage";
 import SiteFooter from "./components/SiteFooter";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -71,6 +72,7 @@ function App() {
         />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/blog" element={<BlogPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route
           path="/subscription"
