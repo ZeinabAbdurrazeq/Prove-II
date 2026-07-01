@@ -18,6 +18,7 @@ import ResultsPage from "./pages/ResultsPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import BlogPage from "./pages/BlogPage";
+import BlogDetailPage from "./pages/BlogDetailPage";
 import SiteFooter from "./components/SiteFooter";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -38,7 +39,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={isSignedIn ? <Navigate to={'/dashboard'} /> : <HomePage />}
+          element={<HomePage />}
         />
         <Route
           path="/dashboard"
@@ -73,6 +74,7 @@ function App() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogDetailPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route
           path="/subscription"

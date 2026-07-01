@@ -26,6 +26,9 @@ function SiteFooter() {
   const appLinks = [
     { label: t("marketing.home"), to: "/" },
     { label: t("marketing.blog"), to: "/blog" },
+    { label: t("marketing.pricing"), to: "/pricing" },
+    { label: t("marketing.about"), to: "/about" },
+    { label: t("marketing.contact"), to: "/contact" },
     { label: t("nav.dashboard"), to: "/dashboard" },
     { label: t("nav.problems"), to: "/problems" },
     { label: t("nav.availability"), to: "/availability/settings" },
@@ -33,7 +36,6 @@ function SiteFooter() {
     { label: t("nav.invitations"), to: "/invitations" },
     { label: t("nav.aiInterview"), to: "/ai-interview" },
     { label: t("nav.subscription"), to: "/subscription" },
-    { label: t("marketing.pricing"), to: "/pricing" },
   ];
 
   const sections = isSignedIn

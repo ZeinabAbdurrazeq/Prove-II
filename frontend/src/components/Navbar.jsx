@@ -5,6 +5,7 @@ import {
   BookOpenIcon,
   CalendarClockIcon,
   CalendarPlusIcon,
+  CompassIcon,
   CreditCardIcon,
   LayoutDashboardIcon,
   LanguagesIcon,
@@ -52,6 +53,14 @@ function Navbar() {
     { to: "/subscription", label: t("nav.subscription"), icon: CreditCardIcon },
   ];
 
+  const publicLinks = [
+    { to: "/", label: t("marketing.home") },
+    { to: "/blog", label: t("marketing.blog") },
+    { to: "/pricing", label: t("marketing.pricing") },
+    { to: "/contact", label: t("marketing.contact") },
+    { to: "/about", label: t("marketing.about") },
+  ];
+
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
@@ -94,6 +103,20 @@ function Navbar() {
 
           <ThemeSwitcher />
           <NotificationBell />
+
+          <details className="dropdown dropdown-end">
+            <summary className="btn btn-ghost btn-sm gap-1.5 rounded-xl px-2 text-base-content/70 hover:text-base-content xl:px-3">
+              <CompassIcon className="size-4" />
+              <span className="hidden xl:inline">Public</span>
+            </summary>
+            <ul className="menu dropdown-content z-[1000] mt-3 w-48 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl">
+              {publicLinks.map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to}>{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </details>
 
           {isAdminUser ? (
             <a
@@ -164,6 +187,27 @@ function Navbar() {
                   <span className="truncate">{label}</span>
                 </Link>
               ))}
+            </div>
+
+            <div>
+              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-base-content/45">
+                Public pages
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                {publicLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`rounded-2xl border px-3 py-3 text-sm font-medium transition-all ${
+                      isActive(link.to)
+                        ? "border-primary bg-primary text-primary-content shadow-sm"
+                        : "border-base-300 bg-base-200/40 text-base-content/80 hover:bg-base-200"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
             {isAdminUser ? (

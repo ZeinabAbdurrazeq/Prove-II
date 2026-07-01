@@ -6,64 +6,18 @@ import {
   FileTextIcon,
   UsersIcon,
 } from "lucide-react";
+import { Link } from "react-router";
 import MarketingNav from "../components/MarketingNav";
+import { blogPosts } from "../data/blogPosts";
 
-const posts = [
-  {
-    title: "How to Prepare for a Technical Interview",
-    excerpt:
-      "Build a repeatable practice routine that balances algorithms, communication, system thinking, and review.",
-    category: "Preparation",
-    readTime: "6 min read",
-    date: "Jul 1, 2026",
-    icon: BookOpenIcon,
-  },
-  {
-    title: "Why Live Coding Practice Matters",
-    excerpt:
-      "Real interviews are interactive. Practicing with another person helps you explain choices under realistic pressure.",
-    category: "Live Practice",
-    readTime: "5 min read",
-    date: "Jun 24, 2026",
-    icon: Code2Icon,
-  },
-  {
-    title: "How AI Interviewers Improve Readiness",
-    excerpt:
-      "A structured AI recruiter can help candidates rehearse background, behavioral, and technical answers consistently.",
-    category: "AI Interview",
-    readTime: "7 min read",
-    date: "Jun 18, 2026",
-    icon: BrainIcon,
-  },
-  {
-    title: "Solo vs Pair Problem Solving",
-    excerpt:
-      "Solo practice builds fluency, while pair sessions reveal how clearly you collaborate and communicate.",
-    category: "Practice Modes",
-    readTime: "4 min read",
-    date: "Jun 10, 2026",
-    icon: UsersIcon,
-  },
-  {
-    title: "What Makes a Strong Candidate Profile",
-    excerpt:
-      "Strong profiles connect projects, ownership, trade-offs, and measurable outcomes into one clear story.",
-    category: "Profile",
-    readTime: "5 min read",
-    date: "Jun 3, 2026",
-    icon: FileTextIcon,
-  },
-  {
-    title: "Common Mistakes in Coding Interviews",
-    excerpt:
-      "Avoid silent problem solving, unclear assumptions, overengineering, and skipping edge-case discussion.",
-    category: "Interview Tips",
-    readTime: "6 min read",
-    date: "May 28, 2026",
-    icon: Code2Icon,
-  },
-];
+const postIcons = {
+  Preparation: BookOpenIcon,
+  "Live Practice": Code2Icon,
+  "AI Interview": BrainIcon,
+  "Practice Modes": UsersIcon,
+  Profile: FileTextIcon,
+  "Interview Tips": Code2Icon,
+};
 
 function BlogPage() {
   return (
@@ -91,12 +45,13 @@ function BlogPage() {
 
         <section className="mx-auto max-w-7xl px-6 py-14">
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {posts.map((post) => {
-              const Icon = post.icon;
+            {blogPosts.map((post) => {
+              const Icon = postIcons[post.category] || BookOpenIcon;
 
               return (
-                <article
+                <Link
                   key={post.title}
+                  to={`/blog/${post.slug}`}
                   className="card border border-base-300 bg-base-100 shadow-sm transition-transform duration-200 hover:-translate-y-1"
                 >
                   <div className="card-body">
@@ -116,12 +71,12 @@ function BlogPage() {
                       <span>{post.date}</span>
                       <span>{post.readTime}</span>
                     </div>
-                    <button className="btn btn-ghost btn-sm mt-4 w-fit gap-2 px-0 text-primary">
+                    <span className="btn btn-ghost btn-sm mt-4 w-fit gap-2 px-0 text-primary">
                       Read more
                       <ArrowRightIcon className="size-4" />
-                    </button>
+                    </span>
                   </div>
-                </article>
+                </Link>
               );
             })}
           </div>

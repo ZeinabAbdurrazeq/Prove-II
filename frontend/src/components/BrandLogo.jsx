@@ -3,7 +3,7 @@ import { Link } from "react-router";
 function LogoMark({ compact }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center rounded-2xl border border-base-300 bg-base-100 text-primary shadow-sm transition-colors duration-200 group-hover:text-secondary ${
+      className={`inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#F3E4C9] text-[#0A2947] ${
         compact ? "size-10" : "size-12"
       }`}
       aria-hidden="true"
@@ -38,9 +38,9 @@ function LogoMark({ compact }) {
           strokeLinecap="round"
         />
         <circle cx="64" cy="16" r="6" fill="currentColor" />
-        <circle cx="56" cy="111" r="5.5" fill="currentColor" />
-        <circle cx="64" cy="113" r="5.5" className="fill-secondary" />
-        <circle cx="72" cy="111" r="5.5" className="fill-accent" />
+        <circle cx="56" cy="111" r="4" fill="currentColor" />
+        <circle cx="64" cy="111" r="4" fill="currentColor" />
+        <circle cx="72" cy="111" r="4" fill="currentColor" />
         <path
           d="M48 48 32 64l16 16"
           stroke="currentColor"
