@@ -81,18 +81,29 @@ function SchedulePage() {
   });
 
   const users = useMemo(() => usersData?.users || [], [usersData]);
+  const displayedUsers = useMemo(
+    () =>
+      levelFilter === "All"
+        ? users
+        : users.filter(
+            (user) =>
+              String(user.level || "Entry-Level").toLowerCase() ===
+              levelFilter.toLowerCase(),
+          ),
+    [levelFilter, users],
+  );
 
   useEffect(() => {
-    if (selectedUser && !users.some((user) => user._id === selectedUser._id)) {
-      setSelectedUser(users[0] || null);
+    if (selectedUser && !displayedUsers.some((user) => user._id === selectedUser._id)) {
+      setSelectedUser(displayedUsers[0] || null);
       setSelectedCell(null);
       return;
     }
 
-    if (!selectedUser && users.length > 0) {
-      setSelectedUser(users[0]);
+    if (!selectedUser && displayedUsers.length > 0) {
+      setSelectedUser(displayedUsers[0]);
     }
-  }, [users, selectedUser]);
+  }, [displayedUsers, selectedUser]);
 
   const { data: availabilityData, isLoading: loadingAvailability } = useQuery({
     queryKey: ["userAvailability", selectedUser?._id],
@@ -207,11 +218,12 @@ function SchedulePage() {
                 </div>
 
                 <div className="mt-4 rounded-lg bg-base-200/60 px-3 py-2 text-xs font-semibold text-base-content/65">
-                  Showing {levelFilter === "All" ? "all levels" : levelFilter} candidates
+                  Showing {displayedUsers.length}{" "}
+                  {levelFilter === "All" ? "candidates from all levels" : `${levelFilter} candidates`}
                 </div>
 
                 <div className="mt-4 max-h-[520px] space-y-2 overflow-y-auto pr-1">
-                  {users.map((user) => {
+                  {displayedUsers.map((user) => {
                     const active = selectedUser?._id === user._id;
                     const userLevel = user.level || "Entry-Level";
 
@@ -238,14 +250,16 @@ function SchedulePage() {
                           </span>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-base-content/45">
-                            Candidate name
-                          </p>
                           <p className="truncate font-semibold">{user.name}</p>
                           <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <span className="badge badge-primary badge-sm">
+                            <span className="badge badge-outline badge-sm bg-transparent">
                               Level: {userLevel}
                             </span>
+                            {levelFilter !== "All" ? (
+                              <span className="text-xs font-semibold text-success">
+                                Matches selected level
+                              </span>
+                            ) : null}
                             <span className="text-xs font-semibold text-base-content/70">
                               {Number(user.score || 0)} pts
                             </span>
@@ -260,7 +274,7 @@ function SchedulePage() {
                     );
                   })}
 
-                  {!loadingUsers && users.length === 0 ? (
+                  {!loadingUsers && displayedUsers.length === 0 ? (
                     <div className="rounded-2xl border border-base-300 bg-base-200/40 p-5 text-sm text-base-content/60">
                       {t("schedule.noUsers")}
                     </div>
