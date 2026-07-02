@@ -16,6 +16,7 @@ import notificationRoutes from "./routes/notificationRoute.js";
 import subscriptionRoutes from "./routes/subscriptionRoute.js";
 import aiInterviewRoutes from "./routes/aiInterviewRoute.js";
 import adminRoutes from "./routes/adminRoute.js";
+import userRoutes from "./routes/userRoute.js";
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/ai-interview", aiInterviewRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/users", userRoutes);
 
 app.use("/api", (req, res) => {
   res.status(404).json({ msg: "Not Found" });

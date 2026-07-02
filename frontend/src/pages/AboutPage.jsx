@@ -161,12 +161,16 @@ function AboutPage() {
               ["Behavioral signals", HandshakeIcon],
               ["Role-based technical depth", Code2Icon],
               ["Readiness recommendation", CompassIcon],
-            ].map(([label, Icon]) => (
-              <div key={label} className="rounded-lg bg-base-100 p-5 shadow-sm">
-                <Icon className="size-6 text-primary" />
-                <p className="mt-3 font-bold">{label}</p>
-              </div>
-            ))}
+            ].map(([label, icon]) => {
+              const FeatureIcon = icon;
+
+              return (
+                <div key={label} className="rounded-lg bg-base-100 p-5 shadow-sm">
+                  <FeatureIcon className="size-6 text-primary" />
+                  <p className="mt-3 font-bold">{label}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
 

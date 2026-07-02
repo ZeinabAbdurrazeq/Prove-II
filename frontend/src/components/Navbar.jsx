@@ -12,6 +12,7 @@ import {
   MailIcon,
   MenuIcon,
   MicIcon,
+  TrophyIcon,
   XIcon,
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
@@ -48,6 +49,7 @@ function Navbar() {
     },
     { to: "/ai-interview", label: t("nav.aiInterview"), icon: MicIcon },
     { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboardIcon },
+    { to: "/leaderboard", label: "Ranking", icon: TrophyIcon },
     { to: "/schedule", label: t("nav.schedule"), icon: CalendarPlusIcon },
     { to: "/invitations", label: t("nav.invitations"), icon: MailIcon },
     { to: "/subscription", label: t("nav.subscription"), icon: CreditCardIcon },
@@ -72,20 +74,24 @@ function Navbar() {
 
         <div className="hidden min-w-0 flex-1 justify-center lg:flex">
           <div className="flex min-w-0 flex-wrap items-center justify-center gap-1 rounded-2xl border border-base-300/70 bg-base-200/30 p-1 shadow-sm xl:flex-nowrap">
-            {navItems.map(({ to, label, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`flex min-w-0 shrink items-center gap-1 rounded-xl px-1.5 py-2 text-[10px] font-medium transition-all duration-200 sm:text-[11px] lg:text-[12px] xl:text-sm ${
-                  isActive(to)
-                    ? "bg-primary text-primary-content shadow-sm"
-                    : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
-                }`}
-              >
-                <Icon className="size-3 shrink-0 lg:size-4" />
-                <span className="whitespace-nowrap">{label}</span>
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const NavIcon = item.icon;
+
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`flex min-w-0 shrink items-center gap-1 rounded-xl px-1.5 py-2 text-[10px] font-medium transition-all duration-200 sm:text-[11px] lg:text-[12px] xl:text-sm ${
+                    isActive(item.to)
+                      ? "bg-primary text-primary-content shadow-sm"
+                      : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
+                  }`}
+                >
+                  <NavIcon className="size-3 shrink-0 lg:size-4" />
+                  <span className="whitespace-nowrap">{item.label}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
 
@@ -176,20 +182,24 @@ function Navbar() {
         <div className="fixed right-4 top-20 z-[999] w-[55vw] max-w-[20rem] rounded-3xl border border-base-300/70 bg-base-100/98 shadow-2xl backdrop-blur-xl lg:hidden">
           <div className="space-y-4 p-4">
             <div className="grid grid-cols-1 gap-2">
-              {navItems.map(({ to, label, icon: Icon }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  className={`flex items-center gap-2 rounded-2xl border px-3 py-3 text-sm font-medium transition-all ${
-                    isActive(to)
-                      ? "border-primary bg-primary text-primary-content shadow-sm"
-                      : "border-base-300 bg-base-200/40 text-base-content/80 hover:bg-base-200"
-                  }`}
-                >
-                  <Icon className="size-4 shrink-0" />
-                  <span className="truncate">{label}</span>
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const NavIcon = item.icon;
+
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`flex items-center gap-2 rounded-2xl border px-3 py-3 text-sm font-medium transition-all ${
+                      isActive(item.to)
+                        ? "border-primary bg-primary text-primary-content shadow-sm"
+                        : "border-base-300 bg-base-200/40 text-base-content/80 hover:bg-base-200"
+                    }`}
+                  >
+                    <NavIcon className="size-4 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
 
             <div>

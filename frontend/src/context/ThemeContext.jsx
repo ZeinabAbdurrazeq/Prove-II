@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useEffect, useState } from "react";
 import { THEMES } from "../lib/themes";
 
@@ -13,7 +14,7 @@ export function ThemeProvider({ children }) {
       if (stored && THEMES.some((t) => t.id === stored)) {
         return stored;
       }
-    } catch (e) {
+    } catch {
       // Ignore localStorage read errors
     }
     return DEFAULT_THEME;
@@ -31,7 +32,7 @@ export function ThemeProvider({ children }) {
     }
     try {
       window.localStorage.setItem(STORAGE_KEY, theme);
-    } catch (e) {
+    } catch {
       // Ignore localStorage write errors
     }
   }, [theme]);

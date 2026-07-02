@@ -38,6 +38,7 @@ function SessionPage() {
 
   const joinSessionMutation = useJoinSession();
   const endSessionMutation = useEndSession();
+  const { isIdle: isJoinIdle, mutate: joinSession } = joinSessionMutation;
 
   const session = sessionData?.session;
   const isHost = session?.host?.clerkId === user?.id;
@@ -76,17 +77,27 @@ function SessionPage() {
     if (!session || !user || loadingSession) return;
     if (isHost || isParticipant) return;
     // Guard against duplicate join calls triggered by the 5s polling refetch.
-    if (hasJoinedRef.current || !joinSessionMutation.isIdle) return;
+    if (hasJoinedRef.current || !isJoinIdle) return;
 
     hasJoinedRef.current = true;
-    joinSessionMutation.mutate(id, {
+    joinSession(id, {
       onSuccess: refetch,
       // Allow a retry if the join failed (e.g. transient network error).
       onError: () => {
         hasJoinedRef.current = false;
       },
     });
-  }, [session, user, loadingSession, isHost, isParticipant, id]);
+  }, [
+    session,
+    user,
+    loadingSession,
+    isHost,
+    isParticipant,
+    id,
+    isJoinIdle,
+    joinSession,
+    refetch,
+  ]);
 
   useEffect(() => {
     if (!session || loadingSession) return;

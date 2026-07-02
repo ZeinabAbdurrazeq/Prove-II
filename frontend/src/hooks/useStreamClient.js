@@ -11,6 +11,9 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
   const [channel, setChannel] = useState(null);
   const [isInitializingCall, setIsInitializingCall] = useState(true);
   const activeCallIdRef = useRef(null);
+  const sessionId = session?._id;
+  const sessionCallId = session?.callId;
+  const sessionStatus = session?.status;
 
   useEffect(() => {
     let disposed = false;
@@ -20,8 +23,8 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
     const cleanupResources = async () => {
       try {
         if (videoCall) await videoCall.leave();
-        if (isParticipant && session?.status === "active" && session?._id) {
-          await sessionApi.leaveSession(session._id);
+        if (isParticipant && sessionStatus === "active" && sessionId) {
+          await sessionApi.leaveSession(sessionId);
         }
       } catch (error) {
         console.error("Error leaving Stream call:", error);
@@ -43,12 +46,12 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
     };
 
     const initCall = async () => {
-      const callId = session?.callId;
+      const callId = sessionCallId;
       const shouldJoinCall = isHost || isParticipant;
 
       if (!callId) return;
       if (!shouldJoinCall) return;
-      if (session.status === "completed") return;
+      if (sessionStatus === "completed") return;
       if (activeCallIdRef.current === callId) return;
 
       try {
@@ -113,14 +116,21 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
       }
     };
 
-    if (session && !loadingSession) initCall();
+    if (sessionCallId && !loadingSession) initCall();
 
     // cleanup - performance reasons
     return () => {
       disposed = true;
       void cleanupResources();
     };
-  }, [session?.callId, session?.status, loadingSession, isHost, isParticipant]);
+  }, [
+    sessionCallId,
+    sessionId,
+    sessionStatus,
+    loadingSession,
+    isHost,
+    isParticipant,
+  ]);
 
   return {
     streamClient,

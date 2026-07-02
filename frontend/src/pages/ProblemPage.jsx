@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { PROBLEMS } from "../data/problems";
 import { getDifficultyBadgeClass } from "../lib/utils";
 import Navbar from "../components/Navbar";
@@ -16,6 +17,7 @@ import confetti from "canvas-confetti";
 function ProblemPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [currentProblemId, setCurrentProblemId] = useState("two-sum");
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
@@ -120,7 +122,22 @@ function ProblemPage() {
 
       if (testsPassed) {
         triggerConfetti();
-        toast.success("All tests passed! Great job!");
+        const scoreUpdate = result.scoreUpdate;
+        const pointsAdded = Number(scoreUpdate?.scoreDelta || 0);
+
+        if (scoreUpdate && pointsAdded > 0) {
+          toast.success(
+            <div>
+              <p className="font-semibold">Your new score: {Number(scoreUpdate.score || 0)}</p>
+              <p>+{pointsAdded} points added</p>
+            </div>,
+          );
+          queryClient.invalidateQueries({ queryKey: ["myScoreSummary"] });
+          queryClient.invalidateQueries({ queryKey: ["mySolvedProblems"] });
+          queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+        } else {
+          toast.success("All tests passed! Great job!");
+        }
       } else {
         toast.error("Code ran, but the sample output did not match.");
       }

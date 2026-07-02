@@ -19,6 +19,7 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import BlogPage from "./pages/BlogPage";
 import BlogDetailPage from "./pages/BlogDetailPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
 import SiteFooter from "./components/SiteFooter";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -44,6 +45,10 @@ function App() {
         <Route
           path="/dashboard"
           element={isSignedIn ? <DashboardPage /> : <Navigate to={'/'} />}
+        />
+        <Route
+          path="/leaderboard"
+          element={isSignedIn ? <LeaderboardPage /> : <Navigate to={'/'} />}
         />
         <Route
           path="/problems"
