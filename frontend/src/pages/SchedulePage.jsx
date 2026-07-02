@@ -23,6 +23,14 @@ import {
   scheduleToSelectedCells,
 } from "../lib/availabilityGrid";
 
+const LEVEL_FILTERS = [
+  "All",
+  "Entry-Level",
+  "Junior",
+  "Intermediate",
+  "Advanced",
+];
+
 function nextDateForDay(dayName) {
   const order = [
     "sunday",
@@ -60,15 +68,26 @@ function SchedulePage() {
   const [problem, setProblem] = useState(problems[0]?.title || "");
   const [difficulty, setDifficulty] = useState("easy");
   const [message, setMessage] = useState("");
+  const [levelFilter, setLevelFilter] = useState("All");
 
   const { data: usersData, isLoading: loadingUsers } = useQuery({
-    queryKey: ["allScheduleUsers"],
-    queryFn: () => invitationApi.searchUsers(""),
+    queryKey: ["allScheduleUsers", levelFilter],
+    queryFn: () =>
+      invitationApi.searchUsers("", {
+        level: levelFilter === "All" ? "" : levelFilter,
+        sort: "score",
+      }),
   });
 
   const users = usersData?.users || [];
 
   useEffect(() => {
+    if (selectedUser && !users.some((user) => user._id === selectedUser._id)) {
+      setSelectedUser(users[0] || null);
+      setSelectedCell(null);
+      return;
+    }
+
     if (!selectedUser && users.length > 0) {
       setSelectedUser(users[0]);
     }
@@ -153,12 +172,27 @@ function SchedulePage() {
               <div className="card-body p-6">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-bold">All users</h2>
+                    <h2 className="text-lg font-bold">Candidates</h2>
                     <p className="text-sm text-base-content/60">
-                      Choose any person to see whether they have saved availability.
+                      Choose a candidate by level and score, then inspect availability.
                     </p>
                   </div>
                   {loadingUsers ? <Loader2Icon className="size-5 animate-spin text-primary" /> : null}
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {LEVEL_FILTERS.map((level) => (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => setLevelFilter(level)}
+                      className={`btn btn-xs ${
+                        levelFilter === level ? "btn-primary" : "btn-outline"
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="mt-4 max-h-[520px] space-y-2 overflow-y-auto pr-1">
@@ -188,7 +222,14 @@ function SchedulePage() {
                         )}
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-semibold">{user.name}</p>
-                          <p className="truncate text-xs text-base-content/60">{user.email}</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <span className="badge badge-outline badge-sm">
+                              {user.level || "Entry-Level"}
+                            </span>
+                            <span className="text-xs font-semibold text-base-content/70">
+                              {Number(user.score || 0)} pts
+                            </span>
+                          </div>
                         </div>
                         {active ? (
                           <span className="rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-content">
@@ -225,7 +266,9 @@ function SchedulePage() {
                     )}
                     <div className="min-w-0">
                       <p className="font-semibold">{selectedUser.name}</p>
-                      <p className="truncate text-xs text-base-content/60">{selectedUser.email}</p>
+                      <p className="truncate text-xs text-base-content/60">
+                        {selectedUser.level || "Entry-Level"} | {Number(selectedUser.score || 0)} pts
+                      </p>
                     </div>
                   </div>
                   <button className="btn btn-ghost btn-sm" onClick={() => setSelectedCell(null)}>

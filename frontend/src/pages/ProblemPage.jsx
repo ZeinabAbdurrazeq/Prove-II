@@ -103,14 +103,19 @@ function ProblemPage() {
     setIsRunning(true);
     setOutput(null);
 
-    const result = await executeCode(selectedLanguage, code);
+    const expectedOutput = currentProblem.expectedOutput[selectedLanguage];
+    const result = await executeCode(selectedLanguage, code, {
+      problemId: currentProblemId,
+      problemTitle: currentProblem.title,
+      difficulty: currentProblem.difficulty,
+      expectedOutput,
+    });
     setOutput(result);
     setIsRunning(false);
 
     // check if code executed successfully and matches expected output
 
     if (result.success) {
-      const expectedOutput = currentProblem.expectedOutput[selectedLanguage];
       const testsPassed = checkIfTestsPassed(result.output, expectedOutput);
 
       if (testsPassed) {

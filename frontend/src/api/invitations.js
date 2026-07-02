@@ -1,9 +1,17 @@
 import axiosInstance from "../lib/axios";
 
 export const invitationApi = {
-  searchUsers: async (q) => {
+  searchUsers: async (q = "", filters = {}) => {
+    const params =
+      typeof q === "object" && q !== null
+        ? q
+        : {
+            q,
+            ...filters,
+          };
+
     const response = await axiosInstance.get("/invitations/search-users", {
-      params: { q },
+      params,
     });
     return response.data;
   },

@@ -1,4 +1,5 @@
 import { ENV } from "../lib/env.js";
+import { updateUserScoreAfterSubmission } from "../services/scoreService.js";
 
 // Map our supported languages to Judge0 language IDs.
 const LANGUAGE_IDS = {
@@ -35,9 +36,36 @@ async function submitToJudge0(baseUrl, headers, code, languageId) {
   });
 }
 
+function normalizeOutput(output) {
+  return String(output || "")
+    .trim()
+    .split("\n")
+    .map((line) =>
+      line
+        .trim()
+        .replace(/\[\s+/g, "[")
+        .replace(/\s+\]/g, "]")
+        .replace(/\s*,\s*/g, ","),
+    )
+    .filter((line) => line.length > 0)
+    .join("\n");
+}
+
+function outputMatchesExpected(output, expectedOutput) {
+  return normalizeOutput(output) === normalizeOutput(expectedOutput);
+}
+
 export async function executeCode(req, res) {
   try {
-    const { language, code } = req.body;
+    const {
+      language,
+      code,
+      problemId,
+      problemTitle,
+      difficulty,
+      accepted,
+      expectedOutput,
+    } = req.body;
 
     if (!language || typeof code !== "string") {
       return res
@@ -89,13 +117,41 @@ export async function executeCode(req, res) {
     const output = data.stdout || "";
     const stderr = data.stderr || data.compile_output || "";
 
+    let scoreUpdate = null;
+    const hasExpectedOutput = typeof expectedOutput === "string";
+    const evaluatedAccepted =
+      hasExpectedOutput
+        ? !stderr && outputMatchesExpected(output, expectedOutput)
+        : typeof accepted === "boolean"
+          ? accepted
+          : null;
+
+    const shouldScoreSubmission =
+      problemId &&
+      problemTitle &&
+      difficulty &&
+      typeof evaluatedAccepted === "boolean" &&
+      req.user?._id;
+
+    if (shouldScoreSubmission) {
+      scoreUpdate = await updateUserScoreAfterSubmission(req.user._id, {
+        problemId,
+        problemTitle,
+        difficulty,
+        language,
+        accepted: evaluatedAccepted,
+      });
+    }
+
     if (stderr) {
-      return res.status(200).json({ success: false, output, error: stderr });
+      return res
+        .status(200)
+        .json({ success: false, output, error: stderr, scoreUpdate });
     }
 
     return res
       .status(200)
-      .json({ success: true, output: output || "No output" });
+      .json({ success: true, output: output || "No output", scoreUpdate });
   } catch (error) {
     console.error("Error in executeCode controller:", error.message);
     return res.status(500).json({

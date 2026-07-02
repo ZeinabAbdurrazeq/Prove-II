@@ -20,6 +20,7 @@ const DAYS = [
   "friday",
   "saturday",
 ];
+const SCORE_LEVELS = ["Entry-Level", "Junior", "Intermediate", "Advanced"];
 
 // Returns true if scheduledTime (HH:MM) falls within any slot for the given
 // weekday in the recipient's weekly schedule. A time matches if
@@ -41,6 +42,8 @@ function isWithinAvailability(weeklySchedule, scheduledDate, scheduledTime) {
 export async function searchUsers(req, res) {
   try {
     const q = (req.query.q || "").trim();
+    const level = String(req.query.level || "").trim();
+    const sort = String(req.query.sort || "").trim();
     const query = { _id: { $ne: req.user._id } };
 
     if (q) {
@@ -48,9 +51,15 @@ export async function searchUsers(req, res) {
       query.$or = [{ name: regex }, { email: regex }];
     }
 
+    if (SCORE_LEVELS.includes(level)) {
+      query.level = level;
+    }
+
+    const sortOption = sort === "score" ? { score: -1, name: 1 } : { name: 1 };
+
     const users = await User.find(query)
-      .select("name email profileImage")
-      .sort({ name: 1 })
+      .select("name profileImage score level scoreStats")
+      .sort(sortOption)
       .limit(100);
 
     res.status(200).json({ users });
