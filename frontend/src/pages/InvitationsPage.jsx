@@ -159,8 +159,8 @@ function InvitationsPage() {
             </div>
           )}
 
-          {/* Sent + accepted: Join Session while active, otherwise show done. */}
-          {tab === "sent" && inv.status === "accepted" && inv.sessionId && (
+          {/* Accepted invitations are joinable from both Sent and Received tabs. */}
+          {inv.status === "accepted" && inv.sessionId && (
             sessionStatus === "active" ? (
               <Link
                 to={`/session/${

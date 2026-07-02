@@ -19,6 +19,7 @@ const notificationSchema = new mongoose.Schema(
         "invitation-accepted",
         "invitation-declined",
         "session-reminder",
+        "session-started",
       ],
       required: true,
     },
@@ -30,6 +31,11 @@ const notificationSchema = new mongoose.Schema(
     relatedInvitationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Invitation",
+      default: null,
+    },
+    relatedSessionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Session",
       default: null,
     },
     message: {

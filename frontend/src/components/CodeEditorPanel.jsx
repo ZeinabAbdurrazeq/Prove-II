@@ -65,6 +65,10 @@ function CodeEditorPanel({
             scrollBeyondLastLine: false,
             automaticLayout: true,
             minimap: { enabled: false },
+            multiCursorModifier: "ctrlCmd",
+            multiCursorMergeOverlapping: true,
+            selectionHighlight: true,
+            occurrencesHighlight: "singleFile",
           }}
         />
       </div>

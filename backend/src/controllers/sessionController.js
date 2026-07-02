@@ -1,5 +1,17 @@
 import { streamClient, chatClient } from "../lib/stream.js";
 import Session from "../models/Session.js";
+import Notification from "../models/Notification.js";
+import { sendSessionStartedEmail } from "../lib/email.js";
+import { ENV } from "../lib/env.js";
+
+function formatDifficulty(difficulty) {
+  const value = String(difficulty || "");
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : "Session";
+}
+
+function getSessionTitle(session) {
+  return `${formatDifficulty(session.difficulty)} coding session`;
+}
 
 export async function createSession(req, res) {
   try {
@@ -50,6 +62,7 @@ export async function getActiveSession(_, res) {
     const sessions = await Session.find({ status: "active" })
       .populate("host", "name profileImage email clerkId")
       .populate("participant", "name profileImage")
+      .populate("invitedParticipant", "name profileImage")
       .sort({ createdAt: -1 })
       .limit(20);
 
@@ -68,6 +81,8 @@ export async function getMyRecentSession(req, res) {
       status: "completed",
       $or: [{ host: userId }, { participant: userId }],
     })
+      .populate("host", "name profileImage email clerkId")
+      .populate("participant", "name profileImage")
       .sort({ createdAt: -1 })
       .limit(20);
 
@@ -83,7 +98,8 @@ export async function getSessionById(req, res) {
     const { id } = req.params;
     const session = await Session.findById(id)
       .populate("host", "name email profileImage clerkId")
-      .populate("participant", "name email profileImage clerkId");
+      .populate("participant", "name email profileImage clerkId")
+      .populate("invitedParticipant", "name email profileImage clerkId");
 
     if (!session) return res.status(404).json({ msg: "Session not found" });
 
@@ -112,6 +128,22 @@ export async function joinSession(req, res) {
       return res
         .status(400)
         .json({ msg: "Host cannot join their own session as participant" });
+    }
+
+    if (
+      session.invitedParticipant &&
+      session.invitedParticipant.toString() !== userId.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ msg: "This private session is reserved for the invited user" });
+    }
+
+    if (
+      session.participant &&
+      session.participant.toString() === userId.toString()
+    ) {
+      return res.status(200).json({ session, msg: "Already joined session" });
     }
 
     if (session.participant)
@@ -203,6 +235,90 @@ export async function endSession(req, res) {
     res.status(200).json({ session, msg: "Session ended successfully" });
   } catch (error) {
     console.error("Error in endSession Controller:", error.message);
+    res.status(500).json({ msg: "Internal Server Error" });
+  }
+}
+
+export async function updateSessionProblem(req, res) {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const { problemId, problemTitle } = req.body;
+
+    const session = await Session.findById(id);
+    if (!session) return res.status(404).json({ msg: "session is not found" });
+
+    const isHost = session.host.toString() === userId.toString();
+    const isParticipant =
+      session.participant?.toString() === userId.toString() ||
+      session.invitedParticipant?.toString() === userId.toString();
+
+    if (!isHost && !isParticipant) {
+      return res.status(403).json({ msg: "You are not part of this session" });
+    }
+
+    session.selectedProblemId = String(problemId || "").trim();
+    session.problem = String(problemTitle || "").trim();
+    await session.save();
+
+    res.status(200).json({ session });
+  } catch (error) {
+    console.error("Error in updateSessionProblem Controller:", error.message);
+    res.status(500).json({ msg: "Internal Server Error" });
+  }
+}
+
+export async function notifySessionStarted(req, res) {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const session = await Session.findById(id)
+      .populate("host", "name email clerkId")
+      .populate("invitedParticipant", "name email clerkId");
+
+    if (!session) return res.status(404).json({ msg: "session is not found" });
+
+    if (session.host._id.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ msg: "Only the host can start session notifications" });
+    }
+
+    if (!session.invitedParticipant) {
+      return res.status(200).json({ session, msg: "No invited participant" });
+    }
+
+    if (session.startedNotificationSentAt) {
+      return res.status(200).json({ session, msg: "Already notified" });
+    }
+
+    const clientUrl = ENV.CLIENT_URL || "";
+    const sessionUrl = `${clientUrl}/session/${session._id}`;
+    const sessionTitle = getSessionTitle(session);
+
+    await Notification.create({
+      recipientId: session.invitedParticipant._id,
+      senderId: session.host._id,
+      type: "session-started",
+      relatedInvitationId: session.invitation || null,
+      relatedSessionId: session._id,
+      message: `${session.host.name} started ${sessionTitle}: ${sessionUrl}`,
+    });
+
+    await sendSessionStartedEmail(session.invitedParticipant.email, {
+      sessionTitle,
+      sessionUrl,
+      difficulty: session.difficulty,
+      senderName: session.host.name,
+    });
+
+    session.startedNotificationSentAt = new Date();
+    await session.save();
+
+    res.status(200).json({ session, msg: "Invited participant notified" });
+  } catch (error) {
+    console.error("Error in notifySessionStarted Controller:", error.message);
     res.status(500).json({ msg: "Internal Server Error" });
   }
 }

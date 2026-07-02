@@ -32,6 +32,17 @@ export const sessionApi = {
     const response = await axiosInstance.post(`/sessions/${id}/end`);
     return response.data;
   },
+  updateSessionProblem: async ({ id, problemId, problemTitle }) => {
+    const response = await axiosInstance.patch(`/sessions/${id}/problem`, {
+      problemId,
+      problemTitle,
+    });
+    return response.data;
+  },
+  notifySessionStarted: async (id) => {
+    const response = await axiosInstance.post(`/sessions/${id}/start-notification`);
+    return response.data;
+  },
   getStreamToken: async () => {
     const response = await axiosInstance.get(`/chat/token`);
     return response.data;

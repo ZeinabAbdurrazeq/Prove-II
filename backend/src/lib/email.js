@@ -110,14 +110,44 @@ export async function sendSubscriptionEmail(to, data) {
 }
 
 export async function sendAcceptedEmail(to, data) {
-  const { scheduledDate, scheduledTime, sessionUrl } = data;
+  const {
+    scheduledDate,
+    scheduledTime,
+    sessionUrl,
+    sessionTitle = "Coding session",
+    difficulty,
+    senderName,
+  } = data;
   const body = `
     <p style="color:#374151;">Your session is confirmed and ready to join.</p>
     <table style="width:100%;margin:16px 0;border-collapse:collapse;">
+      <tr><td style="padding:6px 0;color:#6b7280;">Session</td><td style="padding:6px 0;color:#111827;">${sessionTitle}</td></tr>
+      ${senderName ? `<tr><td style="padding:6px 0;color:#6b7280;">Inviter</td><td style="padding:6px 0;color:#111827;">${senderName}</td></tr>` : ""}
+      ${difficulty ? `<tr><td style="padding:6px 0;color:#6b7280;">Difficulty</td><td style="padding:6px 0;">${difficultyBadge(difficulty)}</td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#6b7280;">Date</td><td style="padding:6px 0;color:#111827;">${scheduledDate} at ${scheduledTime} (Egypt)</td></tr>
+      <tr><td style="padding:6px 0;color:#6b7280;">Link</td><td style="padding:6px 0;"><a href="${sessionUrl}" style="color:#4f46e5;">${sessionUrl}</a></td></tr>
     </table>
     <p style="color:#374151;">Choose the problem inside the session when you join.</p>
     <div style="text-align:center;margin-top:20px;">${button("Join Session", sessionUrl)}</div>
   `;
   return send(to, "Your Provelt session is confirmed", emailShell("Session confirmed", body));
+}
+
+export async function sendSessionStartedEmail(to, data) {
+  const {
+    sessionUrl,
+    sessionTitle = "Coding session",
+    difficulty,
+    senderName,
+  } = data;
+  const body = `
+    <p style="color:#374151;"><strong>${senderName || "Your inviter"}</strong> started your Provelt session.</p>
+    <table style="width:100%;margin:16px 0;border-collapse:collapse;">
+      <tr><td style="padding:6px 0;color:#6b7280;">Session</td><td style="padding:6px 0;color:#111827;">${sessionTitle}</td></tr>
+      ${difficulty ? `<tr><td style="padding:6px 0;color:#6b7280;">Difficulty</td><td style="padding:6px 0;">${difficultyBadge(difficulty)}</td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#6b7280;">Link</td><td style="padding:6px 0;"><a href="${sessionUrl}" style="color:#4f46e5;">${sessionUrl}</a></td></tr>
+    </table>
+    <div style="text-align:center;margin-top:20px;">${button("Join Session", sessionUrl)}</div>
+  `;
+  return send(to, "Your Provelt session has started", emailShell("Session started", body));
 }

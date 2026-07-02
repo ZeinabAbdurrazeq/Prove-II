@@ -7,6 +7,10 @@ import { getTranslator } from "../lib/translations";
 function RecentSessions({ sessions, isLoading }) {
   const { language } = useLanguage();
   const t = getTranslator(language);
+  const formatDifficulty = (difficulty) =>
+    difficulty
+      ? difficulty.slice(0, 1).toUpperCase() + difficulty.slice(1)
+      : "";
 
   return (
     <div className="card bg-base-100 border-2 border-accent/20 hover:border-accent/30 mt-8">
@@ -55,13 +59,18 @@ function RecentSessions({ sessions, isLoading }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-base mb-1 truncate">
-                        {session.problem || "Problem chosen in session"}
+                        {formatDifficulty(session.difficulty)} coding session
                       </h3>
                       <span
                         className={`badge badge-sm ${getDifficultyBadgeClass(session.difficulty)}`}
                       >
-                        {session.difficulty}
+                        {formatDifficulty(session.difficulty)}
                       </span>
+                      {session.problem && (
+                        <p className="mt-2 truncate text-sm font-medium text-base-content/70">
+                          {session.problem}
+                        </p>
+                      )}
                     </div>
                   </div>
 

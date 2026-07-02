@@ -4,7 +4,9 @@ import { useNavigate, useParams } from "react-router";
 import {
   useEndSession,
   useJoinSession,
+  useNotifySessionStarted,
   useSessionById,
+  useUpdateSessionProblem,
 } from "../hooks/useSessions";
 import { sessionApi } from "../api/sessions";
 import { PROBLEMS } from "../data/problems";
@@ -38,6 +40,8 @@ function SessionPage() {
 
   const joinSessionMutation = useJoinSession();
   const endSessionMutation = useEndSession();
+  const updateSessionProblemMutation = useUpdateSessionProblem();
+  const notifySessionStartedMutation = useNotifySessionStarted();
   const { isIdle: isJoinIdle, mutate: joinSession } = joinSessionMutation;
 
   const session = sessionData?.session;
@@ -59,6 +63,7 @@ function SessionPage() {
     [session?.problem],
   );
   const [selectedProblemId, setSelectedProblemId] = useState("");
+  const hasSentStartNotificationRef = useRef(false);
 
   const { call, channel, chatClient, isInitializingCall, streamClient } =
     useStreamClient(session, loadingSession, isHost, isParticipant);
@@ -117,20 +122,45 @@ function SessionPage() {
   }, [session, loadingSession, navigate]);
 
   useEffect(() => {
-    if (selectedProblemId) return;
-    const initialProblem = legacyProblem || sessionProblems[0];
+    const savedProblemId =
+      session?.selectedProblemId && PROBLEMS[session.selectedProblemId]
+        ? session.selectedProblemId
+        : legacyProblem?.id || "";
 
-    if (initialProblem) {
-      setSelectedProblemId(initialProblem.id);
+    if (savedProblemId && savedProblemId !== selectedProblemId) {
+      setSelectedProblemId(savedProblemId);
     }
-  }, [legacyProblem, selectedProblemId, sessionProblems]);
+  }, [legacyProblem, selectedProblemId, session?.selectedProblemId]);
 
   useEffect(() => {
     if (problemData?.starterCode?.[selectedLanguage]) {
       setCode(problemData.starterCode[selectedLanguage]);
       setOutput(null);
+    } else if (!problemData) {
+      setCode("");
+      setOutput(null);
     }
   }, [problemData, selectedLanguage]);
+
+  useEffect(() => {
+    if (!session || !isHost) return;
+    if (!session.invitedParticipant || session.startedNotificationSentAt) return;
+    if (hasSentStartNotificationRef.current) return;
+
+    hasSentStartNotificationRef.current = true;
+    notifySessionStartedMutation.mutate(id, {
+      onSuccess: refetch,
+      onError: () => {
+        hasSentStartNotificationRef.current = false;
+      },
+    });
+  }, [
+    session,
+    isHost,
+    id,
+    notifySessionStartedMutation,
+    refetch,
+  ]);
 
   const applyRemoteCode = useCallback((remoteCode) => setCode(remoteCode), []);
   const applyRemoteLanguage = useCallback(
@@ -181,6 +211,16 @@ function SessionPage() {
     setOutput(null);
     broadcastProblem(nextProblemId);
     broadcastCode(starterCode);
+    updateSessionProblemMutation.mutate(
+      {
+        id,
+        problemId: nextProblemId,
+        problemTitle: nextProblem.title,
+      },
+      {
+        onSuccess: refetch,
+      },
+    );
   };
 
   const handleRunCode = async () => {
@@ -280,6 +320,9 @@ function SessionPage() {
                       value={selectedProblemId}
                       onChange={handleProblemChange}
                     >
+                      <option value="" disabled>
+                        Choose a problem
+                      </option>
                       {sessionProblems.map((problem) => (
                         <option key={problem.id} value={problem.id}>
                           {problem.title}
@@ -425,6 +468,9 @@ function SessionPage() {
                             value={selectedProblemId}
                             onChange={handleProblemChange}
                           >
+                            <option value="" disabled>
+                              Choose a problem
+                            </option>
                             {sessionProblems.map((problem) => (
                               <option key={problem.id} value={problem.id}>
                                 {problem.title}

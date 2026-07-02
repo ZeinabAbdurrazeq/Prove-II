@@ -22,6 +22,25 @@ const sessionSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    invitedParticipant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    invitation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Invitation",
+      default: null,
+    },
+    selectedProblemId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    startedNotificationSentAt: {
+      type: Date,
+      default: null,
+    },
     status: {
       type: String,
       enum: ["active", "completed"],
@@ -42,6 +61,7 @@ const sessionSchema = new mongoose.Schema(
 sessionSchema.index({ status: 1, createdAt: -1 });
 sessionSchema.index({ host: 1 });
 sessionSchema.index({ participant: 1 });
+sessionSchema.index({ invitedParticipant: 1 });
 
 const Session = mongoose.model("Session", sessionSchema);
 

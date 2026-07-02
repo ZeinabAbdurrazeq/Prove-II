@@ -262,6 +262,9 @@ export async function respondToInvitation(req, res) {
     const session = await Session.create({
       difficulty: invitation.difficulty,
       host: sender._id,
+      participant: recipient._id,
+      invitedParticipant: recipient._id,
+      invitation: invitation._id,
       callId,
     });
 
@@ -297,6 +300,9 @@ export async function respondToInvitation(req, res) {
     const clientUrl = ENV.CLIENT_URL || "";
     const sessionUrl = `${clientUrl}/session/${session._id}`;
     const emailData = {
+      sessionTitle: `${String(invitation.difficulty).charAt(0).toUpperCase()}${String(invitation.difficulty).slice(1)} coding session`,
+      difficulty: invitation.difficulty,
+      senderName: sender.name,
       scheduledDate: invitation.scheduledDate,
       scheduledTime: invitation.scheduledTime,
       sessionUrl,

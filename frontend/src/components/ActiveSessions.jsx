@@ -15,6 +15,10 @@ import { getTranslator } from "../lib/translations";
 function ActiveSessions({ sessions, isLoading, isUserInSession }) {
   const { language } = useLanguage();
   const t = getTranslator(language);
+  const formatDifficulty = (difficulty) =>
+    difficulty
+      ? difficulty.slice(0, 1).toUpperCase() + difficulty.slice(1)
+      : "";
 
   return (
     <div className="lg:col-span-2 card bg-base-100 border-2 border-primary/20 hover:border-primary/30 h-full">
@@ -60,19 +64,21 @@ function ActiveSessions({ sessions, isLoading, isUserInSession }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="font-bold text-lg truncate">
-                          {session.problem || "Choose problem in session"}
+                          {formatDifficulty(session.difficulty)} coding session
                         </h3>
                         <span
                           className={`badge badge-sm ${getDifficultyBadgeClass(
                             session.difficulty,
                           )}`}
                         >
-                          {session.difficulty
-                            ? session.difficulty.slice(0, 1).toUpperCase() +
-                              session.difficulty.slice(1)
-                            : ""}
+                          {formatDifficulty(session.difficulty)}
                         </span>
                       </div>
+                      {session.problem && (
+                        <p className="mb-2 truncate text-sm font-medium text-base-content/70">
+                          {session.problem}
+                        </p>
+                      )}
 
                       <div className="flex items-center gap-4 text-sm opacity-80">
                         <div className="flex items-center gap-1.5">

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -9,6 +10,7 @@ import {
   XIcon,
   CheckCheckIcon,
   Loader2Icon,
+  VideoIcon,
 } from "lucide-react";
 import { notificationApi } from "../api/notifications";
 import { invitationApi } from "../api/invitations";
@@ -211,6 +213,24 @@ function NotificationBell() {
                                   {t("common.decline")}
                                 </button>
                               </div>
+                            )}
+                          {n.type === "session-started" &&
+                            n.relatedSessionId && (
+                              <Link
+                                to={`/session/${
+                                  typeof n.relatedSessionId === "object"
+                                    ? n.relatedSessionId._id
+                                    : n.relatedSessionId
+                                }`}
+                                className="btn btn-primary btn-xs gap-1 mt-2"
+                                onClick={() => {
+                                  void notificationApi.markAsRead(n._id);
+                                  setOpen(false);
+                                }}
+                              >
+                                <VideoIcon className="size-3" />
+                                {t("invitations.join")}
+                              </Link>
                             )}
                         </div>
                       </div>

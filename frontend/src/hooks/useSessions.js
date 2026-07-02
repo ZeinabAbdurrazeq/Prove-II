@@ -18,6 +18,7 @@ export const useActiveSessions = () => {
   const result = useQuery({
     queryKey: ["activeSessions"],
     queryFn: sessionApi.getActiveSessions,
+    refetchInterval: 5000,
   });
 
   return result;
@@ -62,6 +63,26 @@ export const useEndSession = () => {
     onSuccess: () => toast.success("Session ended successfully!"),
     onError: (error) =>
       toast.error(error.response?.data?.msg || "Failed to end session"),
+  });
+
+  return result;
+};
+
+export const useUpdateSessionProblem = () => {
+  const result = useMutation({
+    mutationKey: ["updateSessionProblem"],
+    mutationFn: sessionApi.updateSessionProblem,
+    onError: (error) =>
+      toast.error(error.response?.data?.msg || "Failed to update session problem"),
+  });
+
+  return result;
+};
+
+export const useNotifySessionStarted = () => {
+  const result = useMutation({
+    mutationKey: ["notifySessionStarted"],
+    mutationFn: sessionApi.notifySessionStarted,
   });
 
   return result;
