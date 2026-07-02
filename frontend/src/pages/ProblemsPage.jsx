@@ -8,6 +8,7 @@ import { getDifficultyBadgeClass } from "../lib/utils";
 
 function ProblemsPage() {
   const [difficultyFilter, setDifficultyFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
   const problems = useMemo(() => Object.values(PROBLEMS), []);
   const filteredProblems = useMemo(
     () =>
@@ -16,16 +17,25 @@ function ProblemsPage() {
         : problems.filter((problem) => problem.difficulty === difficultyFilter),
     [difficultyFilter, problems],
   );
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(filteredProblems.length / pageSize));
+  const visibleProblems = filteredProblems.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   const easyProblemsCount = problems.filter((p) => p.difficulty === "Easy").length;
   const mediumProblemsCount = problems.filter((p) => p.difficulty === "Medium").length;
   const hardProblemsCount = problems.filter((p) => p.difficulty === "Hard").length;
-  const difficultyStats = [
-    { label: "All", count: problems.length, className: "progress-primary" },
-    { label: "Easy", count: easyProblemsCount, className: "progress-success" },
-    { label: "Medium", count: mediumProblemsCount, className: "progress-warning" },
-    { label: "Hard", count: hardProblemsCount, className: "progress-error" },
-  ];
+  const selectedCount = filteredProblems.length;
+  const selectedPercent =
+    problems.length > 0 ? Math.round((selectedCount / problems.length) * 100) : 0;
+  const showAllProblems = difficultyFilter === "All";
+
+  const setFilter = (nextFilter) => {
+    setDifficultyFilter(nextFilter);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -40,40 +50,55 @@ function ProblemsPage() {
           </p>
         </div>
 
-        <div className="mb-8 grid gap-3 md:grid-cols-4">
-          {difficultyStats.map((item) => {
-            const active = difficultyFilter === item.label;
-            const percent = problems.length > 0 ? Math.round((item.count / problems.length) * 100) : 0;
-
-            return (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => setDifficultyFilter(item.label)}
-                className={`rounded-lg border bg-base-100 p-4 text-left shadow-sm transition-all ${
-                  active
-                    ? "border-primary ring-2 ring-primary/20"
-                    : "border-base-300 hover:border-primary/40"
-                }`}
+        <div className="mb-8 rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <label className="form-control w-full max-w-xs">
+              <span className="label-text mb-1 font-semibold">Difficulty</span>
+              <select
+                className="select select-bordered"
+                value={difficultyFilter}
+                onChange={(event) => setFilter(event.target.value)}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-bold">{item.label}</span>
-                  <span className="badge badge-outline">{item.count}</span>
-                </div>
-                <progress
-                  className={`progress ${item.className} mt-3 h-2 w-full`}
-                  value={item.count}
-                  max={problems.length || 1}
-                />
-                <p className="mt-2 text-xs text-base-content/55">{percent}% of practice set</p>
-              </button>
-            );
-          })}
+                <option value="All" disabled>
+                  Choose difficulty
+                </option>
+                <option value="Easy">Easy ({easyProblemsCount})</option>
+                <option value="Medium">Medium ({mediumProblemsCount})</option>
+                <option value="Hard">Hard ({hardProblemsCount})</option>
+              </select>
+            </label>
+
+            <label className="flex items-center gap-3 rounded-lg border border-base-300 bg-base-200/50 px-4 py-3">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-primary"
+                checked={showAllProblems}
+                onChange={(event) =>
+                  setFilter(event.target.checked ? "All" : "Easy")
+                }
+              />
+              <span className="font-semibold">All problems</span>
+            </label>
+          </div>
+
+          <div className="mt-5">
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <span className="font-semibold">
+                Showing {selectedCount} of {problems.length}
+              </span>
+              <span className="text-base-content/60">{selectedPercent}%</span>
+            </div>
+            <progress
+              className="progress progress-primary h-3 w-full"
+              value={selectedCount}
+              max={problems.length || 1}
+            />
+          </div>
         </div>
 
         {/* PROBLEMS LIST */}
         <div className="space-y-4">
-          {filteredProblems.map((problem) => (
+          {visibleProblems.map((problem) => (
             <Link
               key={problem.id}
               to={`/problem/${problem.id}`}
@@ -123,6 +148,32 @@ function ProblemsPage() {
             </div>
           ) : null}
         </div>
+
+        {filteredProblems.length > pageSize ? (
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              className="btn btn-outline btn-sm rounded-full"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            >
+              Previous
+            </button>
+            <span className="text-sm font-semibold">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm rounded-full"
+              disabled={currentPage === totalPages}
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
+            >
+              Next
+            </button>
+          </div>
+        ) : null}
 
         {/* STATS FOOTER */}
         <div className="mt-12 card bg-base-100 shadow-lg">

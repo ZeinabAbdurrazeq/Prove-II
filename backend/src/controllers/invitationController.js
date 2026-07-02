@@ -44,34 +44,18 @@ export async function searchUsers(req, res) {
     const q = (req.query.q || "").trim();
     const level = String(req.query.level || "").trim();
     const sort = String(req.query.sort || "").trim();
-    const minScore = Number(req.query.minScore || 0);
-    const availability = String(req.query.availability || "all").trim();
     const query = { _id: { $ne: req.user._id } };
 
     if (q) {
       const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-      query.$or = [{ name: regex }, { email: regex }];
+      query.name = regex;
     }
 
-    if (SCORE_LEVELS.includes(level)) {
-      query.level = level;
-    }
-
-    if (Number.isFinite(minScore) && minScore > 0) {
-      query.score = { $gte: minScore };
-    }
-
-    if (availability === "available") {
-      const availabilityDocs = await Availability.find({
-        $or: DAYS.map((day) => ({
-          [`weeklySchedule.${day}.0`]: { $exists: true },
-        })),
-      }).select("userId");
-
-      query._id = {
-        $ne: req.user._id,
-        $in: availabilityDocs.map((doc) => doc.userId),
-      };
+    const matchedLevel = SCORE_LEVELS.find(
+      (item) => item.toLowerCase() === level.toLowerCase(),
+    );
+    if (matchedLevel) {
+      query.level = matchedLevel;
     }
 
     const sortOption =

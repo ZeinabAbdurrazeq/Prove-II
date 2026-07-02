@@ -12,7 +12,6 @@ import {
   MailIcon,
   MenuIcon,
   MicIcon,
-  TrophyIcon,
   XIcon,
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
@@ -49,7 +48,6 @@ function Navbar() {
     },
     { to: "/ai-interview", label: t("nav.aiInterview"), icon: MicIcon },
     { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboardIcon },
-    { to: "/leaderboard", label: "Ranking", icon: TrophyIcon },
     { to: "/schedule", label: t("nav.schedule"), icon: CalendarPlusIcon },
     { to: "/invitations", label: t("nav.invitations"), icon: MailIcon },
     { to: "/subscription", label: t("nav.subscription"), icon: CreditCardIcon },
@@ -69,11 +67,11 @@ function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-base-300/60 bg-base-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
+      <div className="flex w-full items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <BrandLogo />
 
         <div className="hidden min-w-0 flex-1 justify-center lg:flex">
-          <div className="flex min-w-0 flex-wrap items-center justify-center gap-1 rounded-2xl border border-base-300/70 bg-base-200/30 p-1 shadow-sm xl:flex-nowrap">
+          <div className="flex w-full min-w-0 items-center justify-center gap-1 rounded-2xl border border-base-300/70 bg-base-200/30 p-1 shadow-sm">
             {navItems.map((item) => {
               const NavIcon = item.icon;
 
@@ -81,7 +79,7 @@ function Navbar() {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`flex min-w-0 shrink items-center gap-1 rounded-xl px-1.5 py-2 text-[10px] font-medium transition-all duration-200 sm:text-[11px] lg:text-[12px] xl:text-sm ${
+                  className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] font-medium transition-all duration-200 sm:text-[11px] lg:text-[12px] xl:text-sm ${
                     isActive(item.to)
                       ? "bg-primary text-primary-content shadow-sm"
                       : "text-base-content/70 hover:bg-base-200 hover:text-base-content"

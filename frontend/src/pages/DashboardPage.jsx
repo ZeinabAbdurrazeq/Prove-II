@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useUser } from "@clerk/react";
 import { useState } from "react";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions";
@@ -87,11 +87,6 @@ function DashboardPage() {
               compact
               currentUserId={scoreSummary?._id}
             />
-            <div className="mt-3 text-right">
-              <Link to="/leaderboard" className="btn btn-outline btn-sm rounded-full">
-                View full leaderboard
-              </Link>
-            </div>
           </div>
         </div>
       </div>

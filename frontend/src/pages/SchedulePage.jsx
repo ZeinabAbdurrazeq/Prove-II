@@ -8,7 +8,6 @@ import {
   UserIcon,
   CalendarIcon,
   UsersIcon,
-  RotateCcwIcon,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { invitationApi } from "../api/invitations";
@@ -30,11 +29,6 @@ const LEVEL_FILTERS = [
   "Junior",
   "Intermediate",
   "Advanced",
-];
-const SORT_OPTIONS = [
-  { value: "score", label: "Top score" },
-  { value: "name", label: "Name" },
-  { value: "level", label: "Level" },
 ];
 
 function nextDateForDay(dayName) {
@@ -76,34 +70,17 @@ function SchedulePage() {
   const [message, setMessage] = useState("");
   const [levelFilter, setLevelFilter] = useState("All");
   const [search, setSearch] = useState("");
-  const [minScore, setMinScore] = useState("");
-  const [availabilityFilter, setAvailabilityFilter] = useState("all");
-  const [sort, setSort] = useState("score");
 
   const { data: usersData, isLoading: loadingUsers } = useQuery({
-    queryKey: [
-      "allScheduleUsers",
-      { levelFilter, search, minScore, availabilityFilter, sort },
-    ],
+    queryKey: ["allScheduleUsers", { levelFilter, search }],
     queryFn: () =>
       invitationApi.searchUsers(search, {
         level: levelFilter === "All" ? "" : levelFilter,
-        minScore,
-        availability: availabilityFilter,
-        sort,
+        sort: "score",
       }),
   });
 
   const users = useMemo(() => usersData?.users || [], [usersData]);
-
-  const resetFilters = () => {
-    setSearch("");
-    setLevelFilter("All");
-    setMinScore("");
-    setAvailabilityFilter("all");
-    setSort("score");
-    setSelectedCell(null);
-  };
 
   useEffect(() => {
     if (selectedUser && !users.some((user) => user._id === selectedUser._id)) {
@@ -198,77 +175,20 @@ function SchedulePage() {
                   <div>
                     <h2 className="text-lg font-bold">Candidates</h2>
                     <p className="text-sm text-base-content/60">
-                      Choose a candidate by level and score, then inspect availability.
+                      Search by name, choose a level, then inspect availability.
                     </p>
                   </div>
                   {loadingUsers ? <Loader2Icon className="size-5 animate-spin text-primary" /> : null}
                 </div>
 
-                <div className="mt-4 space-y-3">
+                <div className="mt-4">
                   <input
                     type="search"
                     className="input input-bordered input-sm w-full"
-                    placeholder="Search by name or email"
+                    placeholder="Search by name"
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                   />
-
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <label className="form-control">
-                      <span className="label-text mb-1 text-xs font-semibold">Minimum score</span>
-                      <input
-                        type="number"
-                        min="0"
-                        className="input input-bordered input-sm"
-                        value={minScore}
-                        onChange={(event) => setMinScore(event.target.value)}
-                      />
-                    </label>
-
-                    <label className="form-control">
-                      <span className="label-text mb-1 text-xs font-semibold">Sort by</span>
-                      <select
-                        className="select select-bordered select-sm"
-                        value={sort}
-                        onChange={(event) => setSort(event.target.value)}
-                      >
-                        {SORT_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setAvailabilityFilter("all")}
-                      className={`btn btn-xs ${
-                        availabilityFilter === "all" ? "btn-primary" : "btn-outline"
-                      }`}
-                    >
-                      All availability
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAvailabilityFilter("available")}
-                      className={`btn btn-xs ${
-                        availabilityFilter === "available" ? "btn-primary" : "btn-outline"
-                      }`}
-                    >
-                      Has slots
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetFilters}
-                      className="btn btn-ghost btn-xs gap-1"
-                    >
-                      <RotateCcwIcon className="size-3" />
-                      Reset
-                    </button>
-                  </div>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
