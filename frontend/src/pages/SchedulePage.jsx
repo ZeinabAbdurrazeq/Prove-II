@@ -206,9 +206,15 @@ function SchedulePage() {
                   ))}
                 </div>
 
+                <div className="mt-4 rounded-lg bg-base-200/60 px-3 py-2 text-xs font-semibold text-base-content/65">
+                  Showing {levelFilter === "All" ? "all levels" : levelFilter} candidates
+                </div>
+
                 <div className="mt-4 max-h-[520px] space-y-2 overflow-y-auto pr-1">
                   {users.map((user) => {
                     const active = selectedUser?._id === user._id;
+                    const userLevel = user.level || "Entry-Level";
+
                     return (
                       <button
                         key={user._id}
@@ -232,10 +238,13 @@ function SchedulePage() {
                           </span>
                         )}
                         <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-base-content/45">
+                            Candidate name
+                          </p>
                           <p className="truncate font-semibold">{user.name}</p>
                           <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <span className="badge badge-outline badge-sm">
-                              {user.level || "Entry-Level"}
+                            <span className="badge badge-primary badge-sm">
+                              Level: {userLevel}
                             </span>
                             <span className="text-xs font-semibold text-base-content/70">
                               {Number(user.score || 0)} pts

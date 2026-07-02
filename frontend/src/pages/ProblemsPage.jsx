@@ -27,9 +27,6 @@ function ProblemsPage() {
   const easyProblemsCount = problems.filter((p) => p.difficulty === "Easy").length;
   const mediumProblemsCount = problems.filter((p) => p.difficulty === "Medium").length;
   const hardProblemsCount = problems.filter((p) => p.difficulty === "Hard").length;
-  const selectedCount = filteredProblems.length;
-  const selectedPercent =
-    problems.length > 0 ? Math.round((selectedCount / problems.length) * 100) : 0;
   const showAllProblems = difficultyFilter === "All";
 
   const setFilter = (nextFilter) => {
@@ -62,9 +59,9 @@ function ProblemsPage() {
                 <option value="All" disabled>
                   Choose difficulty
                 </option>
-                <option value="Easy">Easy ({easyProblemsCount})</option>
-                <option value="Medium">Medium ({mediumProblemsCount})</option>
-                <option value="Hard">Hard ({hardProblemsCount})</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
               </select>
             </label>
 
@@ -79,20 +76,6 @@ function ProblemsPage() {
               />
               <span className="font-semibold">All problems</span>
             </label>
-          </div>
-
-          <div className="mt-5">
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="font-semibold">
-                Showing {selectedCount} of {problems.length}
-              </span>
-              <span className="text-base-content/60">{selectedPercent}%</span>
-            </div>
-            <progress
-              className="progress progress-primary h-3 w-full"
-              value={selectedCount}
-              max={problems.length || 1}
-            />
           </div>
         </div>
 
