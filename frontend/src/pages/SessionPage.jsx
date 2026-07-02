@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   useEndSession,
@@ -43,13 +43,27 @@ function SessionPage() {
   const session = sessionData?.session;
   const isHost = session?.host?.clerkId === user?.id;
   const isParticipant = session?.participant?.clerkId === user?.id;
+  const sessionDifficulty = String(session?.difficulty || "easy").toLowerCase();
+  const sessionProblems = useMemo(
+    () =>
+      Object.values(PROBLEMS).filter(
+        (problem) => problem.difficulty.toLowerCase() === sessionDifficulty,
+      ),
+    [sessionDifficulty],
+  );
+  const legacyProblem = useMemo(
+    () =>
+      session?.problem
+        ? Object.values(PROBLEMS).find((p) => p.title === session.problem)
+        : null,
+    [session?.problem],
+  );
+  const [selectedProblemId, setSelectedProblemId] = useState("");
 
   const { call, channel, chatClient, isInitializingCall, streamClient } =
     useStreamClient(session, loadingSession, isHost, isParticipant);
 
-  const problemData = session?.problem
-    ? Object.values(PROBLEMS).find((p) => p.title === session.problem)
-    : null;
+  const problemData = selectedProblemId ? PROBLEMS[selectedProblemId] : null;
 
   useEffect(() => {
     const updateLayout = () => {
@@ -65,9 +79,6 @@ function SessionPage() {
   const [code, setCode] = useState(
     problemData?.starterCode?.[selectedLanguage] || "",
   );
-  // Ensures starter code is only auto-loaded once, so it never overwrites
-  // collaborative edits coming from the other participant.
-  const starterLoadedRef = useRef(false);
   // Ensures the join request is fired at most once, even though the 5s polling
   // refetch can re-render this effect before the mutation leaves its idle
   // state (which previously allowed a duplicate join).
@@ -106,22 +117,41 @@ function SessionPage() {
   }, [session, loadingSession, navigate]);
 
   useEffect(() => {
-    // Load starter code only once, when the problem data first resolves.
-    if (starterLoadedRef.current) return;
+    if (selectedProblemId) return;
+    const initialProblem = legacyProblem || sessionProblems[0];
+
+    if (initialProblem) {
+      setSelectedProblemId(initialProblem.id);
+    }
+  }, [legacyProblem, selectedProblemId, sessionProblems]);
+
+  useEffect(() => {
     if (problemData?.starterCode?.[selectedLanguage]) {
       setCode(problemData.starterCode[selectedLanguage]);
-      starterLoadedRef.current = true;
+      setOutput(null);
     }
   }, [problemData, selectedLanguage]);
 
+  const applyRemoteCode = useCallback((remoteCode) => setCode(remoteCode), []);
+  const applyRemoteLanguage = useCallback(
+    (remoteLang) => setSelectedLanguage(remoteLang),
+    [],
+  );
+  const applyRemoteProblem = useCallback((remoteProblemId) => {
+    if (PROBLEMS[remoteProblemId]) {
+      setSelectedProblemId(remoteProblemId);
+    }
+  }, []);
+
   // Real-time collaborative editing over the shared Stream channel.
-  const { broadcastCode, broadcastLanguage } = useCollaborativeCode(
+  const { broadcastCode, broadcastLanguage, broadcastProblem } = useCollaborativeCode(
     channel,
     user?.id,
     // When the other user types, apply their code locally.
-    (remoteCode) => setCode(remoteCode),
+    applyRemoteCode,
     // When the other user switches language, mirror it locally.
-    (remoteLang) => setSelectedLanguage(remoteLang),
+    applyRemoteLanguage,
+    applyRemoteProblem,
   );
 
   const handleCodeChange = (value) => {
@@ -137,6 +167,19 @@ function SessionPage() {
     setCode(starterCode);
     setOutput(null);
     broadcastLanguage(newLang);
+    broadcastCode(starterCode);
+  };
+
+  const handleProblemChange = (e) => {
+    const nextProblemId = e.target.value;
+    const nextProblem = PROBLEMS[nextProblemId];
+    if (!nextProblem) return;
+
+    setSelectedProblemId(nextProblemId);
+    const starterCode = nextProblem.starterCode?.[selectedLanguage] || "";
+    setCode(starterCode);
+    setOutput(null);
+    broadcastProblem(nextProblemId);
     broadcastCode(starterCode);
   };
 
@@ -222,7 +265,7 @@ function SessionPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h1 className="text-2xl font-bold text-base-content">
-                      {session?.problem || "Loading..."}
+                      {problemData?.title || "Choose a problem"}
                     </h1>
                     {problemData?.category && (
                       <p className="text-sm text-base-content/60">
@@ -232,6 +275,17 @@ function SessionPage() {
                     <p className="mt-1 text-sm text-base-content/60">
                       Host: {session?.host?.name || "Loading..."} ? {session?.participant ? 2 : 1}/2 participants
                     </p>
+                    <select
+                      className="select select-bordered select-sm mt-3 w-full max-w-xs"
+                      value={selectedProblemId}
+                      onChange={handleProblemChange}
+                    >
+                      {sessionProblems.map((problem) => (
+                        <option key={problem.id} value={problem.id}>
+                          {problem.title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <span
@@ -351,7 +405,7 @@ function SessionPage() {
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h1 className="text-3xl font-bold text-base-content">
-                          {session?.problem || "Loading..."}
+                          {problemData?.title || "Choose a problem"}
                         </h1>
                         {problemData?.category && (
                           <p className="text-base-content/60 mt-1">
@@ -362,6 +416,22 @@ function SessionPage() {
                           Host: {session?.host?.name || "Loading..."} •{" "}
                           {session?.participant ? 2 : 1}/2 participants
                         </p>
+                        <label className="mt-4 block max-w-md">
+                          <span className="mb-1 block text-sm font-semibold text-base-content/70">
+                            Session problem
+                          </span>
+                          <select
+                            className="select select-bordered w-full"
+                            value={selectedProblemId}
+                            onChange={handleProblemChange}
+                          >
+                            {sessionProblems.map((problem) => (
+                              <option key={problem.id} value={problem.id}>
+                                {problem.title}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                       </div>
 
                       <div className="flex items-center gap-3">

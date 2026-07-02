@@ -1,7 +1,8 @@
 import { Code2Icon, LoaderIcon, PlusIcon } from "lucide-react";
-import { PROBLEMS } from "../data/problems";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
+
+const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
 function CreateSessionModal({
   isOpen,
@@ -11,7 +12,6 @@ function CreateSessionModal({
   onCreateRoom,
   isCreating,
 }) {
-  const problems = Object.values(PROBLEMS);
   const { language } = useLanguage();
   const t = getTranslator(language);
 
@@ -23,48 +23,45 @@ function CreateSessionModal({
         <h3 className="font-bold text-2xl mb-6">{t("dashboard.createNewSession")}</h3>
 
         <div className="space-y-8">
-          {/* PROBLEM SELECTION */}
+          {/* DIFFICULTY SELECTION */}
           <div className="space-y-2">
             <label className="label">
-              <span className="label-text font-semibold">{t("dashboard.selectProblem")}</span>
+              <span className="label-text font-semibold">Select difficulty</span>
               <span className="label-text-alt text-error">*</span>
             </label>
 
             <select
               className="select w-full"
-              value={roomConfig.problem}
+              value={roomConfig.difficulty}
               onChange={(e) => {
-                const selectedProblem = problems.find(
-                  (p) => p.title === e.target.value,
-                );
                 setRoomConfig({
-                  difficulty: selectedProblem.difficulty,
-                  problem: e.target.value,
+                  difficulty: e.target.value,
                 });
               }}
             >
               <option value="" disabled>
-                {t("dashboard.chooseProblem")}
+                Choose a difficulty level...
               </option>
 
-              {problems.map((problem) => (
-                <option key={problem.id} value={problem.title}>
-                  {problem.title} ({problem.difficulty})
+              {DIFFICULTIES.map((difficulty) => (
+                <option key={difficulty} value={difficulty}>
+                  {difficulty}
                 </option>
               ))}
             </select>
           </div>
 
           {/* ROOM SUMMARY */}
-          {roomConfig.problem && (
+          {roomConfig.difficulty && (
             <div className="alert alert-success">
               <Code2Icon className="size-5" />
               <div>
                 <p className="font-semibold">{t("dashboard.roomSummary")}</p>
                 <p>
-                  {t("dashboard.problem")}:{" "}
-                  <span className="font-medium">{roomConfig.problem}</span>
+                  Difficulty:{" "}
+                  <span className="font-medium">{roomConfig.difficulty}</span>
                 </p>
+                <p className="text-sm">Choose the problem after joining the session.</p>
                 <p>
                   {t("dashboard.maxParticipants")}:{" "}
                   <span className="font-medium">{t("dashboard.participantsNote")}</span>
@@ -82,7 +79,7 @@ function CreateSessionModal({
           <button
             className="btn btn-primary gap-2"
             onClick={onCreateRoom}
-            disabled={isCreating || !roomConfig.problem}
+            disabled={isCreating || !roomConfig.difficulty}
           >
             {isCreating ? (
               <LoaderIcon className="size-5 animate-spin" />

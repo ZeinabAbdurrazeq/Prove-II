@@ -3,14 +3,13 @@ import Session from "../models/Session.js";
 
 export async function createSession(req, res) {
   try {
-    const { problem } = req.body;
     const userId = req.user._id;
     const clerkId = req.user.clerkId;
 
-    if (!problem || !req.body.difficulty) {
+    if (!req.body.difficulty) {
       return res
         .status(400)
-        .json({ msg: "Problem or Difficulty are Required" });
+        .json({ msg: "Difficulty is required" });
     }
 
     // Normalize difficulty to lowercase to match the Session schema enum
@@ -19,7 +18,6 @@ export async function createSession(req, res) {
     const callId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     const session = await Session.create({
-      problem,
       difficulty,
       host: userId,
       callId,
@@ -28,12 +26,12 @@ export async function createSession(req, res) {
     await streamClient.video.call("default", callId).getOrCreate({
       data: {
         created_by_id: clerkId,
-        custom: { problem, difficulty, sessionId: session._id.toString() },
+        custom: { difficulty, sessionId: session._id.toString() },
       },
     });
 
     const channel = chatClient.channel("messaging", callId, {
-      name: `${problem} session`,
+      name: `${difficulty} coding session`,
       created_by_id: clerkId,
       members: [clerkId],
     });

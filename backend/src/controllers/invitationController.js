@@ -86,12 +86,11 @@ export async function sendInvitation(req, res) {
       scheduledDate,
       scheduledTime,
       duration,
-      problem,
       difficulty,
       message,
     } = req.body;
 
-    if (!recipientId || !scheduledDate || !scheduledTime || !problem || !difficulty) {
+    if (!recipientId || !scheduledDate || !scheduledTime || !difficulty) {
       return res.status(400).json({ msg: "Missing required invitation fields" });
     }
 
@@ -122,7 +121,6 @@ export async function sendInvitation(req, res) {
       scheduledDate,
       scheduledTime,
       duration: duration || 60,
-      problem,
       difficulty: String(difficulty).toLowerCase(),
       message: message || "",
     });
@@ -137,7 +135,6 @@ export async function sendInvitation(req, res) {
 
     await sendInvitationEmail(recipient.email, {
       senderName: req.user.name,
-      problem,
       difficulty,
       scheduledDate,
       scheduledTime,
@@ -250,7 +247,6 @@ export async function respondToInvitation(req, res) {
 
       await sendDeclineEmail(sender.email, {
         recipientName: recipient.name,
-        problem: invitation.problem,
         scheduledDate: invitation.scheduledDate,
         scheduledTime: invitation.scheduledTime,
       });
@@ -264,7 +260,6 @@ export async function respondToInvitation(req, res) {
       .substring(7)}`;
 
     const session = await Session.create({
-      problem: invitation.problem,
       difficulty: invitation.difficulty,
       host: sender._id,
       callId,
@@ -274,7 +269,6 @@ export async function respondToInvitation(req, res) {
       data: {
         created_by_id: sender.clerkId,
         custom: {
-          problem: invitation.problem,
           difficulty: invitation.difficulty,
           sessionId: session._id.toString(),
         },
@@ -282,7 +276,7 @@ export async function respondToInvitation(req, res) {
     });
 
     const channel = chatClient.channel("messaging", callId, {
-      name: `${invitation.problem} session`,
+      name: `${invitation.difficulty} coding session`,
       created_by_id: sender.clerkId,
       members: [sender.clerkId, recipient.clerkId],
     });
@@ -303,7 +297,6 @@ export async function respondToInvitation(req, res) {
     const clientUrl = ENV.CLIENT_URL || "";
     const sessionUrl = `${clientUrl}/session/${session._id}`;
     const emailData = {
-      problem: invitation.problem,
       scheduledDate: invitation.scheduledDate,
       scheduledTime: invitation.scheduledTime,
       sessionUrl,

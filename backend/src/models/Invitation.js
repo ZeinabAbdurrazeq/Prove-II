@@ -26,7 +26,8 @@ const invitationSchema = new mongoose.Schema(
     },
     problem: {
       type: String,
-      required: true,
+      default: "",
+      trim: true,
     },
     difficulty: {
       type: String,

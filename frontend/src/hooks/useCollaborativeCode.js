@@ -3,6 +3,7 @@ import { useEffect, useRef, useCallback } from "react";
 // Custom Stream channel event types used to sync the shared code editor.
 const CODE_EVENT = "code-update";
 const LANG_EVENT = "language-update";
+const PROBLEM_EVENT = "problem-update";
 
 /**
  * Real-time collaborative editing over the existing Stream chat channel.
@@ -20,12 +21,14 @@ const LANG_EVENT = "language-update";
  * @param {string} currentUserId  The current user's stream/clerk id
  * @param {function} onRemoteCode  Called with new code when a remote user types
  * @param {function} onRemoteLanguage Called with new language on remote change
+ * @param {function} onRemoteProblem Called with a new problem id on remote change
  */
 function useCollaborativeCode(
   channel,
   currentUserId,
   onRemoteCode,
   onRemoteLanguage,
+  onRemoteProblem,
 ) {
   // True while we are applying an update received from the other user, so the
   // editor's onChange handler knows not to re-broadcast it.
@@ -53,6 +56,10 @@ function useCollaborativeCode(
       if (event.type === LANG_EVENT && typeof event.language === "string") {
         onRemoteLanguage(event.language);
       }
+
+      if (event.type === PROBLEM_EVENT && typeof event.problemId === "string") {
+        onRemoteProblem?.(event.problemId);
+      }
     };
 
     channel.on(handleEvent);
@@ -60,7 +67,7 @@ function useCollaborativeCode(
     return () => {
       channel.off(handleEvent);
     };
-  }, [channel, currentUserId, onRemoteCode, onRemoteLanguage]);
+  }, [channel, currentUserId, onRemoteCode, onRemoteLanguage, onRemoteProblem]);
 
   // Broadcast a code change (debounced) unless it came from a remote update.
   const broadcastCode = useCallback(
@@ -91,6 +98,18 @@ function useCollaborativeCode(
     [channel],
   );
 
+  const broadcastProblem = useCallback(
+    (problemId) => {
+      if (!channel) return;
+      if (isApplyingRemote.current) return;
+
+      channel.sendEvent({ type: PROBLEM_EVENT, problemId }).catch((err) => {
+        console.error("Failed to broadcast problem update:", err);
+      });
+    },
+    [channel],
+  );
+
   // Clean up any pending debounce on unmount.
   useEffect(() => {
     return () => {
@@ -98,7 +117,7 @@ function useCollaborativeCode(
     };
   }, []);
 
-  return { broadcastCode, broadcastLanguage, isApplyingRemote };
+  return { broadcastCode, broadcastLanguage, broadcastProblem, isApplyingRemote };
 }
 
 export default useCollaborativeCode;

@@ -12,7 +12,6 @@ import {
 import Navbar from "../components/Navbar";
 import { invitationApi } from "../api/invitations";
 import { availabilityApi } from "../api/availability";
-import { PROBLEMS } from "../data/problems";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 import {
@@ -60,12 +59,10 @@ function SchedulePage() {
   const { language } = useLanguage();
   const t = getTranslator(language);
   const dayLabels = getDayLabels(language);
-  const problems = Object.values(PROBLEMS);
   const timeRows = buildTimeRows();
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedCell, setSelectedCell] = useState(null);
-  const [problem, setProblem] = useState(problems[0]?.title || "");
   const [difficulty, setDifficulty] = useState("easy");
   const [message, setMessage] = useState("");
   const [levelFilter, setLevelFilter] = useState("All");
@@ -130,14 +127,13 @@ function SchedulePage() {
   const handleSend = () => {
     if (!selectedUser) return toast.error(t("schedule.selectUser"));
     if (!selectedCell) return toast.error(t("schedule.pickSlot"));
-    if (!problem || !difficulty) return toast.error(t("schedule.chooseProblem"));
+    if (!difficulty) return toast.error("Choose a difficulty");
 
     const [day, time] = selectedCell.split("|");
     sendMutation.mutate({
       recipientId: selectedUser._id,
       scheduledDate: nextDateForDay(day),
       scheduledTime: time,
-      problem,
       difficulty,
       message,
     });
@@ -463,23 +459,6 @@ function SchedulePage() {
                   <div className="card-body space-y-4 p-6">
                     <div>
                       <label className="label">
-                        <span className="label-text font-semibold">{t("schedule.problem")}</span>
-                      </label>
-                      <select
-                        className="select select-bordered w-full"
-                        value={problem}
-                        onChange={(e) => setProblem(e.target.value)}
-                      >
-                        {problems.map((p) => (
-                          <option key={p.id} value={p.title}>
-                            {p.title} ({p.difficulty})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="label">
                         <span className="label-text font-semibold">{t("schedule.difficulty")}</span>
                       </label>
                       <select
@@ -491,6 +470,9 @@ function SchedulePage() {
                         <option value="medium">Medium</option>
                         <option value="hard">Hard</option>
                       </select>
+                      <p className="mt-2 text-xs text-base-content/60">
+                        The problem will be selected inside the session.
+                      </p>
                     </div>
 
                     <div>

@@ -17,7 +17,7 @@ function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
+  const [roomConfig, setRoomConfig] = useState({ difficulty: "" });
 
   const createSessionMutation = useCreateSession();
 
@@ -28,11 +28,10 @@ function DashboardPage() {
   const { data: leaderboardData, isLoading: loadingLeaderboard } = useLeaderboard(5);
 
   const handleCreateRoom = () => {
-    if (!roomConfig.problem || !roomConfig.difficulty) return;
+    if (!roomConfig.difficulty) return;
 
     createSessionMutation.mutate(
       {
-        problem: roomConfig.problem,
         difficulty: roomConfig.difficulty.toLowerCase(),
       },
       {

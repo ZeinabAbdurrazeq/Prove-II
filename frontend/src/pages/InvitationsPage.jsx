@@ -113,7 +113,7 @@ function InvitationsPage() {
           </div>
 
           <div className="flex items-center gap-2 mt-2">
-            <span className="font-medium">{inv.problem}</span>
+            <span className="font-medium">Problem selected in session</span>
             <span className={`badge badge-sm ${getDifficultyBadgeClass(inv.difficulty)}`}>
               {inv.difficulty}
             </span>

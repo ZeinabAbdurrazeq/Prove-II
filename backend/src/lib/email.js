@@ -60,15 +60,15 @@ async function send(to, subject, html) {
 }
 
 export async function sendInvitationEmail(to, data) {
-  const { senderName, problem, difficulty, scheduledDate, scheduledTime, message } = data;
+  const { senderName, difficulty, scheduledDate, scheduledTime, message } = data;
   const body = `
     <p style="color:#374151;">Hi, <strong>${senderName}</strong> invited you to a coding session on Provelt.</p>
     <table style="width:100%;margin:16px 0;border-collapse:collapse;">
-      <tr><td style="padding:6px 0;color:#6b7280;">Problem</td><td style="padding:6px 0;color:#111827;font-weight:bold;">${problem}</td></tr>
       <tr><td style="padding:6px 0;color:#6b7280;">Difficulty</td><td style="padding:6px 0;">${difficultyBadge(difficulty)}</td></tr>
       <tr><td style="padding:6px 0;color:#6b7280;">Date</td><td style="padding:6px 0;color:#111827;">${scheduledDate}</td></tr>
       <tr><td style="padding:6px 0;color:#6b7280;">Time (Egypt)</td><td style="padding:6px 0;color:#111827;">${scheduledTime}</td></tr>
     </table>
+    <p style="color:#374151;">You can choose any matching problem after joining the session.</p>
     ${message ? `<p style="background:#f9fafb;border-left:3px solid #6366f1;padding:12px;color:#374151;">“${message}”</p>` : ""}
     <p style="color:#374151;">Open Provelt to accept or decline this invitation.</p>
   `;
@@ -76,11 +76,10 @@ export async function sendInvitationEmail(to, data) {
 }
 
 export async function sendDeclineEmail(to, data) {
-  const { recipientName, problem, scheduledDate, scheduledTime } = data;
+  const { recipientName, scheduledDate, scheduledTime } = data;
   const body = `
     <p style="color:#374151;"><strong>${recipientName}</strong> declined your session invitation.</p>
     <table style="width:100%;margin:16px 0;border-collapse:collapse;">
-      <tr><td style="padding:6px 0;color:#6b7280;">Problem</td><td style="padding:6px 0;color:#111827;font-weight:bold;">${problem}</td></tr>
       <tr><td style="padding:6px 0;color:#6b7280;">Date</td><td style="padding:6px 0;color:#111827;">${scheduledDate} at ${scheduledTime} (Egypt)</td></tr>
     </table>
     <p style="color:#374151;">You can schedule another session anytime from your dashboard.</p>
@@ -111,13 +110,13 @@ export async function sendSubscriptionEmail(to, data) {
 }
 
 export async function sendAcceptedEmail(to, data) {
-  const { problem, scheduledDate, scheduledTime, sessionUrl } = data;
+  const { scheduledDate, scheduledTime, sessionUrl } = data;
   const body = `
     <p style="color:#374151;">Your session is confirmed and ready to join.</p>
     <table style="width:100%;margin:16px 0;border-collapse:collapse;">
-      <tr><td style="padding:6px 0;color:#6b7280;">Problem</td><td style="padding:6px 0;color:#111827;font-weight:bold;">${problem}</td></tr>
       <tr><td style="padding:6px 0;color:#6b7280;">Date</td><td style="padding:6px 0;color:#111827;">${scheduledDate} at ${scheduledTime} (Egypt)</td></tr>
     </table>
+    <p style="color:#374151;">Choose the problem inside the session when you join.</p>
     <div style="text-align:center;margin-top:20px;">${button("Join Session", sessionUrl)}</div>
   `;
   return send(to, "Your Provelt session is confirmed", emailShell("Session confirmed", body));
