@@ -43,6 +43,18 @@ export const translations = {
     "home.statUsers": "Active Users",
     "home.statSessions": "Sessions",
     "home.statUptime": "Uptime",
+    "home.badgeText": "Real-time Collaboration",
+    "home.heroTitleMain": "Code Together,",
+    "home.heroTitleSpan": "Learn Together",
+    "home.heroDesc":
+      "The ultimate platform for collaborative coding interviews and pair programming. Connect face-to-face, code in real-time, and ace your technical interviews.",
+    "home.btnStart": "Start Coding Now",
+    "home.btnDashboard": "Go to Dashboard",
+    "home.btnWatchDemo": "Watch Demo",
+    "home.rotating.interviews": "Interviews",
+    "home.rotating.coding": "Coding",
+    "home.rotating.pair": "Pair Practice",
+    "home.rotating.realtime": "Real-time",
     "home.rotatingInterviews": "Interviews",
     "home.rotatingCoding": "Coding",
     "home.rotatingPairPractice": "Pair Practice",
@@ -86,6 +98,24 @@ export const translations = {
     "home.finalCtaTitle": "Ready to practice with evidence?",
     "home.finalCtaBody":
       "Start with a live session, solve a problem, or rehearse your next interview with AI.",
+    "home.whyEyebrow": "Why choose ProveIt",
+    "home.whyTitle": "Built for real interview confidence.",
+    "home.whyRealTitle": "Real practice",
+    "home.whyRealBody":
+      "Live collaboration mirrors the pressure and communication of technical interviews.",
+    "home.whyAiTitle": "AI rehearsal",
+    "home.whyAiBody":
+      "Practice interview answers with structured prompts and feedback before the real day.",
+    "home.whyProgressTitle": "Visible progress",
+    "home.whyProgressBody":
+      "Scores, solved problems, sessions, and rank help users understand what improved.",
+    "home.poweredBy": "Powered by the ProveIt workspace",
+    "home.poweredVideo": "Live Video",
+    "home.poweredWorkspace": "Shared Workspace",
+    "home.poweredAi": "AI Recruiter",
+    "home.poweredScoring": "Scoring",
+    "home.testimonialsEyebrow": "Testimonials",
+    "home.testimonialsTitle": "Trusted voices for serious practice.",
 
     // Home features
     "home.featuresTitle": "Everything You Need to Succeed",
@@ -500,6 +530,18 @@ export const translations = {
     "home.statUsers": "مستخدم نشط",
     "home.statSessions": "جلسة",
     "home.statUptime": "وقت التشغيل",
+    "home.badgeText": "تعاون في الوقت الفعلي",
+    "home.heroTitleMain": "برمجوا معًا،",
+    "home.heroTitleSpan": "وتعلّموا معًا",
+    "home.heroDesc":
+      "منصة متكاملة لمقابلات البرمجة التعاونية والتدريب الثنائي. تواصل وجهًا لوجه، واكتب الكود مباشرة، واستعد لمقابلاتك التقنية بثقة.",
+    "home.btnStart": "ابدأ البرمجة الآن",
+    "home.btnDashboard": "اذهب إلى لوحة التحكم",
+    "home.btnWatchDemo": "شاهد العرض",
+    "home.rotating.interviews": "المقابلات",
+    "home.rotating.coding": "البرمجة",
+    "home.rotating.pair": "التدريب الثنائي",
+    "home.rotating.realtime": "الوقت الفعلي",
     "home.rotatingInterviews": "المقابلات",
     "home.rotatingCoding": "البرمجة",
     "home.rotatingPairPractice": "التدريب الثنائي",
@@ -543,6 +585,24 @@ export const translations = {
     "home.finalCtaTitle": "جاهز للتدريب بدليل واضح؟",
     "home.finalCtaBody":
       "ابدأ بجلسة مباشرة، أو حل مسألة، أو تمرن على مقابلتك القادمة مع الذكاء الاصطناعي.",
+    "home.whyEyebrow": "لماذا تختار ProveIt",
+    "home.whyTitle": "مصمم لبناء ثقة حقيقية في المقابلات.",
+    "home.whyRealTitle": "تدريب واقعي",
+    "home.whyRealBody":
+      "التعاون المباشر يحاكي ضغط المقابلات التقنية وطريقة التواصل فيها.",
+    "home.whyAiTitle": "تدريب بالذكاء الاصطناعي",
+    "home.whyAiBody":
+      "تمرن على إجابات المقابلة مع أسئلة منظمة وملاحظات قبل اليوم الحقيقي.",
+    "home.whyProgressTitle": "تقدم واضح",
+    "home.whyProgressBody":
+      "الدرجات والمسائل المحلولة والجلسات والترتيب تساعد المستخدم على فهم ما تطور.",
+    "home.poweredBy": "مدعوم بمساحة عمل ProveIt",
+    "home.poweredVideo": "فيديو مباشر",
+    "home.poweredWorkspace": "مساحة مشتركة",
+    "home.poweredAi": "مسؤول توظيف ذكي",
+    "home.poweredScoring": "التقييم",
+    "home.testimonialsEyebrow": "آراء المستخدمين",
+    "home.testimonialsTitle": "أصوات موثوقة لتدريب جاد.",
 
     // Home features
     "home.featuresTitle": "كل ما تحتاجه للنجاح",
