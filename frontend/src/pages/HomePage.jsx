@@ -1,18 +1,23 @@
 import { Link } from "react-router";
 import { SignInButton, useUser } from "@clerk/react";
+import { lazy, Suspense } from "react";
 import { ArrowRight, PlayCircle, Zap } from "lucide-react";
 import MarketingNav from "../components/MarketingNav";
-import GetStarted from "../components/GetStarted";
-import MagicRings from "../components/lib-componetns/MagicRings";
-import RotatingText from "../components/lib-componetns/RotatingText";
-import PowerdBy from "../components/PowerdBy";
-import PowerfulFeatures from "../components/PowerfullFeature";
-import SiteFooter from "../components/SiteFooter";
-import TestimonialsSection from "../components/Testmonials";
-import HowItWorks from "../components/ui/howItWorks";
-import WhyChooseProvelt from "../components/ui/WhyProvelt";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
+
+const GetStarted = lazy(() => import("../components/GetStarted"));
+const MagicRings = lazy(() => import("../components/lib-componetns/MagicRings"));
+const PowerdBy = lazy(() => import("../components/PowerdBy"));
+const PowerfulFeatures = lazy(() => import("../components/PowerfullFeature"));
+const RotatingText = lazy(() => import("../components/lib-componetns/RotatingText"));
+const TestimonialsSection = lazy(() => import("../components/Testmonials"));
+const HowItWorks = lazy(() => import("../components/ui/howItWorks"));
+const WhyChooseProvelt = lazy(() => import("../components/ui/WhyProvelt"));
+
+function SectionFallback() {
+  return <div className="min-h-32 bg-base-100" aria-hidden="true" />;
+}
 
 function HomePage() {
   const { isSignedIn } = useUser();
@@ -25,29 +30,31 @@ function HomePage() {
 
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-base-100 px-4 py-20 text-base-content sm:px-6 lg:px-8">
         <div className="absolute inset-0 z-0 opacity-35">
-          <MagicRings
-            color="#5E81AC"
-            colorTwo="#88C0D0"
-            speed={0.85}
-            ringCount={8}
-            attenuation={9}
-            lineThickness={2.4}
-            baseRadius={0.35}
-            radiusStep={0.15}
-            scaleRate={0.11}
-            opacity={4}
-            blur={0.12}
-            noiseAmount={0.04}
-            rotation={0.25}
-            ringGap={1.3}
-            fadeIn={0.95}
-            fadeOut={0.75}
-            followMouse
-            mouseInfluence={0.22}
-            hoverScale={1.25}
-            parallax={0.06}
-            clickBurst
-          />
+          <Suspense fallback={<div className="h-full w-full bg-primary/5" />}>
+            <MagicRings
+              color="#5E81AC"
+              colorTwo="#88C0D0"
+              speed={0.85}
+              ringCount={8}
+              attenuation={9}
+              lineThickness={2.4}
+              baseRadius={0.35}
+              radiusStep={0.15}
+              scaleRate={0.11}
+              opacity={4}
+              blur={0.12}
+              noiseAmount={0.04}
+              rotation={0.25}
+              ringGap={1.3}
+              fadeIn={0.95}
+              fadeOut={0.75}
+              followMouse
+              mouseInfluence={0.22}
+              hoverScale={1.25}
+              parallax={0.06}
+              clickBurst
+            />
+          </Suspense>
         </div>
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
@@ -63,30 +70,38 @@ function HomePage() {
             <span className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 text-primary">
               {t("home.heroTitleSpan")}
 
-              <RotatingText
-                texts={[
-                  t("home.rotating.interviews"),
-                  t("home.rotating.coding"),
-                  t("home.rotating.pair"),
-                  t("home.rotating.realtime"),
-                ]}
-                mainClassName="rounded-lg border border-base-300 bg-base-200 px-3 py-1 text-primary overflow-hidden"
-                staggerFrom="last"
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "-120%" }}
-                staggerDuration={0.02}
-                splitLevelClassName="overflow-hidden"
-                transition={{
-                  type: "spring",
-                  damping: 25,
-                  stiffness: 300,
-                }}
-                rotationInterval={2200}
-                splitBy="characters"
-                auto
-                loop
-              />
+              <Suspense
+                fallback={
+                  <span className="rounded-lg border border-base-300 bg-base-200 px-3 py-1 text-primary">
+                    {t("home.rotating.interviews")}
+                  </span>
+                }
+              >
+                <RotatingText
+                  texts={[
+                    t("home.rotating.interviews"),
+                    t("home.rotating.coding"),
+                    t("home.rotating.pair"),
+                    t("home.rotating.realtime"),
+                  ]}
+                  mainClassName="rounded-lg border border-base-300 bg-base-200 px-3 py-1 text-primary overflow-hidden"
+                  staggerFrom="last"
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "-120%" }}
+                  staggerDuration={0.02}
+                  splitLevelClassName="overflow-hidden"
+                  transition={{
+                    type: "spring",
+                    damping: 25,
+                    stiffness: 300,
+                  }}
+                  rotationInterval={2200}
+                  splitBy="characters"
+                  auto
+                  loop
+                />
+              </Suspense>
             </span>
           </h1>
 
@@ -123,13 +138,14 @@ function HomePage() {
         </div>
       </section>
 
-      <HowItWorks />
-      <PowerfulFeatures />
-      <WhyChooseProvelt />
-      <PowerdBy />
-      <TestimonialsSection />
-      <GetStarted />
-      <SiteFooter />
+      <Suspense fallback={<SectionFallback />}>
+        <HowItWorks />
+        <PowerfulFeatures />
+        <WhyChooseProvelt />
+        <PowerdBy />
+        <TestimonialsSection />
+        <GetStarted />
+      </Suspense>
     </>
   );
 }
