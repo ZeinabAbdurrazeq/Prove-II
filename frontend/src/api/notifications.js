@@ -15,4 +15,9 @@ export const notificationApi = {
     const response = await axiosInstance.patch("/notifications/read-all");
     return response.data;
   },
+
+  deleteNotification: async (id) => {
+    const response = await axiosInstance.delete(`/notifications/${id}`);
+    return response.data;
+  },
 };

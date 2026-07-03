@@ -62,7 +62,7 @@ function SchedulePage() {
   const timeRows = buildTimeRows();
 
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedCell, setSelectedCell] = useState(null);
+  const [selectedCells, setSelectedCells] = useState(() => new Set());
   const [difficulty, setDifficulty] = useState("easy");
   const [message, setMessage] = useState("");
   const [levelFilter, setLevelFilter] = useState("All");
@@ -93,7 +93,7 @@ function SchedulePage() {
   useEffect(() => {
     if (selectedUser && !displayedUsers.some((user) => user._id === selectedUser._id)) {
       setSelectedUser(displayedUsers[0] || null);
-      setSelectedCell(null);
+      setSelectedCells(new Set());
       return;
     }
 
@@ -114,9 +114,14 @@ function SchedulePage() {
   );
 
   const sendMutation = useMutation({
-    mutationFn: invitationApi.sendInvitation,
-    onSuccess: () => {
-      toast.success(t("schedule.sent"));
+    mutationFn: (payloads) =>
+      Promise.all(payloads.map((payload) => invitationApi.sendInvitation(payload))),
+    onSuccess: (_data, payloads) => {
+      toast.success(
+        payloads.length === 1
+          ? t("schedule.sent")
+          : `${payloads.length} invitations sent`,
+      );
       queryClient.invalidateQueries({ queryKey: ["myInvitations"] });
       navigate("/invitations");
     },
@@ -126,23 +131,52 @@ function SchedulePage() {
 
   const handleSend = () => {
     if (!selectedUser) return toast.error(t("schedule.selectUser"));
-    if (!selectedCell) return toast.error(t("schedule.pickSlot"));
+    if (selectedCells.size === 0) return toast.error(t("schedule.pickSlot"));
     if (!difficulty) return toast.error("Choose a difficulty");
 
-    const [day, time] = selectedCell.split("|");
-    sendMutation.mutate({
-      recipientId: selectedUser._id,
-      scheduledDate: nextDateForDay(day),
-      scheduledTime: time,
-      difficulty,
-      message,
+    const invitations = Array.from(selectedCells).map((cell) => {
+      const [day, time] = cell.split("|");
+      return {
+        recipientId: selectedUser._id,
+        scheduledDate: nextDateForDay(day),
+        scheduledTime: time,
+        difficulty,
+        message,
+      };
     });
+
+    sendMutation.mutate(invitations);
   };
 
   const selectUser = (user) => {
     setSelectedUser(user);
-    setSelectedCell(null);
+    setSelectedCells(new Set());
   };
+
+  const toggleSelectedCell = (key) => {
+    setSelectedCells((current) => {
+      const next = new Set(current);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const clearSelectedCells = () => setSelectedCells(new Set());
+
+  const selectedSlots = useMemo(
+    () =>
+      Array.from(selectedCells)
+        .sort()
+        .map((cell) => {
+          const [day, time] = cell.split("|");
+          return { cell, day, time };
+        }),
+    [selectedCells],
+  );
 
   const availabilitySlotsByDay = useMemo(
     () =>
@@ -301,8 +335,8 @@ function SchedulePage() {
                       </p>
                     </div>
                   </div>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setSelectedCell(null)}>
-                    {t("common.change")}
+                  <button className="btn btn-ghost btn-sm" onClick={clearSelectedCells}>
+                    Clear times
                   </button>
                 </div>
               </div>
@@ -361,12 +395,12 @@ function SchedulePage() {
                                 <div className="mt-3 flex flex-wrap gap-2">
                                   {slots.map((time) => {
                                     const key = `${day}|${time}`;
-                                    const picked = selectedCell === key;
+                                    const picked = selectedCells.has(key);
                                     return (
                                       <button
                                         key={key}
                                         type="button"
-                                        onClick={() => setSelectedCell(key)}
+                                        onClick={() => toggleSelectedCell(key)}
                                         className={`rounded-full px-3 py-2 text-xs font-semibold transition-all ${
                                           picked
                                             ? "bg-primary text-primary-content shadow-sm"
@@ -416,11 +450,11 @@ function SchedulePage() {
                                 {DAYS.map((day) => {
                                   const key = `${day}|${time}`;
                                   const available = availableCells.has(key);
-                                  const picked = selectedCell === key;
+                                  const picked = selectedCells.has(key);
                                   return (
                                     <div
                                       key={key}
-                                      onClick={() => available && setSelectedCell(key)}
+                                      onClick={() => available && toggleSelectedCell(key)}
                                       className={`h-6 border border-base-300/60 transition-colors ${
                                         picked
                                           ? "bg-primary"
@@ -443,14 +477,35 @@ function SchedulePage() {
                       )}
                     </div>
 
-                    {selectedCell ? (
-                      <p className="mt-3 text-sm">
-                        {t("schedule.selected")} {" "}
-                        <span className="font-semibold">
-                          {dayLabels[selectedCell.split("|")[0]]} {" "}
-                          {formatTimeLabel(selectedCell.split("|")[1], language)}
-                        </span>
-                      </p>
+                    {selectedSlots.length > 0 ? (
+                      <div className="mt-3">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <p className="text-sm font-semibold">
+                            {selectedSlots.length} selected time
+                            {selectedSlots.length === 1 ? "" : "s"}
+                          </p>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-xs"
+                            onClick={clearSelectedCells}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedSlots.map(({ cell, day, time }) => (
+                            <button
+                              key={cell}
+                              type="button"
+                              className="badge badge-primary gap-1"
+                              onClick={() => toggleSelectedCell(cell)}
+                              title="Remove time"
+                            >
+                              {dayLabels[day]} {formatTimeLabel(time, language)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     ) : null}
                   </div>
                 </div>

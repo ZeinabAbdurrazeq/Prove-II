@@ -4,6 +4,7 @@ import {
   getMyNotifications,
   markAsRead,
   markAllAsRead,
+  deleteNotification,
 } from "../controllers/notificationController.js";
 
 const router = express.Router();
@@ -12,5 +13,6 @@ router.get("/", protectRoute, getMyNotifications);
 // read-all before /:id/read so it is not captured by the param route.
 router.patch("/read-all", protectRoute, markAllAsRead);
 router.patch("/:id/read", protectRoute, markAsRead);
+router.delete("/:id", protectRoute, deleteNotification);
 
 export default router;

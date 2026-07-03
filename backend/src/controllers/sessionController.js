@@ -279,44 +279,58 @@ export async function notifySessionStarted(req, res) {
 
     if (!session) return res.status(404).json({ msg: "session is not found" });
 
-    if (session.host._id.toString() !== userId.toString()) {
-      return res
-        .status(403)
-        .json({ msg: "Only the host can start session notifications" });
-    }
-
     if (!session.invitedParticipant) {
       return res.status(200).json({ session, msg: "No invited participant" });
     }
 
-    if (session.startedNotificationSentAt) {
+    const hostStarted = session.host._id.toString() === userId.toString();
+    const participantStarted =
+      session.invitedParticipant._id.toString() === userId.toString();
+
+    if (!hostStarted && !participantStarted) {
+      return res
+        .status(403)
+        .json({ msg: "Only session members can start session notifications" });
+    }
+
+    if (hostStarted && session.startedNotificationSentAt) {
+      return res.status(200).json({ session, msg: "Already notified" });
+    }
+
+    if (participantStarted && session.participantStartedNotificationSentAt) {
       return res.status(200).json({ session, msg: "Already notified" });
     }
 
     const clientUrl = ENV.CLIENT_URL || "";
     const sessionUrl = `${clientUrl}/session/${session._id}`;
     const sessionTitle = getSessionTitle(session);
+    const sender = hostStarted ? session.host : session.invitedParticipant;
+    const recipient = hostStarted ? session.invitedParticipant : session.host;
 
     await Notification.create({
-      recipientId: session.invitedParticipant._id,
-      senderId: session.host._id,
+      recipientId: recipient._id,
+      senderId: sender._id,
       type: "session-started",
       relatedInvitationId: session.invitation || null,
       relatedSessionId: session._id,
-      message: `${session.host.name} started ${sessionTitle}: ${sessionUrl}`,
+      message: `${sender.name} started ${sessionTitle}: ${sessionUrl}`,
     });
 
-    await sendSessionStartedEmail(session.invitedParticipant.email, {
+    await sendSessionStartedEmail(recipient.email, {
       sessionTitle,
       sessionUrl,
       difficulty: session.difficulty,
-      senderName: session.host.name,
+      senderName: sender.name,
     });
 
-    session.startedNotificationSentAt = new Date();
+    if (hostStarted) {
+      session.startedNotificationSentAt = new Date();
+    } else {
+      session.participantStartedNotificationSentAt = new Date();
+    }
     await session.save();
 
-    res.status(200).json({ session, msg: "Invited participant notified" });
+    res.status(200).json({ session, msg: "Session member notified" });
   } catch (error) {
     console.error("Error in notifySessionStarted Controller:", error.message);
     res.status(500).json({ msg: "Internal Server Error" });

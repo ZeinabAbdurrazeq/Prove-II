@@ -41,6 +41,10 @@ const sessionSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    participantStartedNotificationSentAt: {
+      type: Date,
+      default: null,
+    },
     status: {
       type: String,
       enum: ["active", "completed"],

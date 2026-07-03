@@ -47,15 +47,30 @@ function button(text, url) {
 }
 
 async function send(to, subject, html) {
+  const recipients = Array.isArray(to)
+    ? to.map((item) => String(item || "").trim()).filter(Boolean)
+    : String(to || "").trim();
+
+  if (
+    (Array.isArray(recipients) && recipients.length === 0) ||
+    (!Array.isArray(recipients) && !recipients)
+  ) {
+    console.warn("[email] Missing recipient - skipping", subject);
+    return { skipped: true, reason: "missing-recipient" };
+  }
+
   if (!resend) {
-    console.warn("[email] RESEND_API_KEY missing - skipping email to", to);
-    return;
+    console.warn("[email] RESEND_API_KEY missing - skipping email to", recipients);
+    return { skipped: true, reason: "missing-api-key" };
   }
   try {
-    await resend.emails.send({ from: FROM, to, subject, html });
+    const result = await resend.emails.send({ from: FROM, to: recipients, subject, html });
+    console.info("[email] Sent", subject, "to", recipients, result?.data?.id || "");
+    return result;
   } catch (error) {
     // Never let an email failure break the request flow.
-    console.error("[email] Failed to send to", to, error?.message || error);
+    console.error("[email] Failed to send to", recipients, error?.message || error);
+    return { error };
   }
 }
 

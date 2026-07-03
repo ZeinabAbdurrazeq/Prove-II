@@ -11,6 +11,7 @@ import {
   CheckCheckIcon,
   Loader2Icon,
   VideoIcon,
+  Trash2Icon,
 } from "lucide-react";
 import { notificationApi } from "../api/notifications";
 import { invitationApi } from "../api/invitations";
@@ -97,6 +98,14 @@ function NotificationBell() {
     mutationFn: notificationApi.markAllAsRead,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: notificationApi.deleteNotification,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+    onError: (error) =>
+      toast.error(error.response?.data?.msg || "Failed to delete notification"),
   });
 
   const respondMutation = useMutation({
@@ -233,6 +242,16 @@ function NotificationBell() {
                               </Link>
                             )}
                         </div>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-xs btn-circle shrink-0"
+                          aria-label="Delete notification"
+                          title="Delete notification"
+                          onClick={() => deleteMutation.mutate(n._id)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2Icon className="size-3.5" />
+                        </button>
                       </div>
                     </div>
                   ))

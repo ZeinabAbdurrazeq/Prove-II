@@ -143,8 +143,10 @@ function SessionPage() {
   }, [problemData, selectedLanguage]);
 
   useEffect(() => {
-    if (!session || !isHost) return;
-    if (!session.invitedParticipant || session.startedNotificationSentAt) return;
+    if (!session || (!isHost && !isParticipant)) return;
+    if (!session.invitedParticipant) return;
+    if (isHost && session.startedNotificationSentAt) return;
+    if (isParticipant && session.participantStartedNotificationSentAt) return;
     if (hasSentStartNotificationRef.current) return;
 
     hasSentStartNotificationRef.current = true;
@@ -157,6 +159,7 @@ function SessionPage() {
   }, [
     session,
     isHost,
+    isParticipant,
     id,
     notifySessionStartedMutation,
     refetch,

@@ -51,3 +51,22 @@ export async function markAllAsRead(req, res) {
     res.status(500).json({ msg: "Internal Server Error" });
   }
 }
+
+export async function deleteNotification(req, res) {
+  try {
+    const { id } = req.params;
+
+    const notification = await Notification.findOneAndDelete({
+      _id: id,
+      recipientId: req.user._id,
+    });
+
+    if (!notification)
+      return res.status(404).json({ msg: "Notification not found" });
+
+    res.status(200).json({ msg: "Notification deleted" });
+  } catch (error) {
+    console.error("Error in deleteNotification Controller:", error.message);
+    res.status(500).json({ msg: "Internal Server Error" });
+  }
+}
