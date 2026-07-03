@@ -90,10 +90,10 @@ function ActiveSessions({ sessions, isLoading, isUserInSession }) {
                         <div className="flex items-center gap-1.5">
                           <UsersIcon className="size-4" />
                           <span className="text-xs">
-                            {session.participant ? "2/2" : "1/2"}
+                            {session.participant || session.invitedParticipant ? "2/2" : "1/2"}
                           </span>
                         </div>
-                        {session.participant && !isUserInSession(session) ? (
+                        {(session.participant || session.invitedParticipant) && !isUserInSession(session) ? (
                           <span className="badge badge-error badge-sm">
                             {t("dashboard.full")}
                           </span>
@@ -106,7 +106,7 @@ function ActiveSessions({ sessions, isLoading, isUserInSession }) {
                     </div>
                   </div>
 
-                  {session.participant && !isUserInSession(session) ? (
+                  {(session.participant || session.invitedParticipant) && !isUserInSession(session) ? (
                     <button className="btn btn-disabled btn-sm">{t("dashboard.full")}</button>
                   ) : (
                     <Link
