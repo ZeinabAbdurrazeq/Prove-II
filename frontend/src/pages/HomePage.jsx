@@ -3,8 +3,8 @@ import { SignInButton, useUser } from "@clerk/react";
 import { ArrowRight, PlayCircle, Zap } from "lucide-react";
 import MarketingNav from "../components/MarketingNav";
 import GetStarted from "../components/GetStarted";
-import MagicRings from "../components/lib-components/MagicRings";
-import RotatingText from "../components/lib-components/RotatingText";
+import MagicRings from "../components/lib-componetns/MagicRings";
+import RotatingText from "../components/lib-componetns/RotatingText";
 import PowerdBy from "../components/PowerdBy";
 import PowerfulFeatures from "../components/PowerfullFeature";
 import SiteFooter from "../components/SiteFooter";
@@ -23,9 +23,31 @@ function HomePage() {
     <>
       <MarketingNav />
 
-      <section className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden bg-base-100 px-4 py-20 text-base-content sm:px-6 lg:px-8">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-base-100 px-4 py-20 text-base-content sm:px-6 lg:px-8">
         <div className="absolute inset-0 z-0 opacity-35">
-          <MagicRings />
+          <MagicRings
+            color="#5E81AC"
+            colorTwo="#88C0D0"
+            speed={0.85}
+            ringCount={8}
+            attenuation={9}
+            lineThickness={2.4}
+            baseRadius={0.35}
+            radiusStep={0.15}
+            scaleRate={0.11}
+            opacity={4}
+            blur={0.12}
+            noiseAmount={0.04}
+            rotation={0.25}
+            ringGap={1.3}
+            fadeIn={0.95}
+            fadeOut={0.75}
+            followMouse
+            mouseInfluence={0.22}
+            hoverScale={1.25}
+            parallax={0.06}
+            clickBurst
+          />
         </div>
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
@@ -48,7 +70,22 @@ function HomePage() {
                   t("home.rotating.pair"),
                   t("home.rotating.realtime"),
                 ]}
-                className="rounded-lg border border-base-300 bg-base-200 px-3 py-1 text-primary"
+                mainClassName="rounded-lg border border-base-300 bg-base-200 px-3 py-1 text-primary overflow-hidden"
+                staggerFrom="last"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-120%" }}
+                staggerDuration={0.02}
+                splitLevelClassName="overflow-hidden"
+                transition={{
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 300,
+                }}
+                rotationInterval={2200}
+                splitBy="characters"
+                auto
+                loop
               />
             </span>
           </h1>

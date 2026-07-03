@@ -1,34 +1,42 @@
-import { BrainCircuit, MonitorPlay, Trophy, Video } from "lucide-react";
+import { FaDatabase, FaNodeJs, FaReact } from "react-icons/fa";
+import { SiExpress, SiSocketdotio, SiTailwindcss } from "react-icons/si";
+import { createElement } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
-const items = [
-  { icon: Video, label: "home.poweredVideo" },
-  { icon: MonitorPlay, label: "home.poweredWorkspace" },
-  { icon: BrainCircuit, label: "home.poweredAi" },
-  { icon: Trophy, label: "home.poweredScoring" },
+const techs = [
+  { icon: FaReact, label: "React.js" },
+  { icon: FaNodeJs, label: "Node.js" },
+  { icon: FaDatabase, label: "MongoDB" },
+  { icon: SiTailwindcss, label: "TailwindCSS" },
+  { icon: SiExpress, label: "Express.js" },
+  { icon: SiSocketdotio, label: "Socket.io" },
 ];
 
 function PowerdBy() {
   const { language } = useLanguage();
   const t = getTranslator(language);
+  const repeatedTechs = [...techs, ...techs];
 
   return (
-    <section className="bg-base-100 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl rounded-3xl border border-base-300 bg-base-200/50 p-6 sm:p-8">
-        <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-base-content/50">
-          {t("home.poweredBy")}
-        </p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.label} className="flex items-center justify-center gap-3 rounded-2xl bg-base-100 p-4 text-center shadow-sm rtl:flex-row-reverse">
-                <Icon className="size-5 text-primary" />
-                <span className="font-semibold">{t(item.label)}</span>
+    <section className="overflow-hidden bg-base-200 px-4 py-16 text-center sm:px-6">
+      <p className="mb-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-base-content/60">
+        {t("home.powered.title")}
+      </p>
+
+      <div className="relative w-full overflow-hidden">
+        <div className="powerdby-scroll flex w-max gap-10 sm:gap-14">
+          {repeatedTechs.map(({ icon: Icon, label }, index) => (
+            <div
+              key={`${label}-${index}`}
+              className="group flex items-center gap-3 text-base font-semibold text-base-content rtl:flex-row-reverse"
+            >
+              <div className="flex size-11 items-center justify-center rounded-xl border border-base-300 bg-base-100 text-primary transition-all duration-300 group-hover:border-primary">
+                {createElement(Icon, { size: 20 })}
               </div>
-            );
-          })}
+              <span>{label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </section>

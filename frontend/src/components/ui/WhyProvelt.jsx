@@ -1,40 +1,74 @@
-import { Medal, ShieldCheck, Sparkles } from "lucide-react";
+import AnimatedContent from "../lib-componetns/AnimatedContent";
 import { useLanguage } from "../../context/LanguageContext";
 import { getTranslator } from "../../lib/translations";
-
-const reasons = [
-  { icon: ShieldCheck, title: "home.whyRealTitle", body: "home.whyRealBody" },
-  { icon: Sparkles, title: "home.whyAiTitle", body: "home.whyAiBody" },
-  { icon: Medal, title: "home.whyProgressTitle", body: "home.whyProgressBody" },
-];
 
 function WhyChooseProvelt() {
   const { language } = useLanguage();
   const t = getTranslator(language);
 
+  const features = [
+    {
+      title: t("home.why.speed.title"),
+      description: t("home.why.speed.desc"),
+    },
+    {
+      title: t("home.why.remote.title"),
+      description: t("home.why.remote.desc"),
+    },
+    {
+      title: t("home.why.security.title"),
+      description: t("home.why.security.desc"),
+    },
+    {
+      title: t("home.why.teams.title"),
+      description: t("home.why.teams.desc"),
+    },
+  ];
+
   return (
-    <section className="bg-base-200 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-      <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-            {t("home.whyEyebrow")}
-          </p>
-          <h2 className="mt-3 text-3xl font-black sm:text-4xl">
-            {t("home.whyTitle")}
-          </h2>
+    <section className="bg-base-100 px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-12 lg:flex-row lg:gap-20">
+        <div className="w-full lg:w-[360px]">
+          <AnimatedContent delay={0.1}>
+            <h2 className="text-4xl font-bold leading-tight text-base-content md:text-5xl">
+              {t("home.why.title")}{" "}
+              <span className="text-primary">{t("home.why.span")}</span>?
+            </h2>
+          </AnimatedContent>
+
+          <AnimatedContent delay={0.2}>
+            <p className="mt-5 text-lg leading-relaxed text-base-content/70">
+              {t("home.why.subtitle")}
+            </p>
+          </AnimatedContent>
+
+          <AnimatedContent delay={0.3}>
+            <a
+              href="/blog"
+              className="mt-7 inline-flex text-sm font-semibold text-primary hover:underline"
+            >
+              {t("home.why.docLink")}
+            </a>
+          </AnimatedContent>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {reasons.map((reason) => {
-            const Icon = reason.icon;
-            return (
-              <article key={reason.title} className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
-                <Icon className="size-8 text-primary" />
-                <h3 className="mt-5 text-xl font-black">{t(reason.title)}</h3>
-                <p className="mt-3 leading-7 text-base-content/70">{t(reason.body)}</p>
+        <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+          {features.map((feature, index) => (
+            <AnimatedContent key={feature.title} delay={0.2 + index * 0.1}>
+              <article className="group relative min-h-[220px] overflow-hidden rounded-3xl border border-base-300 bg-base-200/70 p-8 sm:p-10">
+                <div className="absolute inset-y-0 start-0 w-1 rounded-s-3xl bg-primary" />
+                <div className="pointer-events-none absolute inset-0 rounded-3xl bg-primary/5 opacity-0 transition duration-300 group-hover:opacity-100" />
+                <div className="relative">
+                  <h3 className="mb-3 text-xl font-bold text-base-content">
+                    {feature.title}
+                  </h3>
+                  <p className="text-[15px] leading-relaxed text-base-content/70">
+                    {feature.description}
+                  </p>
+                </div>
               </article>
-            );
-          })}
+            </AnimatedContent>
+          ))}
         </div>
       </div>
     </section>

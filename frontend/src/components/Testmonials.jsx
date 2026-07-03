@@ -1,53 +1,83 @@
+import { FaQuoteRight } from "react-icons/fa6";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
-const testimonials = [
-  {
-    name: "Mohamed Saad",
-    role: "home.testimonialMohamedRole",
-    quote: "home.testimonialMohamedQuote",
-    image: "/mohamed-saad.jpeg",
-  },
-  {
-    name: "Nour",
-    role: "home.testimonialNourRole",
-    quote: "home.testimonialNourQuote",
-    image: "/nour.jpg",
-  },
-];
+function TestimonialCard({ testimonial }) {
+  return (
+    <article className="group relative overflow-hidden rounded-3xl border border-base-300 bg-base-200/70 p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+      <span
+        className="pointer-events-none absolute -top-1 end-2 select-none text-primary/10"
+        aria-hidden="true"
+      >
+        <FaQuoteRight size={70} />
+      </span>
+
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <div className="relative z-10 flex flex-col gap-5">
+        <div className="flex items-center gap-4 rtl:flex-row-reverse">
+          <img
+            src={testimonial.avatar}
+            alt={testimonial.name}
+            className="size-14 rounded-full border-2 border-base-300 object-cover"
+          />
+
+          <div>
+            <h3 className="text-lg font-semibold text-base-content">
+              {testimonial.name}
+            </h3>
+            <p className="text-sm text-primary">{testimonial.role}</p>
+          </div>
+        </div>
+
+        <p className="leading-7 text-base-content/70 italic">
+          &ldquo;{testimonial.quote}&rdquo;
+        </p>
+      </div>
+    </article>
+  );
+}
 
 function TestimonialsSection() {
   const { language } = useLanguage();
   const t = getTranslator(language);
 
+  const testimonials = [
+    {
+      name: t("home.testimonials.nour.name"),
+      role: t("home.testimonials.nour.role"),
+      avatar: "/nour.jpg",
+      quote: t("home.testimonials.nour.quote"),
+    },
+    {
+      name: t("home.testimonials.mohamed.name"),
+      role: t("home.testimonials.mohamed.role"),
+      avatar: "/mohamed saad.jpeg",
+      quote: t("home.testimonials.mohamed.quote"),
+    },
+  ];
+
   return (
-    <section className="bg-base-200 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-      <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-            {t("home.testimonialsEyebrow")}
-          </p>
-          <h2 className="mt-3 text-3xl font-black sm:text-4xl">
-            {t("home.testimonialsTitle")}
+    <section className="bg-base-100 px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-14 text-center">
+          <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-sm font-medium text-primary">
+            {t("home.testimonials.badge")}
+          </span>
+
+          <h2 className="mt-4 text-4xl font-bold text-base-content">
+            {t("home.testimonials.title")}{" "}
+            <span className="text-primary">{t("home.testimonials.span")}</span>
           </h2>
+
+          <p className="mx-auto mt-4 max-w-2xl text-base-content/70">
+            {t("home.testimonials.subtitle")}
+          </p>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {testimonials.map((person) => (
-            <article key={person.name} className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
-              <div className="grid gap-0 sm:grid-cols-[220px_1fr]">
-                <img
-                  src={person.image}
-                  alt={person.name}
-                  className="h-64 w-full object-cover object-top sm:h-full"
-                />
-                <div className="p-6">
-                  <p className="text-lg font-black">{person.name}</p>
-                  <p className="mt-1 text-sm text-base-content/55">{t(person.role)}</p>
-                  <p className="mt-5 leading-7 text-base-content/70">{t(person.quote)}</p>
-                </div>
-              </div>
-            </article>
+        <div className="grid gap-6 md:grid-cols-2">
+          {testimonials.map((testimonial) => (
+            <TestimonialCard key={testimonial.name} testimonial={testimonial} />
           ))}
         </div>
       </div>

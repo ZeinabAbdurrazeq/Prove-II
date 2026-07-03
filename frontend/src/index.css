@@ -108,3 +108,20 @@
     font-weight: 500;
   }
 }
+
+@keyframes powerdby-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.powerdby-scroll {
+  animation: powerdby-scroll 18s linear infinite;
+}
+
+[dir="rtl"] .powerdby-scroll {
+  animation-direction: reverse;
+}

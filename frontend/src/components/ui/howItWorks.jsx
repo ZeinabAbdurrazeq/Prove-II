@@ -1,45 +1,70 @@
-import { CheckCircle2, Code2, Users } from "lucide-react";
+import { ListChecks, SquarePlus, SquareTerminal, Video } from "lucide-react";
+import { createElement } from "react";
+import AnimatedContent from "../lib-componetns/AnimatedContent";
 import { useLanguage } from "../../context/LanguageContext";
 import { getTranslator } from "../../lib/translations";
-
-const steps = [
-  { icon: Users, title: "home.workflowChooseTitle", body: "home.workflowChooseBody" },
-  { icon: Code2, title: "home.workflowFaceTitle", body: "home.workflowFaceBody" },
-  { icon: CheckCircle2, title: "home.workflowProgressTitle", body: "home.workflowProgressBody" },
-];
 
 function HowItWorks() {
   const { language } = useLanguage();
   const t = getTranslator(language);
 
-  return (
-    <section className="bg-base-200 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-      <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
-            {t("home.workflowEyebrow")}
-          </p>
-          <h2 className="mt-3 text-3xl font-black sm:text-4xl">
-            {t("home.workflowTitle")}
-          </h2>
-        </div>
+  const steps = [
+    {
+      icon: SquarePlus,
+      title: t("home.howItWorks.step1.title"),
+      description: t("home.howItWorks.step1.desc"),
+    },
+    {
+      icon: Video,
+      title: t("home.howItWorks.step2.title"),
+      description: t("home.howItWorks.step2.desc"),
+    },
+    {
+      icon: SquareTerminal,
+      title: t("home.howItWorks.step3.title"),
+      description: t("home.howItWorks.step3.desc"),
+    },
+    {
+      icon: ListChecks,
+      title: t("home.howItWorks.step4.title"),
+      description: t("home.howItWorks.step4.desc"),
+    },
+  ];
 
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <article key={step.title} className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="size-6" />
-                  </span>
-                  <span className="text-sm font-black text-base-content/30">0{index + 1}</span>
+  return (
+    <section className="bg-base-100 px-4 py-20 text-base-content sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-6xl text-center">
+        <AnimatedContent delay={0.1}>
+          <h2 className="mb-4 text-4xl font-extrabold tracking-normal md:text-5xl">
+            {t("home.howItWorks.title")}{" "}
+            <span className="text-primary">{t("home.howItWorks.span")}</span>
+          </h2>
+        </AnimatedContent>
+
+        <AnimatedContent delay={0.2}>
+          <p className="mx-auto mb-16 max-w-2xl text-lg text-base-content/70 md:mb-20">
+            {t("home.howItWorks.subtitle")}
+          </p>
+        </AnimatedContent>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          {steps.map(({ icon: Icon, title, description }, index) => (
+            <AnimatedContent key={title} delay={0.25 + index * 0.12}>
+              <article className="group flex h-full flex-col items-center rounded-2xl border border-base-300 bg-base-200/60 p-6 text-center transition-colors duration-300 hover:bg-base-200">
+                <div className="mb-5 flex size-16 items-center justify-center rounded-2xl border border-base-300 bg-base-100">
+                  {createElement(Icon, {
+                    className: "size-7 text-primary",
+                    strokeWidth: 1.7,
+                  })}
                 </div>
-                <h3 className="mt-5 text-xl font-black">{t(step.title)}</h3>
-                <p className="mt-3 leading-7 text-base-content/70">{t(step.body)}</p>
+
+                <h3 className="mb-2 text-xl font-bold">{title}</h3>
+                <p className="max-w-[260px] leading-relaxed text-base-content/70">
+                  {description}
+                </p>
               </article>
-            );
-          })}
+            </AnimatedContent>
+          ))}
         </div>
       </div>
     </section>

@@ -98,6 +98,69 @@ export const translations = {
     "home.finalCtaTitle": "Ready to practice with evidence?",
     "home.finalCtaBody":
       "Start with a live session, solve a problem, or rehearse your next interview with AI.",
+    "home.howItWorks.title": "How It",
+    "home.howItWorks.span": "Works",
+    "home.howItWorks.subtitle": "Streamlining the path from invitation to evaluation.",
+    "home.howItWorks.step1.title": "Create Room",
+    "home.howItWorks.step1.desc": "Instantly generate a secure, private interview space.",
+    "home.howItWorks.step2.title": "Start Video",
+    "home.howItWorks.step2.desc": "Connect face-to-face with crystal clear WebRTC video.",
+    "home.howItWorks.step3.title": "Share & Code",
+    "home.howItWorks.step3.desc": "Collaborate in the IDE with real-time sync and chat.",
+    "home.howItWorks.step4.title": "Evaluate",
+    "home.howItWorks.step4.desc": "Review session recordings and provide final feedback.",
+    "home.features.title": "Powerful",
+    "home.features.span": "Features",
+    "home.features.subtitle": "Built by developers, for technical recruiters.",
+    "home.features.editor.title": "Advanced Code Editor",
+    "home.features.editor.desc":
+      "Support for 50+ languages, syntax highlighting, and auto-completion. Just like your favorite IDE, but directly in the browser.",
+    "home.features.video.title": "HD Video Calling",
+    "home.features.video.desc":
+      "Low-latency video and audio powered by WebRTC for a smooth interview experience.",
+    "home.features.auth.title": "Secure JWT Auth",
+    "home.features.auth.desc":
+      "Enterprise-grade security ensuring only authorized participants can access interview rooms safely.",
+    "home.features.sharing.title": "Screen Sharing",
+    "home.features.sharing.desc":
+      "Collaborate beyond the editor by sharing your desktop or specific windows during interviews.",
+    "home.features.recording.title": "Session Recording",
+    "home.features.recording.desc":
+      "Record interviews for future review, feedback, and collaborative hiring decisions.",
+    "home.why.title": "Why Choose",
+    "home.why.span": "ProveIt",
+    "home.why.subtitle": "Performance meets developer productivity.",
+    "home.why.docLink": "See detailed documentation →",
+    "home.why.speed.title": "Maximum Speed",
+    "home.why.speed.desc":
+      "Zero lag between keystrokes. Our real-time engine ensures a local-IDE feel regardless of distance.",
+    "home.why.remote.title": "Remote-Friendly",
+    "home.why.remote.desc":
+      "Optimized for low-bandwidth connections, ensuring accessibility for global talent pools.",
+    "home.why.security.title": "Top-tier Security",
+    "home.why.security.desc":
+      "End-to-end encryption for video and data. Your proprietary interview tasks remain yours.",
+    "home.why.teams.title": "Built for Teams",
+    "home.why.teams.desc":
+      "Multi-interviewer support and unified dashboard for centralizing candidate records.",
+    "home.powered.title": "Powered by Modern Technology",
+    "home.testimonials.badge": "Testimonials",
+    "home.testimonials.title": "Trusted by",
+    "home.testimonials.span": "Developers & Recruiters",
+    "home.testimonials.subtitle":
+      "See why engineering teams and candidates rely on ProveIt for collaborative technical interviews.",
+    "home.testimonials.nour.name": "Nour Moftah",
+    "home.testimonials.nour.role": "Tech Lead @ NextGen",
+    "home.testimonials.nour.quote":
+      "ProveIt has completely changed our hiring workflow. The low latency in the code editor makes it feel like the candidate is sitting right next to me. Highly recommended for any scaling tech team.",
+    "home.testimonials.mohamed.name": "Mohamed Saad",
+    "home.testimonials.mohamed.role": "Full-stack Developer",
+    "home.testimonials.mohamed.quote":
+      "As a candidate, I have used many platforms, but ProveIt is by far the most stable. The IDE features are intuitive, and I did not have to fight the tool to show my skills.",
+    "home.getStarted.title": "Start your first interview in seconds",
+    "home.getStarted.subtitle":
+      "Join thousands of companies using ProveIt to hire faster, collaborate better, and build world-class engineering teams.",
+    "home.getStarted.btn": "Get Started for Free",
     "home.whyEyebrow": "Why choose ProveIt",
     "home.whyTitle": "Built for real interview confidence.",
     "home.whyRealTitle": "Real practice",
@@ -585,6 +648,70 @@ export const translations = {
     "home.finalCtaTitle": "جاهز للتدريب بدليل واضح؟",
     "home.finalCtaBody":
       "ابدأ بجلسة مباشرة، أو حل مسألة، أو تمرن على مقابلتك القادمة مع الذكاء الاصطناعي.",
+    "home.howItWorks.title": "كيف",
+    "home.howItWorks.span": "يعمل",
+    "home.howItWorks.subtitle": "تبسيط المسار من الدعوة إلى التقييم.",
+    "home.howItWorks.step1.title": "إنشاء غرفة",
+    "home.howItWorks.step1.desc": "أنشئ مساحة مقابلة آمنة وخاصة على الفور.",
+    "home.howItWorks.step2.title": "بدء الفيديو",
+    "home.howItWorks.step2.desc": "تواصل وجهًا لوجه بفيديو WebRTC فائق الوضوح.",
+    "home.howItWorks.step3.title": "المشاركة والبرمجة",
+    "home.howItWorks.step3.desc":
+      "تعاون في بيئة التطوير المتكاملة مع مزامنة ومحادثة فورية.",
+    "home.howItWorks.step4.title": "التقييم",
+    "home.howItWorks.step4.desc": "راجع تسجيلات الجلسة وقدم الملاحظات النهائية.",
+    "home.features.title": "ميزات",
+    "home.features.span": "قوية",
+    "home.features.subtitle": "صنعت بواسطة المطورين، لمسؤولي التوظيف التقنيين.",
+    "home.features.editor.title": "محرر أكواد متقدم",
+    "home.features.editor.desc":
+      "دعم لأكثر من 50 لغة، وتظليل التعليمات البرمجية، والإكمال التلقائي. تمامًا مثل بيئة التطوير المفضلة لديك، ولكن مباشرة في المتصفح.",
+    "home.features.video.title": "مكالمات فيديو عالية الدقة",
+    "home.features.video.desc":
+      "فيديو وصوت بزمن تأخير منخفض مدعوم بـ WebRTC لتجربة مقابلة سلسة.",
+    "home.features.auth.title": "مصادقة JWT آمنة",
+    "home.features.auth.desc":
+      "أمان بمستوى المؤسسات يضمن وصول المشاركين المصرح لهم فقط إلى غرف المقابلات بأمان.",
+    "home.features.sharing.title": "مشاركة الشاشة",
+    "home.features.sharing.desc":
+      "تعاون إلى ما بعد المحرر من خلال مشاركة سطح المكتب أو نوافذ محددة أثناء المقابلات.",
+    "home.features.recording.title": "تسجيل الجلسات",
+    "home.features.recording.desc":
+      "سجل المقابلات للمراجعة المستقبلية وتقديم الملاحظات وقرارات التوظيف التعاونية.",
+    "home.why.title": "لماذا تختار",
+    "home.why.span": "ProveIt",
+    "home.why.subtitle": "الأداء يلتقي بإنتاجية المطور.",
+    "home.why.docLink": "شاهد الوثائق التفصيلية ←",
+    "home.why.speed.title": "أقصى سرعة",
+    "home.why.speed.desc":
+      "بدون أي تأخير بين النقرات. يضمن محركنا الفوري إحساس بيئة التطوير المحلية بغض النظر عن المسافة.",
+    "home.why.remote.title": "مناسب للعمل عن بعد",
+    "home.why.remote.desc":
+      "محسن للاتصالات ذات النطاق الترددي المنخفض، مما يضمن إمكانية الوصول لمجموعات المواهب العالمية.",
+    "home.why.security.title": "أمان من الدرجة الأولى",
+    "home.why.security.desc":
+      "تشفير تام بين الطرفين للفيديو والبيانات. تظل مهام المقابلة الخاصة بك ملكك وحدك.",
+    "home.why.teams.title": "مصمم للفرق",
+    "home.why.teams.desc":
+      "دعم المقابلين المتعددين ولوحة تحكم موحدة لمركزية سجلات المرشحين.",
+    "home.powered.title": "يعمل بالتقنيات الحديثة",
+    "home.testimonials.badge": "آراء العملاء",
+    "home.testimonials.title": "موثوق من قبل",
+    "home.testimonials.span": "المطورين ومسؤولي التوظيف",
+    "home.testimonials.subtitle":
+      "اكتشف لماذا تعتمد الفرق الهندسية والمرشحون على ProveIt لإجراء المقابلات الفنية التعاونية.",
+    "home.testimonials.nour.name": "نور مفتاح",
+    "home.testimonials.nour.role": "قائد تقني في NextGen",
+    "home.testimonials.nour.quote":
+      "لقد غير ProveIt سير عمل التوظيف لدينا تمامًا. زمن التأخير المنخفض في محرر الأكواد يجعلني أشعر وكأن المرشح يجلس بجواري مباشرة. موصى به للغاية لأي فريق تقني ينمو.",
+    "home.testimonials.mohamed.name": "محمد سعد",
+    "home.testimonials.mohamed.role": "مطور ويب متكامل",
+    "home.testimonials.mohamed.quote":
+      "كمرشح، استخدمت العديد من المنصات، ولكن ProveIt هي الأكثر استقرارًا على الإطلاق. ميزات بيئة التطوير سهلة الاستخدام، ولم يكن علي مواجهة الأداة لإظهار مهاراتي.",
+    "home.getStarted.title": "ابدأ مقابلتك الأولى في ثوان معدودة",
+    "home.getStarted.subtitle":
+      "انضم إلى آلاف الشركات التي تستخدم ProveIt للتوظيف بشكل أسرع، والتعاون بشكل أفضل، وبناء فرق هندسية عالمية.",
+    "home.getStarted.btn": "ابدأ مجانًا",
     "home.whyEyebrow": "لماذا تختار ProveIt",
     "home.whyTitle": "مصمم لبناء ثقة حقيقية في المقابلات.",
     "home.whyRealTitle": "تدريب واقعي",
