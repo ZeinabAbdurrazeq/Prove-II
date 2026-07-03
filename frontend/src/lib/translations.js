@@ -43,6 +43,49 @@ export const translations = {
     "home.statUsers": "Active Users",
     "home.statSessions": "Sessions",
     "home.statUptime": "Uptime",
+    "home.rotatingInterviews": "Interviews",
+    "home.rotatingCoding": "Coding",
+    "home.rotatingPairPractice": "Pair Practice",
+    "home.rotatingRealtime": "Real-time",
+    "home.roomTitle": "Live interview room",
+    "home.roomSubtitle": "Two people. One shared answer.",
+    "home.roomLive": "Live",
+    "home.workspaceReadyTitle": "Shared workspace ready",
+    "home.workspaceReadyBody":
+      "Video, code, chat, problem choice, and execution.",
+    "home.testimonialMohamedRole": "Senior Technical Interviewer",
+    "home.testimonialMohamedQuote":
+      "ProveIt turns interview preparation into a real conversation. Candidates practice the skill that matters most: explaining decisions while building.",
+    "home.testimonialNourRole": "Engineering Career Coach",
+    "home.testimonialNourQuote":
+      "The mix of live sessions, AI rehearsal, and visible progress gives learners a clear path from practice to confidence.",
+    "home.workflowEyebrow": "How it works",
+    "home.workflowTitle": "A calmer way to prepare for technical interviews.",
+    "home.workflowChooseTitle": "Choose your mode",
+    "home.workflowChooseBody":
+      "Practice solo, invite a peer, or rehearse with the AI recruiter when you need a focused interview loop.",
+    "home.workflowFaceTitle": "Work face to face",
+    "home.workflowFaceBody":
+      "Use live video, chat, and a shared editor so communication and implementation improve together.",
+    "home.workflowProgressTitle": "Review real progress",
+    "home.workflowProgressBody":
+      "Track solved problems, sessions, score, rank, and interview feedback from one workspace.",
+    "home.platformEyebrow": "Platform",
+    "home.platformTitle": "Everything needed to prove readiness.",
+    "home.platformSubtitle":
+      "ProveIt combines the pieces candidates usually split across tools: live practice, scoring, scheduling, AI interviews, and progress.",
+    "home.platformCodingTitle": "Collaborative coding",
+    "home.platformCodingBody":
+      "A shared editor, synced problem choice, language switching, and code execution keep sessions practical.",
+    "home.platformAiTitle": "AI recruiter",
+    "home.platformAiBody":
+      "CV-aware interview practice helps you rehearse technical and behavioral answers with structured feedback.",
+    "home.platformScheduleTitle": "Invite and schedule",
+    "home.platformScheduleBody":
+      "Availability, invitations, notifications, and session links make pairing easier to coordinate.",
+    "home.finalCtaTitle": "Ready to practice with evidence?",
+    "home.finalCtaBody":
+      "Start with a live session, solve a problem, or rehearse your next interview with AI.",
 
     // Home features
     "home.featuresTitle": "Everything You Need to Succeed",
@@ -457,6 +500,49 @@ export const translations = {
     "home.statUsers": "مستخدم نشط",
     "home.statSessions": "جلسة",
     "home.statUptime": "وقت التشغيل",
+    "home.rotatingInterviews": "المقابلات",
+    "home.rotatingCoding": "البرمجة",
+    "home.rotatingPairPractice": "التدريب الثنائي",
+    "home.rotatingRealtime": "الوقت الفعلي",
+    "home.roomTitle": "غرفة مقابلة مباشرة",
+    "home.roomSubtitle": "شخصان وإجابة مشتركة واحدة.",
+    "home.roomLive": "مباشر",
+    "home.workspaceReadyTitle": "مساحة العمل المشتركة جاهزة",
+    "home.workspaceReadyBody":
+      "فيديو، كود، محادثة، اختيار المسألة، وتنفيذ الحل.",
+    "home.testimonialMohamedRole": "مقابل تقني أول",
+    "home.testimonialMohamedQuote":
+      "يحوّل ProveIt التحضير للمقابلات إلى محادثة حقيقية، ويتدرب المرشحون على أهم مهارة: شرح القرارات أثناء البناء.",
+    "home.testimonialNourRole": "مدرب مسار هندسي",
+    "home.testimonialNourQuote":
+      "مزيج الجلسات المباشرة وتدريب الذكاء الاصطناعي ووضوح التقدم يمنح المتعلمين طريقًا واضحًا من التدريب إلى الثقة.",
+    "home.workflowEyebrow": "كيف يعمل",
+    "home.workflowTitle": "طريقة أهدأ للتحضير للمقابلات التقنية.",
+    "home.workflowChooseTitle": "اختر وضع التدريب",
+    "home.workflowChooseBody":
+      "تدرب بمفردك، أو ادع زميلًا، أو تمرن مع مسؤول التوظيف الذكي عندما تحتاج إلى دورة مقابلة مركزة.",
+    "home.workflowFaceTitle": "اعمل وجهًا لوجه",
+    "home.workflowFaceBody":
+      "استخدم الفيديو المباشر والمحادثة والمحرر المشترك حتى يتحسن التواصل والتنفيذ معًا.",
+    "home.workflowProgressTitle": "راجع تقدمك الحقيقي",
+    "home.workflowProgressBody":
+      "تابع المسائل المحلولة والجلسات والنتيجة والترتيب وملاحظات المقابلة من مساحة واحدة.",
+    "home.platformEyebrow": "المنصة",
+    "home.platformTitle": "كل ما تحتاجه لإثبات جاهزيتك.",
+    "home.platformSubtitle":
+      "يجمع ProveIt الأدوات التي يوزعها المرشحون عادة بين منصات مختلفة: التدريب المباشر، التقييم، الجدولة، مقابلات الذكاء الاصطناعي، وتتبع التقدم.",
+    "home.platformCodingTitle": "برمجة تعاونية",
+    "home.platformCodingBody":
+      "محرر مشترك، واختيار مسألة متزامن، وتبديل اللغة، وتنفيذ الكود حتى تبقى الجلسات عملية.",
+    "home.platformAiTitle": "مسؤول توظيف ذكي",
+    "home.platformAiBody":
+      "تدريب مقابلات يفهم السيرة الذاتية ويساعدك على تمرين الإجابات التقنية والسلوكية بملاحظات منظمة.",
+    "home.platformScheduleTitle": "دعوات وجدولة",
+    "home.platformScheduleBody":
+      "التوفر والدعوات والإشعارات وروابط الجلسات تجعل تنسيق التدريب الثنائي أسهل.",
+    "home.finalCtaTitle": "جاهز للتدريب بدليل واضح؟",
+    "home.finalCtaBody":
+      "ابدأ بجلسة مباشرة، أو حل مسألة، أو تمرن على مقابلتك القادمة مع الذكاء الاصطناعي.",
 
     // Home features
     "home.featuresTitle": "كل ما تحتاجه للنجاح",
