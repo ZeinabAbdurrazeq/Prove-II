@@ -16,7 +16,6 @@ import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 import {
   DAYS,
-  addMinutes,
   getDayLabels,
   buildTimeRows,
   formatTimeLabel,
@@ -60,10 +59,7 @@ function SchedulePage() {
   const { language } = useLanguage();
   const t = getTranslator(language);
   const dayLabels = getDayLabels(language);
-  const timeRows = useMemo(
-    () => buildTimeRows().filter((time) => time.endsWith(":00")),
-    [],
-  );
+  const timeRows = buildTimeRows();
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedCells, setSelectedCells] = useState(() => new Set());
@@ -117,24 +113,6 @@ function SchedulePage() {
     [availabilityData],
   );
 
-  const availableHourCells = useMemo(() => {
-    const cells = new Set();
-
-    for (const day of DAYS) {
-      for (const time of timeRows) {
-        const nextHalfHour = addMinutes(time, 30);
-        if (
-          availableCells.has(`${day}|${time}`) &&
-          availableCells.has(`${day}|${nextHalfHour}`)
-        ) {
-          cells.add(`${day}|${time}`);
-        }
-      }
-    }
-
-    return cells;
-  }, [availableCells, timeRows]);
-
   const sendMutation = useMutation({
     mutationFn: (payloads) =>
       Promise.all(payloads.map((payload) => invitationApi.sendInvitation(payload))),
@@ -162,7 +140,6 @@ function SchedulePage() {
         recipientId: selectedUser._id,
         scheduledDate: nextDateForDay(day),
         scheduledTime: time,
-        duration: 60,
         difficulty,
         message,
       };
@@ -205,14 +182,14 @@ function SchedulePage() {
     () =>
       DAYS.map((day) => ({
         day,
-        slots: timeRows.filter((time) => availableHourCells.has(`${day}|${time}`)),
+        slots: timeRows.filter((time) => availableCells.has(`${day}|${time}`)),
       })),
-    [availableHourCells, timeRows],
+    [availableCells, timeRows],
   );
 
   const availabilityStatus = selectedUser
-    ? availableHourCells.size > 0
-      ? `Has availability: ${availableHourCells.size} one-hour slots`
+    ? availableCells.size > 0
+      ? `Has availability: ${availableCells.size} slots`
       : t("schedule.noAvailability")
     : "";
 
@@ -397,7 +374,7 @@ function SchedulePage() {
                         <div className="flex items-center justify-center py-12">
                           <Loader2Icon className="size-8 animate-spin text-primary" />
                         </div>
-                      ) : availableHourCells.size === 0 ? (
+                      ) : availableCells.size === 0 ? (
                         <p className="py-4 text-sm opacity-60">{t("schedule.noAvailability")}</p>
                       ) : (
                         <div className="space-y-3">
@@ -447,7 +424,7 @@ function SchedulePage() {
                         <div className="flex items-center justify-center py-12">
                           <Loader2Icon className="size-8 animate-spin text-primary" />
                         </div>
-                      ) : availableHourCells.size === 0 ? (
+                      ) : availableCells.size === 0 ? (
                         <p className="py-4 text-sm opacity-60">{t("schedule.noAvailability")}</p>
                       ) : (
                         <div className="overflow-x-auto">
@@ -472,7 +449,7 @@ function SchedulePage() {
                                 </div>
                                 {DAYS.map((day) => {
                                   const key = `${day}|${time}`;
-                                  const available = availableHourCells.has(key);
+                                  const available = availableCells.has(key);
                                   const picked = selectedCells.has(key);
                                   return (
                                     <div
