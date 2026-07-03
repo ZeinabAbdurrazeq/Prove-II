@@ -65,6 +65,26 @@ function Navbar() {
     { to: "/about", label: t("marketing.about") },
   ];
 
+  const mobilePrimaryLinks = [
+    { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboardIcon },
+    { to: "/problems", label: t("nav.problems"), icon: BookOpenIcon },
+    { to: "/dashboard", label: t("nav.sessions"), icon: CalendarClockIcon },
+    { to: "/schedule", label: t("nav.schedule"), icon: CalendarPlusIcon },
+    { to: "/ai-interview", label: t("nav.aiRecruiter"), icon: MicIcon },
+    { to: "/blog", label: t("marketing.blog"), icon: BookOpenIcon },
+    { to: "/availability/settings", label: t("nav.settings"), icon: SettingsIcon },
+  ];
+
+  const mobileMoreLinks = [
+    { to: "/availability/settings", label: t("nav.availability"), icon: CalendarClockIcon },
+    { to: "/invitations", label: t("nav.invitations"), icon: MailIcon },
+    { to: "/subscription", label: t("nav.subscription"), icon: CreditCardIcon },
+    { to: "/", label: t("marketing.home"), icon: HomeIcon },
+    { to: "/pricing", label: t("marketing.pricing"), icon: CreditCardIcon },
+    { to: "/contact", label: t("marketing.contact"), icon: MailIcon },
+    { to: "/about", label: t("marketing.about"), icon: BookOpenIcon },
+  ];
+
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
@@ -215,10 +235,10 @@ function Navbar() {
 
             <div>
               <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-base-content/45">
-                Workspace
+                {t("nav.mainMenu")}
               </p>
               <div className="grid grid-cols-1 gap-2">
-                {navItems.map((item) => {
+                {mobilePrimaryLinks.map((item) => {
                   const NavIcon = item.icon;
 
                   return (
@@ -241,10 +261,10 @@ function Navbar() {
 
             <div>
               <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-base-content/45">
-                Public pages
+                {t("nav.moreMenu")}
               </p>
               <div className="grid grid-cols-1 gap-2">
-              {publicLinks.map((item) => {
+              {mobileMoreLinks.map((item) => {
                 const NavIcon = item.icon;
 
                 return (
