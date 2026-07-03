@@ -11,6 +11,12 @@ import {
   getTopCandidates,
   getProblemsStats,
 } from "../controllers/adminController.js";
+import {
+  createAdminBlogPost,
+  deleteAdminBlogPost,
+  getAdminBlogPosts,
+  updateAdminBlogPost,
+} from "../controllers/blogController.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 
 const router = Router();
@@ -28,6 +34,9 @@ router.get("/sessions", getAllSessions);
 router.get("/ai-interviews", getAllAiInterviews);
 router.get("/top-candidates", getTopCandidates);
 router.get("/problems-stats", getProblemsStats);
+router.get("/blog-posts", getAdminBlogPosts);
+router.post("/blog-posts", createAdminBlogPost);
+router.put("/blog-posts/:id", updateAdminBlogPost);
+router.delete("/blog-posts/:id", deleteAdminBlogPost);
 
 export default router;
-

@@ -12,6 +12,22 @@ export const translations = {
     "marketing.contact": "Contact Us",
     "marketing.getStarted": "Get Started",
 
+    // Blog
+    "blog.badge": "Interview insights",
+    "blog.title": "Practical writing for better technical interviews.",
+    "blog.subtitle":
+      "Guides on preparation, live coding, AI interview practice, and building the kind of candidate profile that helps your skills show up clearly.",
+    "blog.readMore": "Read more",
+    "blog.empty": "No blog posts are published yet.",
+    "blog.error": "Could not load blog posts.",
+    "blog.notFoundBadge": "Article not found",
+    "blog.notFoundTitle": "This post is not available.",
+    "blog.back": "Back to Blog",
+    "blog.ctaTitle": "Keep practicing with ProveIt",
+    "blog.ctaBody":
+      "Turn the ideas from this article into live practice, solo problem solving, and AI interview rehearsal.",
+    "blog.ctaButton": "Explore plans",
+
     // Home hero
     "home.badge": "Real-time Collaboration",
     "home.heroTitle1": "Code Together,",
@@ -402,6 +418,22 @@ export const translations = {
     "marketing.blog": "Blog",
     "marketing.contact": "اتصل بنا",
     "marketing.getStarted": "ابدأ الآن",
+
+    // Blog
+    "blog.badge": "رؤى للمقابلات",
+    "blog.title": "مقالات عملية لمقابلات تقنية أفضل.",
+    "blog.subtitle":
+      "أدلة عن الاستعداد والبرمجة المباشرة والتدريب بالذكاء الاصطناعي وبناء ملف مرشح يوضح مهاراتك بثقة.",
+    "blog.readMore": "اقرأ المزيد",
+    "blog.empty": "لا توجد مقالات منشورة حاليًا.",
+    "blog.error": "تعذر تحميل المقالات.",
+    "blog.notFoundBadge": "المقال غير موجود",
+    "blog.notFoundTitle": "هذا المقال غير متاح.",
+    "blog.back": "العودة إلى المدونة",
+    "blog.ctaTitle": "واصل التدريب مع ProveIt",
+    "blog.ctaBody":
+      "حوّل أفكار هذا المقال إلى تدريب مباشر وحل مسائل فردي ومحاكاة مقابلات بالذكاء الاصطناعي.",
+    "blog.ctaButton": "استكشف الخطط",
 
     // Home hero
     "home.badge": "تعاون في الوقت الفعلي",

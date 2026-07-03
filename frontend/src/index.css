@@ -31,12 +31,42 @@
   
   html, body, #root {
     min-height: 100%;
+    max-width: 100%;
   }
 
   body {
     font-family: var(--font-ui);
     font-weight: 400;
     overflow-x: hidden;
+  }
+
+  #root {
+    overflow-x: clip;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+  }
+
+  .card,
+  .card-body,
+  main,
+  section,
+  article {
+    min-width: 0;
+  }
+
+  .modal-box {
+    max-width: calc(100vw - 2rem);
   }
 
   h1, h2, h3, h4, h5, h6 {

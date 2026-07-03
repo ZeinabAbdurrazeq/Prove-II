@@ -177,7 +177,7 @@ function Navbar() {
       </div>
 
       {mobileOpen ? (
-        <div className="fixed right-4 top-20 z-[999] w-[55vw] max-w-[20rem] rounded-3xl border border-base-300/70 bg-base-100/98 shadow-2xl backdrop-blur-xl lg:hidden">
+        <div className="fixed end-4 top-20 z-[999] w-[min(20rem,calc(100vw-2rem))] rounded-3xl border border-base-300/70 bg-base-100/98 shadow-2xl backdrop-blur-xl lg:hidden">
           <div className="space-y-4 p-4">
             <div className="grid grid-cols-1 gap-2">
               {navItems.map((item) => {
