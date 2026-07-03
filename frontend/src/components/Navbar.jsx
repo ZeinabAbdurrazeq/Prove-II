@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { useUser, UserButton } from "@clerk/react";
+import { useClerk, useUser, UserButton } from "@clerk/react";
 import {
   BookOpenIcon,
   CalendarClockIcon,
@@ -12,6 +12,9 @@ import {
   MailIcon,
   MenuIcon,
   MicIcon,
+  LogOutIcon,
+  SettingsIcon,
+  UserCircleIcon,
   XIcon,
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
@@ -23,6 +26,7 @@ import { getTranslator } from "../lib/translations";
 function Navbar() {
   const location = useLocation();
   const { isLoaded, isSignedIn, user } = useUser();
+  const { openUserProfile, signOut } = useClerk();
   const { language, toggle } = useLanguage();
   const t = getTranslator(language);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -61,6 +65,16 @@ function Navbar() {
     { to: "/about", label: t("marketing.about") },
   ];
 
+  const mobileMenuItems = [
+    { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboardIcon },
+    { to: "/problems", label: t("nav.problems"), icon: BookOpenIcon },
+    { to: "/dashboard", label: t("nav.sessions"), icon: CalendarClockIcon },
+    { to: "/schedule", label: t("nav.schedule"), icon: CalendarPlusIcon },
+    { to: "/ai-interview", label: t("nav.aiRecruiter"), icon: MicIcon },
+    { to: "/blog", label: t("marketing.blog"), icon: BookOpenIcon },
+    { to: "/availability/settings", label: t("nav.settings"), icon: SettingsIcon },
+  ];
+
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
@@ -68,7 +82,8 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-base-300/60 bg-base-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-xl">
       <div className="flex w-full items-center gap-2 px-3 py-3 sm:px-4 lg:px-5">
-        <BrandLogo />
+        <BrandLogo className="hidden sm:inline-flex" />
+        <BrandLogo showTagline={false} small className="sm:hidden" />
 
         <div className="hidden min-w-0 flex-1 justify-center lg:flex">
           <div className="flex w-auto min-w-0 max-w-full items-center justify-center gap-0.5 rounded-2xl border border-base-300/70 bg-base-200/30 p-1 shadow-sm">
@@ -157,10 +172,6 @@ function Navbar() {
           <ThemeSwitcher />
           <NotificationBell />
 
-          <div className="flex items-center rounded-full border border-base-300 bg-base-100 p-1 shadow-sm">
-            <UserButton />
-          </div>
-
           <button
             className="btn btn-ghost btn-sm rounded-xl px-2"
             onClick={() => setMobileOpen((open) => !open)}
@@ -179,8 +190,37 @@ function Navbar() {
       {mobileOpen ? (
         <div className="fixed end-4 top-20 z-[999] w-[min(20rem,calc(100vw-2rem))] rounded-3xl border border-base-300/70 bg-base-100/98 shadow-2xl backdrop-blur-xl lg:hidden">
           <div className="space-y-4 p-4">
+            <div className="rounded-2xl border border-base-300 bg-base-200/40 p-3">
+              <div className="flex items-center gap-3 rtl:flex-row-reverse">
+                {user?.imageUrl ? (
+                  <img
+                    src={user.imageUrl}
+                    alt={user.fullName || user.firstName || "Account"}
+                    className="size-11 rounded-full object-cover"
+                  />
+                ) : (
+                  <UserCircleIcon className="size-11 text-base-content/60" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold">
+                    {user?.firstName || user?.fullName || "Account"}
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-1 text-sm font-semibold text-primary"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      openUserProfile();
+                    }}
+                  >
+                    {t("nav.viewProfile")}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-2">
-              {navItems.map((item) => {
+              {mobileMenuItems.map((item) => {
                 const NavIcon = item.icon;
 
                 return (
@@ -200,27 +240,6 @@ function Navbar() {
               })}
             </div>
 
-            <div>
-              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-base-content/45">
-                Public pages
-              </p>
-              <div className="grid grid-cols-1 gap-2">
-                {publicLinks.map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={`rounded-2xl border px-3 py-3 text-sm font-medium transition-all ${
-                      isActive(link.to)
-                        ? "border-primary bg-primary text-primary-content shadow-sm"
-                        : "border-base-300 bg-base-200/40 text-base-content/80 hover:bg-base-200"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
             {isAdminUser ? (
               <a
                 href={adminDashboardUrl}
@@ -230,6 +249,20 @@ function Navbar() {
                 <span>{t("nav.adminDashboard")}</span>
               </a>
             ) : null}
+
+            <div className="border-t border-base-300 pt-4">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 rounded-2xl border border-base-300 bg-base-200/40 px-3 py-3 text-sm font-semibold text-base-content/80 transition-all hover:bg-base-200 rtl:flex-row-reverse"
+                onClick={() => {
+                  setMobileOpen(false);
+                  void signOut({ redirectUrl: "/" });
+                }}
+              >
+                <LogOutIcon className="size-4" />
+                {t("nav.logout")}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

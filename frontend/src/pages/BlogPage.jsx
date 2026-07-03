@@ -105,9 +105,18 @@ function BlogPage() {
                         <span>{formatDate(post.date, language)}</span>
                         <span>{post.readTime}</span>
                       </div>
-                      <span className="btn btn-ghost btn-sm mt-4 w-fit gap-2 px-0 text-primary rtl:flex-row-reverse">
-                        {t("blog.readMore")}
-                        <ArrowRightIcon className="size-4 rtl:rotate-180" />
+                      <span className="btn btn-ghost btn-sm mt-4 w-fit gap-2 px-0 text-primary">
+                        {language === "ar" ? (
+                          <>
+                            <ArrowRightIcon className="size-4 rotate-180" />
+                            {t("blog.readMore")}
+                          </>
+                        ) : (
+                          <>
+                            {t("blog.readMore")}
+                            <ArrowRightIcon className="size-4" />
+                          </>
+                        )}
                       </span>
                     </div>
                   </Link>
