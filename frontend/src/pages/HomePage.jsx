@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { SignInButton, useUser } from "@clerk/react";
 import { lazy, Suspense } from "react";
-import { ArrowRight, PlayCircle, Zap } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
 import MarketingNav from "../components/MarketingNav";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
@@ -126,14 +126,6 @@ function HomePage() {
                 </button>
               </SignInButton>
             )}
-
-            <Link
-              to="/pricing"
-              className="btn btn-outline btn-lg min-h-12 w-full gap-2 whitespace-normal sm:w-auto rtl:flex-row-reverse"
-            >
-              <PlayCircle className="size-5 text-primary" />
-              {t("home.btnWatchDemo")}
-            </Link>
           </div>
         </div>
       </section>

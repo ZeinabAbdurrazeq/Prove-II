@@ -58,7 +58,7 @@ function PowerfulFeatures() {
                 <div className="size-3 rounded-full bg-success" />
               </div>
 
-              <div className="overflow-x-auto whitespace-nowrap p-3 font-mono text-xs leading-7 text-base-content sm:p-5 sm:text-sm sm:leading-8 lg:text-[15px] lg:leading-9">
+              <div dir="ltr" className="overflow-x-auto whitespace-nowrap p-3 text-left font-mono text-xs leading-7 text-base-content sm:p-5 sm:text-sm sm:leading-8 lg:text-[15px] lg:leading-9">
                 <div>
                   <span className="me-4 opacity-40">1</span>
                   <span className="text-primary">function</span>{" "}
