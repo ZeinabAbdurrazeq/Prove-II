@@ -65,16 +65,6 @@ function Navbar() {
     { to: "/about", label: t("marketing.about") },
   ];
 
-  const mobileMenuItems = [
-    { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboardIcon },
-    { to: "/problems", label: t("nav.problems"), icon: BookOpenIcon },
-    { to: "/dashboard", label: t("nav.sessions"), icon: CalendarClockIcon },
-    { to: "/schedule", label: t("nav.schedule"), icon: CalendarPlusIcon },
-    { to: "/ai-interview", label: t("nav.aiRecruiter"), icon: MicIcon },
-    { to: "/blog", label: t("marketing.blog"), icon: BookOpenIcon },
-    { to: "/availability/settings", label: t("nav.settings"), icon: SettingsIcon },
-  ];
-
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
@@ -82,8 +72,12 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-base-300/60 bg-base-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-xl">
       <div className="flex w-full items-center gap-2 px-3 py-3 sm:px-4 lg:px-5">
-        <BrandLogo className="hidden sm:inline-flex" />
-        <BrandLogo showTagline={false} small className="sm:hidden" />
+        <div className="hidden sm:block">
+          <BrandLogo />
+        </div>
+        <div className="sm:hidden">
+          <BrandLogo showTagline={false} small />
+        </div>
 
         <div className="hidden min-w-0 flex-1 justify-center lg:flex">
           <div className="flex w-auto min-w-0 max-w-full items-center justify-center gap-0.5 rounded-2xl border border-base-300/70 bg-base-200/30 p-1 shadow-sm">
@@ -219,8 +213,38 @@ function Navbar() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
-              {mobileMenuItems.map((item) => {
+            <div>
+              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-base-content/45">
+                Workspace
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                {navItems.map((item) => {
+                  const NavIcon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`flex items-center gap-2 rounded-2xl border px-3 py-3 text-sm font-medium transition-all ${
+                        isActive(item.to)
+                          ? "border-primary bg-primary text-primary-content shadow-sm"
+                          : "border-base-300 bg-base-200/40 text-base-content/80 hover:bg-base-200"
+                      }`}
+                    >
+                      <NavIcon className="size-4 shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.2em] text-base-content/45">
+                Public pages
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+              {publicLinks.map((item) => {
                 const NavIcon = item.icon;
 
                 return (
@@ -233,11 +257,12 @@ function Navbar() {
                         : "border-base-300 bg-base-200/40 text-base-content/80 hover:bg-base-200"
                     }`}
                   >
-                    <NavIcon className="size-4 shrink-0" />
+                    {NavIcon ? <NavIcon className="size-4 shrink-0" /> : null}
                     <span className="truncate">{item.label}</span>
                   </Link>
                 );
               })}
+              </div>
             </div>
 
             {isAdminUser ? (
