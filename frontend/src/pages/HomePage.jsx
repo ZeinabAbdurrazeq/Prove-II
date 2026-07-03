@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { SignInButton, useUser } from "@clerk/react";
 import { lazy, Suspense } from "react";
-import { ArrowRight, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import MarketingNav from "../components/MarketingNav";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
@@ -113,16 +113,14 @@ function HomePage() {
             {isSignedIn ? (
               <Link
                 to="/dashboard"
-                className="btn btn-primary btn-lg min-h-12 w-full gap-2 whitespace-normal sm:w-auto rtl:flex-row-reverse"
+                className="btn btn-primary btn-lg min-h-12 w-full gap-2 whitespace-normal sm:w-auto"
               >
                 {t("home.btnDashboard")}
-                <ArrowRight className="size-4 rtl:rotate-180" />
               </Link>
             ) : (
               <SignInButton mode="modal">
-                <button className="btn btn-primary btn-lg min-h-12 w-full gap-2 whitespace-normal sm:w-auto rtl:flex-row-reverse">
+                <button className="btn btn-primary btn-lg min-h-12 w-full gap-2 whitespace-normal sm:w-auto">
                   {t("home.btnStart")}
-                  <ArrowRight className="size-4 rtl:rotate-180" />
                 </button>
               </SignInButton>
             )}

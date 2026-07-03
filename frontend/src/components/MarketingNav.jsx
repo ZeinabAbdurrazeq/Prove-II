@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { ArrowRightIcon, LanguagesIcon } from "lucide-react";
+import { LanguagesIcon } from "lucide-react";
 import { SignInButton, useUser } from "@clerk/react";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
@@ -70,9 +70,8 @@ function MarketingNav() {
           <ThemeSwitcher />
 
           <SignInButton mode="modal">
-            <button className="group px-5 py-2.5 bg-gradient-to-r from-primary to-secondary rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2 rtl:flex-row-reverse">
+            <button className="group px-5 py-2.5 bg-gradient-to-r from-primary to-secondary rounded-xl text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2">
               <span>{t("marketing.getStarted")}</span>
-              <ArrowRightIcon className="size-4 group-hover:translate-x-0.5 transition-transform rtl:rotate-180" />
             </button>
           </SignInButton>
         </div>

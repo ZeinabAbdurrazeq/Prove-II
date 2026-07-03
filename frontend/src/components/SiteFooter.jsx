@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import { useUser } from "@clerk/react";
 import {
-  ArrowRightIcon,
   GlobeIcon,
   LinkIcon,
   MailIcon,
@@ -97,7 +96,6 @@ function SiteFooter() {
                 className="btn btn-outline btn-sm gap-2 rounded-full"
               >
                 {t("marketing.pricing")}
-                <ArrowRightIcon className="size-4" />
               </Link>
             </div>
           </div>

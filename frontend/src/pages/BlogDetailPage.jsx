@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, ArrowRightIcon, Loader2Icon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import MarketingNav from "../components/MarketingNav";
@@ -47,8 +47,7 @@ function BlogDetailPage() {
           <h1 className="mt-5 text-3xl font-bold sm:text-4xl">
             {t("blog.notFoundTitle")}
           </h1>
-          <Link to="/blog" className="btn btn-primary mt-8 gap-2 rtl:flex-row-reverse">
-            <ArrowLeftIcon className="size-4 rtl:rotate-180" />
+          <Link to="/blog" className="btn btn-primary mt-8 gap-2">
             {t("blog.back")}
           </Link>
         </main>
@@ -66,9 +65,8 @@ function BlogDetailPage() {
             <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
               <Link
                 to="/blog"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-secondary rtl:flex-row-reverse"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-secondary"
               >
-                <ArrowLeftIcon className="size-4 rtl:rotate-180" />
                 {t("blog.back")}
               </Link>
 
@@ -110,9 +108,8 @@ function BlogDetailPage() {
               <p className="mt-3 leading-7 text-base-content/70">
                 {t("blog.ctaBody")}
               </p>
-              <Link to="/pricing" className="btn btn-primary mt-6 gap-2 rtl:flex-row-reverse">
+              <Link to="/pricing" className="btn btn-primary mt-6 gap-2">
                 {t("blog.ctaButton")}
-                <ArrowRightIcon className="size-4 rtl:rotate-180" />
               </Link>
             </div>
           </div>

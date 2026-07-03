@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/react";
-import { ArrowRightIcon, SparklesIcon, ZapIcon } from "lucide-react";
+import { SparklesIcon, ZapIcon } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
@@ -35,7 +35,6 @@ function WelcomeSection({ onCreateSession }) {
           >
             <ZapIcon className="size-5 shrink-0 sm:size-6" />
             <span>{t("dashboard.createSession")}</span>
-            <ArrowRightIcon className="size-4 shrink-0 transition-transform group-hover:translate-x-1" />
           </button>
         </div>
       </div>

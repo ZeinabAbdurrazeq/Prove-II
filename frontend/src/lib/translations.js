@@ -130,7 +130,7 @@ export const translations = {
     "home.why.title": "Why Choose",
     "home.why.span": "ProveIt",
     "home.why.subtitle": "Performance meets developer productivity.",
-    "home.why.docLink": "See detailed documentation →",
+    "home.why.docLink": "See detailed documentation",
     "home.why.speed.title": "Maximum Speed",
     "home.why.speed.desc":
       "Zero lag between keystrokes. Our real-time engine ensures a local-IDE feel regardless of distance.",
@@ -681,7 +681,7 @@ export const translations = {
     "home.why.title": "لماذا تختار",
     "home.why.span": "ProveIt",
     "home.why.subtitle": "الأداء يلتقي بإنتاجية المطور.",
-    "home.why.docLink": "شاهد الوثائق التفصيلية ←",
+    "home.why.docLink": "شاهد الوثائق التفصيلية",
     "home.why.speed.title": "أقصى سرعة",
     "home.why.speed.desc":
       "بدون أي تأخير بين النقرات. يضمن محركنا الفوري إحساس بيئة التطوير المحلية بغض النظر عن المسافة.",

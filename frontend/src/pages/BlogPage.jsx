@@ -1,5 +1,4 @@
 import {
-  ArrowRightIcon,
   BookOpenIcon,
   BrainIcon,
   Code2Icon,
@@ -106,17 +105,7 @@ function BlogPage() {
                         <span>{post.readTime}</span>
                       </div>
                       <span className="btn btn-ghost btn-sm mt-4 w-fit gap-2 px-0 text-primary">
-                        {language === "ar" ? (
-                          <>
-                            <ArrowRightIcon className="size-4 rotate-180" />
-                            {t("blog.readMore")}
-                          </>
-                        ) : (
-                          <>
-                            {t("blog.readMore")}
-                            <ArrowRightIcon className="size-4" />
-                          </>
-                        )}
+                        {t("blog.readMore")}
                       </span>
                     </div>
                   </Link>
