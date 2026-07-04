@@ -5,12 +5,21 @@ import {
   getSessionsOverTime,
   getInterviewsPerDay,
   getAllUsers,
+  createAdminUser,
+  updateAdminUser,
   updateUserRole,
+  deleteAdminUser,
   getAllSessions,
   getAllAiInterviews,
   getTopCandidates,
   getProblemsStats,
 } from "../controllers/adminController.js";
+import {
+  createAdminProblem,
+  deleteAdminProblem,
+  getAdminProblems,
+  updateAdminProblem,
+} from "../controllers/adminProblemController.js";
 import {
   createAdminBlogPost,
   deleteAdminBlogPost,
@@ -29,11 +38,18 @@ router.get("/stats/dashboard", getDashboardStats);
 router.get("/stats/sessions-over-time", getSessionsOverTime);
 router.get("/stats/interviews-per-day", getInterviewsPerDay);
 router.get("/users", getAllUsers);
+router.post("/users", createAdminUser);
+router.put("/users/:userId", updateAdminUser);
 router.patch("/users/:userId/role", updateUserRole);
+router.delete("/users/:userId", deleteAdminUser);
 router.get("/sessions", getAllSessions);
 router.get("/ai-interviews", getAllAiInterviews);
 router.get("/top-candidates", getTopCandidates);
 router.get("/problems-stats", getProblemsStats);
+router.get("/problems", getAdminProblems);
+router.post("/problems", createAdminProblem);
+router.put("/problems/:id", updateAdminProblem);
+router.delete("/problems/:id", deleteAdminProblem);
 router.get("/blog-posts", getAdminBlogPosts);
 router.post("/blog-posts", createAdminBlogPost);
 router.put("/blog-posts/:id", updateAdminBlogPost);

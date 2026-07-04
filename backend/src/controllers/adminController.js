@@ -229,7 +229,7 @@ export const getAllUsers = async (req, res) => {
 
     const [users, total] = await Promise.all([
       User.find(query)
-        .select("name email profileImage clerkId role createdAt")
+        .select("name email profileImage clerkId role score level createdAt")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -247,6 +247,75 @@ export const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ msg: "Failed to load users" });
+  }
+};
+
+export const createAdminUser = async (req, res) => {
+  try {
+    const name = String(req.body?.name || "").trim();
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const role = ALLOWED_USER_ROLES.includes(req.body?.role) ? req.body.role : "user";
+    const profileImage = String(req.body?.profileImage || "").trim();
+    const score = Math.max(Number(req.body?.score || 0), 0);
+    const level = String(req.body?.level || "Entry-Level").trim();
+    const clerkId =
+      String(req.body?.clerkId || "").trim() ||
+      `manual-${email.replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
+
+    if (!name || !email) {
+      return res.status(400).json({ msg: "Name and email are required" });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      profileImage,
+      clerkId,
+      role,
+      score,
+      level,
+    });
+
+    return res.status(201).json({ user });
+  } catch (error) {
+    const duplicate = error?.code === 11000;
+    return res.status(duplicate ? 409 : 500).json({
+      msg: duplicate ? "Email or Clerk ID already exists" : "Failed to create user",
+    });
+  }
+};
+
+export const updateAdminUser = async (req, res) => {
+  try {
+    const payload = {};
+
+    if (req.body?.name !== undefined) payload.name = String(req.body.name || "").trim();
+    if (req.body?.email !== undefined) payload.email = String(req.body.email || "").trim().toLowerCase();
+    if (req.body?.profileImage !== undefined) payload.profileImage = String(req.body.profileImage || "").trim();
+    if (req.body?.role !== undefined && ALLOWED_USER_ROLES.includes(req.body.role)) payload.role = req.body.role;
+    if (req.body?.score !== undefined) payload.score = Math.max(Number(req.body.score || 0), 0);
+    if (req.body?.level !== undefined) payload.level = String(req.body.level || "Entry-Level").trim();
+    if (req.body?.clerkId !== undefined) payload.clerkId = String(req.body.clerkId || "").trim();
+
+    if (payload.name === "" || payload.email === "" || payload.clerkId === "") {
+      return res.status(400).json({ msg: "Name, email, and Clerk ID cannot be empty" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.params.userId, payload, {
+      new: true,
+      runValidators: true,
+    }).select("name email profileImage clerkId role score level createdAt updatedAt");
+
+    if (!updatedUser) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    return res.status(200).json({ user: updatedUser });
+  } catch (error) {
+    const duplicate = error?.code === 11000;
+    return res.status(duplicate ? 409 : 500).json({
+      msg: duplicate ? "Email or Clerk ID already exists" : "Failed to update user",
+    });
   }
 };
 
@@ -271,6 +340,23 @@ export const updateUserRole = async (req, res) => {
     return res.status(200).json({ user: updatedUser });
   } catch (error) {
     return res.status(500).json({ msg: "Failed to update user role" });
+  }
+};
+
+export const deleteAdminUser = async (req, res) => {
+  try {
+    if (String(req.user?._id) === String(req.params.userId)) {
+      return res.status(400).json({ msg: "You cannot delete your own admin account" });
+    }
+
+    const deletedUser = await User.findByIdAndDelete(req.params.userId);
+    if (!deletedUser) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    return res.status(200).json({ msg: "User deleted" });
+  } catch (error) {
+    return res.status(500).json({ msg: "Failed to delete user" });
   }
 };
 
@@ -394,6 +480,4 @@ export const getProblemsStats = async (req, res) => {
     return res.status(500).json({ msg: "Failed to load problems statistics" });
   }
 };
-
-
 
