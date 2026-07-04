@@ -17,7 +17,7 @@ function TestimonialCard({ testimonial, isRtl }) {
       <div className="relative z-10 flex flex-col gap-5">
         <div
           className={`flex items-center gap-4 ${
-            isRtl ? "self-end text-right" : ""
+            isRtl ? "w-full flex-row-reverse justify-end text-right" : ""
           }`}
         >
           <img

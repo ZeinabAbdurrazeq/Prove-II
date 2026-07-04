@@ -25,7 +25,7 @@ function PowerdBy() {
         {t("home.powered.title")}
       </p>
 
-      <div className="relative w-full overflow-hidden">
+      <div className="relative w-full overflow-hidden" dir="ltr">
         <div className="powerdby-scroll flex w-max">
           {marqueeRows.map((row, rowIndex) => (
             <div
@@ -36,7 +36,7 @@ function PowerdBy() {
               {row.map(({ icon: Icon, label }) => (
                 <div
                   key={`${label}-${rowIndex}`}
-                  className="group flex items-center gap-3 text-base font-semibold text-base-content rtl:flex-row-reverse"
+                  className="group flex items-center gap-3 text-base font-semibold text-base-content"
                 >
                   <div className="flex size-11 items-center justify-center rounded-xl border border-base-300 bg-base-100 text-primary transition-all duration-300 group-hover:border-primary">
                     {createElement(Icon, { size: 20 })}
