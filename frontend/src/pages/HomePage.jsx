@@ -32,8 +32,8 @@ function HomePage() {
         <div className="absolute inset-0 z-0 opacity-35">
           <Suspense fallback={<div className="h-full w-full bg-primary/5" />}>
             <MagicRings
-              color="#5E81AC"
-              colorTwo="#88C0D0"
+              color="#2E3440"
+              colorTwo="#4C566A"
               speed={0.85}
               ringCount={8}
               attenuation={9}
@@ -84,7 +84,7 @@ function HomePage() {
                     t("home.rotating.pair"),
                     t("home.rotating.realtime"),
                   ]}
-                  mainClassName="rounded-lg border border-base-300 bg-base-200 px-3 py-1 text-primary overflow-hidden"
+                  mainClassName="inline-flex justify-center w-[6.5em] rounded-lg border border-base-300 bg-base-200 px-3 py-1 text-primary overflow-hidden"
                   staggerFrom="last"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
