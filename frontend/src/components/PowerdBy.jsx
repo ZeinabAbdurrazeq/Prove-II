@@ -16,7 +16,8 @@ const techs = [
 function PowerdBy() {
   const { language } = useLanguage();
   const t = getTranslator(language);
-  const marqueeRows = [techs, techs];
+  const marqueeSet = [...techs, ...techs, ...techs];
+  const marqueeRows = [marqueeSet, marqueeSet];
 
   return (
     <section className="overflow-hidden bg-base-200 px-4 py-16 text-center sm:px-6">
