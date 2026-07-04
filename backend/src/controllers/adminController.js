@@ -5,6 +5,7 @@ import Subscription from "../models/Subscription.js";
 import Invitation from "../models/Invitation.js";
 import CandidateProfile from "../models/CandidateProfile.js";
 import InterviewQuestions from "../models/InterviewQuestions.js";
+import CodeSubmission from "../models/CodeSubmission.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ALLOWED_USER_ROLES = ["user", "admin"];
@@ -413,6 +414,44 @@ export const getAllAiInterviews = async (req, res) => {
   }
 };
 
+export const getAllSubmissions = async (req, res) => {
+  try {
+    const page = normalizeQueryNumber(req.query.page, 1);
+    const limit = Math.min(normalizeQueryNumber(req.query.limit, 10), 100);
+    const status = String(req.query.status || "").trim();
+    const difficulty = String(req.query.difficulty || "").trim();
+    const search = String(req.query.search || "").trim();
+
+    const filter = {};
+    if (status === "accepted") filter.accepted = true;
+    if (status === "rejected") filter.accepted = false;
+    if (["easy", "medium", "hard"].includes(difficulty)) filter.difficulty = difficulty;
+    if (search) {
+      filter.$or = [
+        { problemTitle: { $regex: escapeRegex(search), $options: "i" } },
+        { problemId: { $regex: escapeRegex(search), $options: "i" } },
+        { language: { $regex: escapeRegex(search), $options: "i" } },
+      ];
+    }
+
+    const [submissions, total] = await Promise.all([
+      CodeSubmission.find(filter)
+        .populate({ path: "userId", select: "name email profileImage role clerkId score level" })
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      CodeSubmission.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      ...buildPagedResponse({ items: submissions, total, page, limit, key: "submissions" }),
+    });
+  } catch (error) {
+    return res.status(500).json({ msg: "Failed to load submissions" });
+  }
+};
+
 export const getTopCandidates = async (req, res) => {
   try {
     const candidates = await CandidateProfile.find()
@@ -480,4 +519,3 @@ export const getProblemsStats = async (req, res) => {
     return res.status(500).json({ msg: "Failed to load problems statistics" });
   }
 };
-

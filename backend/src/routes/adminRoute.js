@@ -11,6 +11,7 @@ import {
   deleteAdminUser,
   getAllSessions,
   getAllAiInterviews,
+  getAllSubmissions,
   getTopCandidates,
   getProblemsStats,
 } from "../controllers/adminController.js";
@@ -44,6 +45,7 @@ router.patch("/users/:userId/role", updateUserRole);
 router.delete("/users/:userId", deleteAdminUser);
 router.get("/sessions", getAllSessions);
 router.get("/ai-interviews", getAllAiInterviews);
+router.get("/submissions", getAllSubmissions);
 router.get("/top-candidates", getTopCandidates);
 router.get("/problems-stats", getProblemsStats);
 router.get("/problems", getAdminProblems);

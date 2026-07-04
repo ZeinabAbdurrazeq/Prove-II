@@ -2,11 +2,11 @@ import { FaQuoteRight } from "react-icons/fa6";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
-function TestimonialCard({ testimonial }) {
+function TestimonialCard({ testimonial, isRtl }) {
   return (
     <article className="group relative overflow-hidden rounded-3xl border border-base-300 bg-base-200/70 p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <span
-        className="pointer-events-none absolute -top-1 end-2 select-none text-primary/10"
+        className="pointer-events-none absolute -top-1 end-2 select-none text-primary/10 rtl:end-auto rtl:left-2"
         aria-hidden="true"
       >
         <FaQuoteRight size={70} />
@@ -15,7 +15,11 @@ function TestimonialCard({ testimonial }) {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <div className="relative z-10 flex flex-col gap-5">
-        <div className="flex items-center gap-4 rtl:flex-row-reverse">
+        <div
+          className={`flex items-center gap-4 ${
+            isRtl ? "self-end text-right" : ""
+          }`}
+        >
           <img
             src={testimonial.avatar}
             alt={testimonial.name}
@@ -41,6 +45,7 @@ function TestimonialCard({ testimonial }) {
 function TestimonialsSection() {
   const { language } = useLanguage();
   const t = getTranslator(language);
+  const isRtl = language === "ar";
 
   const testimonials = [
     {
@@ -77,7 +82,11 @@ function TestimonialsSection() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {testimonials.map((testimonial) => (
-            <TestimonialCard key={testimonial.name} testimonial={testimonial} />
+            <TestimonialCard
+              key={testimonial.name}
+              testimonial={testimonial}
+              isRtl={isRtl}
+            />
           ))}
         </div>
       </div>
