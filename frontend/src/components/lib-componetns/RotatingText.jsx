@@ -39,7 +39,7 @@ export default function RotatingText({
   }, [auto, advance, rotationInterval, texts.length]);
 
   const current = texts[index] || "";
-  const chars = splitBy === "characters" ? current.split("") : current.split(" ");
+  const segments = splitBy === "characters" ? current.split("") : current.split(/(\s+)/);
 
   const getDelay = (i, total) => {
     if (staggerFrom === "last") return (total - 1 - i) * staggerDuration;
@@ -51,12 +51,8 @@ export default function RotatingText({
   return (
     <span className={mainClassName} aria-label={current}>
       <AnimatePresence mode="wait">
-        <MotionSpan
-          key={index}
-          className="inline-flex"
-          aria-hidden
-        >
-          {chars.map((char, i) => (
+        <MotionSpan key={index} className="inline-flex" aria-hidden>
+          {segments.map((char, i) => (
             <span key={`${index}-${i}`} className={splitLevelClassName}>
               <MotionSpan
                 className="inline-block"
@@ -65,10 +61,10 @@ export default function RotatingText({
                 exit={exit}
                 transition={{
                   ...transition,
-                  delay: getDelay(i, chars.length),
+                  delay: getDelay(i, segments.length),
                 }}
               >
-                {char === " " ? "\u00A0" : char}
+                {char.trim() === "" ? "\u00A0" : char}
               </MotionSpan>
             </span>
           ))}

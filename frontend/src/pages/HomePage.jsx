@@ -97,7 +97,7 @@ function HomePage() {
                     stiffness: 300,
                   }}
                   rotationInterval={2200}
-                  splitBy="characters"
+                  splitBy={language === "ar" ? "words" : "characters"}
                   auto
                   loop
                 />
