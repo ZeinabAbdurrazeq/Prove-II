@@ -10,38 +10,41 @@ import {
   UsersIcon,
 } from "lucide-react";
 import MarketingNav from "../components/MarketingNav";
-
-const flows = [
-  {
-    title: "Solo Problem Solving",
-    body: "Practice focused coding problems independently, build fluency, and review your own reasoning before a real interview.",
-    icon: Code2Icon,
-  },
-  {
-    title: "Peer Collaboration",
-    body: "Work with another developer in live sessions so communication, trade-offs, and teamwork become part of your practice.",
-    icon: UsersIcon,
-  },
-  {
-    title: "Mock Interview with Senior",
-    body: "Simulate a higher-pressure interview format with a human interviewer and structured feedback.",
-    icon: MicIcon,
-  },
-  {
-    title: "AI Interviewer Agent",
-    body: "Meet Zara, the AI recruiter agent that reviews your CV, asks staged questions, adapts follow-ups, and prepares feedback.",
-    icon: BotIcon,
-  },
-];
-
-const values = [
-  "Practice should feel realistic, not theoretical.",
-  "Feedback should be specific enough to act on.",
-  "Candidates should improve through repetition and reflection.",
-  "Interview readiness is technical, behavioral, and communicative.",
-];
+import { useLanguage } from "../context/LanguageContext";
+import { getTranslator } from "../lib/translations";
 
 function AboutPage() {
+  const { language } = useLanguage();
+  const t = getTranslator(language);
+
+  const proofPoints = [
+    t("about.proof1"),
+    t("about.proof2"),
+    t("about.proof3"),
+    t("about.proof4"),
+  ];
+
+  const flows = [
+    { title: t("about.flow1Title"), body: t("about.flow1Body"), icon: Code2Icon },
+    { title: t("about.flow2Title"), body: t("about.flow2Body"), icon: UsersIcon },
+    { title: t("about.flow3Title"), body: t("about.flow3Body"), icon: MicIcon },
+    { title: t("about.flow4Title"), body: t("about.flow4Body"), icon: BotIcon },
+  ];
+
+  const aiFeatures = [
+    [t("about.aiFeature1"), BrainCircuitIcon],
+    [t("about.aiFeature2"), HandshakeIcon],
+    [t("about.aiFeature3"), Code2Icon],
+    [t("about.aiFeature4"), CompassIcon],
+  ];
+
+  const values = [
+    t("about.valuePoint1"),
+    t("about.valuePoint2"),
+    t("about.valuePoint3"),
+    t("about.valuePoint4"),
+  ];
+
   return (
     <div className="min-h-screen bg-base-300">
       <MarketingNav />
@@ -51,31 +54,26 @@ function AboutPage() {
           <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div>
               <div className="badge badge-primary badge-lg mb-5">
-                About ProveIt
+                {t("about.title")}
               </div>
               <h1 className="text-4xl font-black leading-tight md:text-6xl">
-                A realistic interview practice platform for developers.
+                {t("about.heroTitle")}
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-relaxed text-base-content/70">
-                ProveIt helps candidates practice the full technical interview
-                journey: solving problems, collaborating live, rehearsing with
-                humans, and preparing with an AI recruiter that keeps the
-                interview structured and role-aware.
+                {t("about.heroBody")}
               </p>
             </div>
 
             <div className="rounded-lg border border-base-300 bg-base-200 p-6 shadow-sm">
               <div className="grid grid-cols-2 gap-4">
-                {["CV-aware", "Live coding", "Peer practice", "AI feedback"].map(
-                  (item) => (
-                    <div key={item} className="rounded-lg bg-base-100 p-4">
-                      <p className="text-sm font-bold">{item}</p>
-                      <p className="mt-2 text-xs text-base-content/60">
-                        Built for repeated, realistic preparation.
-                      </p>
-                    </div>
-                  ),
-                )}
+                {proofPoints.map((item) => (
+                  <div key={item} className="rounded-lg bg-base-100 p-4">
+                    <p className="text-sm font-bold">{item}</p>
+                    <p className="mt-2 text-xs text-base-content/60">
+                      {t("about.proofBody")}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -86,11 +84,9 @@ function AboutPage() {
             <div className="card border border-base-300 bg-base-100 shadow-sm">
               <div className="card-body">
                 <TargetIcon className="size-8 text-primary" />
-                <h2 className="text-2xl font-black">The Problem</h2>
+                <h2 className="text-2xl font-black">{t("about.problemTitle")}</h2>
                 <p className="leading-relaxed text-base-content/70">
-                  Many developers prepare alone, then struggle when the
-                  interview requires communication, pressure management, live
-                  collaboration, and clear stories from their own experience.
+                  {t("about.problemBody")}
                 </p>
               </div>
             </div>
@@ -98,11 +94,9 @@ function AboutPage() {
             <div className="card border border-base-300 bg-base-100 shadow-sm">
               <div className="card-body">
                 <EyeIcon className="size-8 text-secondary" />
-                <h2 className="text-2xl font-black">The Vision</h2>
+                <h2 className="text-2xl font-black">{t("about.visionTitle")}</h2>
                 <p className="leading-relaxed text-base-content/70">
-                  ProveIt turns interview preparation into a complete practice
-                  loop where technical depth, collaboration, and recruiter-style
-                  feedback reinforce each other.
+                  {t("about.visionBody")}
                 </p>
               </div>
             </div>
@@ -112,9 +106,9 @@ function AboutPage() {
         <section className="bg-base-100">
           <div className="mx-auto max-w-7xl px-6 py-16">
             <div className="mb-10 max-w-2xl">
-              <div className="badge badge-secondary mb-4">Four flows</div>
+              <div className="badge badge-secondary mb-4">{t("about.flowsBadge")}</div>
               <h2 className="text-3xl font-black md:text-4xl">
-                Practice the way real interviews actually happen.
+                {t("about.flowsTitle")}
               </h2>
             </div>
 
@@ -144,24 +138,17 @@ function AboutPage() {
 
         <section className="mx-auto grid max-w-7xl gap-8 px-6 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
-            <div className="badge badge-accent mb-4">AI Recruiter Agent</div>
+            <div className="badge badge-accent mb-4">{t("about.aiBadge")}</div>
             <h2 className="text-3xl font-black md:text-4xl">
-              Zara makes AI practice feel structured, focused, and fair.
+              {t("about.aiTitle")}
             </h2>
             <p className="mt-5 leading-relaxed text-base-content/70">
-              The AI interviewer reviews the candidate profile, asks one
-              question at a time, adapts follow-ups when answers are vague, and
-              ends with actionable feedback and a readiness recommendation.
+              {t("about.aiBody")}
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              ["CV understanding", BrainCircuitIcon],
-              ["Behavioral signals", HandshakeIcon],
-              ["Role-based technical depth", Code2Icon],
-              ["Readiness recommendation", CompassIcon],
-            ].map(([label, icon]) => {
+            {aiFeatures.map(([label, icon]) => {
               const FeatureIcon = icon;
 
               return (
@@ -176,7 +163,7 @@ function AboutPage() {
 
         <section className="bg-base-100">
           <div className="mx-auto max-w-7xl px-6 py-16">
-            <h2 className="text-3xl font-black">What makes ProveIt different</h2>
+            <h2 className="text-3xl font-black">{t("about.valuesTitle")}</h2>
             <div className="mt-8 grid gap-4 md:grid-cols-2">
               {values.map((value) => (
                 <div

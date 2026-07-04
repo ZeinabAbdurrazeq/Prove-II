@@ -206,24 +206,47 @@ export const translations = {
 
     // About page
     "about.title": "About ProveIt",
-    "about.subtitle":
-      "We help developers prove their skills through real collaboration and realistic, AI-powered practice.",
-    "about.missionTitle": "Our Mission",
-    "about.missionBody":
-      "To make technical interview preparation accessible, realistic, and collaborative for every developer, anywhere in the world.",
+    "about.heroTitle": "A realistic interview practice platform for developers.",
+    "about.heroBody":
+      "ProveIt helps candidates practice the full technical interview journey: solving problems, collaborating live, rehearsing with humans, and preparing with an AI recruiter that keeps the interview structured and role-aware.",
+    "about.proof1": "CV-aware",
+    "about.proof2": "Live coding",
+    "about.proof3": "Peer practice",
+    "about.proof4": "AI feedback",
+    "about.proofBody": "Built for repeated, realistic preparation.",
+    "about.problemTitle": "The Problem",
+    "about.problemBody":
+      "Many developers prepare alone, then struggle when the interview requires communication, pressure management, live collaboration, and clear stories from their own experience.",
     "about.visionTitle": "Our Vision",
     "about.visionBody":
-      "A world where landing your dream engineering role depends on your real ability, not on who you know or how much you can spend.",
-    "about.valuesTitle": "What We Value",
-    "about.value1Title": "Practice that feels real",
-    "about.value1Body":
-      "Live sessions and AI voice interviews that mirror the real thing, so there are no surprises on the day.",
-    "about.value2Title": "Learning together",
-    "about.value2Body":
-      "Pair programming and peer feedback turn solo grinding into a shared, faster journey.",
-    "about.value3Title": "Fair and accessible",
-    "about.value3Body":
-      "A generous free tier and clear pricing mean anyone can start preparing today.",
+      "ProveIt turns interview preparation into a complete practice loop where technical depth, collaboration, and recruiter-style feedback reinforce each other.",
+    "about.flowsBadge": "Four flows",
+    "about.flowsTitle": "Practice the way real interviews actually happen.",
+    "about.flow1Title": "Solo Problem Solving",
+    "about.flow1Body":
+      "Practice focused coding problems independently, build fluency, and review your own reasoning before a real interview.",
+    "about.flow2Title": "Peer Collaboration",
+    "about.flow2Body":
+      "Work with another developer in live sessions so communication, trade-offs, and teamwork become part of your practice.",
+    "about.flow3Title": "Mock Interview with Senior",
+    "about.flow3Body":
+      "Simulate a higher-pressure interview format with a human interviewer and structured feedback.",
+    "about.flow4Title": "AI Interviewer Agent",
+    "about.flow4Body":
+      "Meet Zara, the AI recruiter agent that reviews your CV, asks staged questions, adapts follow-ups, and prepares feedback.",
+    "about.aiBadge": "AI Recruiter Agent",
+    "about.aiTitle": "Zara makes AI practice feel structured, focused, and fair.",
+    "about.aiBody":
+      "The AI interviewer reviews the candidate profile, asks one question at a time, adapts follow-ups when answers are vague, and ends with actionable feedback and a readiness recommendation.",
+    "about.aiFeature1": "CV understanding",
+    "about.aiFeature2": "Behavioral signals",
+    "about.aiFeature3": "Role-based technical depth",
+    "about.aiFeature4": "Readiness recommendation",
+    "about.valuesTitle": "What makes ProveIt different",
+    "about.valuePoint1": "Practice should feel realistic, not theoretical.",
+    "about.valuePoint2": "Feedback should be specific enough to act on.",
+    "about.valuePoint3": "Candidates should improve through repetition and reflection.",
+    "about.valuePoint4": "Interview readiness is technical, behavioral, and communicative.",
 
     // Contact page
     "contact.title": "Contact Us",
@@ -757,24 +780,47 @@ export const translations = {
 
     // About page
     "about.title": "عن ProveIt",
-    "about.subtitle":
-      "نساعد المطورين على إثبات مهاراتهم من خلال التعاون الحقيقي والتدريب الواقعي المدعوم بالذكاء الاصطناعي.",
-    "about.missionTitle": "مهمتنا",
-    "about.missionBody":
-      "جعل التحضير للمقابلات التقنية متاحًا وواقعيًا وتعاونيًا لكل مطور في أي مكان في العالم.",
-    "about.visionTitle": "رؤيتنا",
+    "about.heroTitle": "منصة تدريب واقعية للمقابلات التقنية للمطورين.",
+    "about.heroBody":
+      "يساعد ProveIt المرشحين على التدريب على رحلة المقابلة التقنية كاملة: حل المسائل، التعاون المباشر، التدريب مع أشخاص حقيقيين، والاستعداد مع وكيل توظيف ذكي يحافظ على المقابلة منظمة ومناسبة للدور.",
+    "about.proof1": "يفهم السيرة الذاتية",
+    "about.proof2": "برمجة مباشرة",
+    "about.proof3": "تدريب مع الأقران",
+    "about.proof4": "تغذية راجعة بالذكاء الاصطناعي",
+    "about.proofBody": "مصمم لتدريب متكرر وواقعي.",
+    "about.problemTitle": "المشكلة",
+    "about.problemBody":
+      "يستعد كثير من المطورين وحدهم، ثم يواجهون صعوبة عندما تتطلب المقابلة تواصلًا واضحًا، إدارة للضغط، تعاونًا مباشرًا، وقصصًا دقيقة من خبراتهم.",
+    "about.visionTitle": "الرؤية",
     "about.visionBody":
-      "عالم يعتمد فيه الحصول على وظيفة هندستك الأحلام على قدرتك الحقيقية، لا على معارفك أو ما يمكنك إنفاقه.",
-    "about.valuesTitle": "قيمنا",
-    "about.value1Title": "تدريب يشبه الواقع",
-    "about.value1Body":
-      "جلسات مباشرة ومقابلات صوتية بالذكاء الاصطناعي تحاكي الواقع، فلا مفاجآت في اليوم الفعلي.",
-    "about.value2Title": "نتعلّم معًا",
-    "about.value2Body":
-      "البرمجة الثنائية وملاحظات الأقران تحوّل المذاكرة الفردية إلى رحلة مشتركة وأسرع.",
-    "about.value3Title": "عادل ومتاح",
-    "about.value3Body":
-      "خطة مجانية سخية وأسعار واضحة تعني أن أي شخص يمكنه البدء في التحضير اليوم.",
+      "يحوّل ProveIt التحضير للمقابلات إلى دورة تدريب كاملة تجمع بين العمق التقني، التعاون، والتغذية الراجعة بأسلوب مسؤولي التوظيف.",
+    "about.flowsBadge": "أربع مسارات",
+    "about.flowsTitle": "تدرّب بالطريقة التي تحدث بها المقابلات الحقيقية.",
+    "about.flow1Title": "حل المسائل بشكل فردي",
+    "about.flow1Body":
+      "تدرّب على مسائل برمجية مركزة بمفردك، وابنِ السرعة، وراجع طريقة تفكيرك قبل المقابلة الحقيقية.",
+    "about.flow2Title": "التعاون مع الأقران",
+    "about.flow2Body":
+      "اعمل مع مطور آخر في جلسات مباشرة حتى يصبح التواصل، ومناقشة البدائل، والعمل الجماعي جزءًا من تدريبك.",
+    "about.flow3Title": "مقابلة تجريبية مع خبير",
+    "about.flow3Body":
+      "حاكِ مقابلة أكثر ضغطًا مع محاور بشري وتغذية راجعة منظمة.",
+    "about.flow4Title": "وكيل مقابلات بالذكاء الاصطناعي",
+    "about.flow4Body":
+      "قابل Zara، وكيل التوظيف الذكي الذي يراجع سيرتك الذاتية، يطرح أسئلة متدرجة، يكيّف المتابعات، ويجهز تغذية راجعة.",
+    "about.aiBadge": "وكيل توظيف ذكي",
+    "about.aiTitle": "تجعل Zara التدريب بالذكاء الاصطناعي منظمًا ومركزًا وعادلًا.",
+    "about.aiBody":
+      "يراجع المحاور الذكي ملف المرشح، يطرح سؤالًا واحدًا في كل مرة، يكيّف الأسئلة اللاحقة عندما تكون الإجابات غامضة، وينهي المقابلة بتغذية راجعة قابلة للتنفيذ وتوصية عن الجاهزية.",
+    "about.aiFeature1": "فهم السيرة الذاتية",
+    "about.aiFeature2": "مؤشرات سلوكية",
+    "about.aiFeature3": "عمق تقني حسب الدور",
+    "about.aiFeature4": "توصية الجاهزية",
+    "about.valuesTitle": "ما الذي يجعل ProveIt مختلفًا",
+    "about.valuePoint1": "يجب أن يكون التدريب واقعيًا لا نظريًا فقط.",
+    "about.valuePoint2": "يجب أن تكون التغذية الراجعة محددة بما يكفي للتطبيق.",
+    "about.valuePoint3": "يتطور المرشحون عبر التكرار والتأمل في الأداء.",
+    "about.valuePoint4": "الجاهزية للمقابلات تقنية وسلوكية وتواصلية معًا.",
 
     // Contact page
     "contact.title": "اتصل بنا",
