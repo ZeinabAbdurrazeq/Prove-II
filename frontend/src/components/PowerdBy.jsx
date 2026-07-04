@@ -16,7 +16,7 @@ const techs = [
 function PowerdBy() {
   const { language } = useLanguage();
   const t = getTranslator(language);
-  const repeatedTechs = [...techs, ...techs];
+  const marqueeRows = [techs, techs];
 
   return (
     <section className="overflow-hidden bg-base-200 px-4 py-16 text-center sm:px-6">
@@ -25,16 +25,24 @@ function PowerdBy() {
       </p>
 
       <div className="relative w-full overflow-hidden">
-        <div className="powerdby-scroll flex w-max gap-10 sm:gap-14">
-          {repeatedTechs.map(({ icon: Icon, label }, index) => (
+        <div className="powerdby-scroll flex w-max">
+          {marqueeRows.map((row, rowIndex) => (
             <div
-              key={`${label}-${index}`}
-              className="group flex items-center gap-3 text-base font-semibold text-base-content rtl:flex-row-reverse"
+              key={rowIndex}
+              className="flex shrink-0 gap-10 pr-10 sm:gap-14 sm:pr-14"
+              aria-hidden={rowIndex > 0}
             >
-              <div className="flex size-11 items-center justify-center rounded-xl border border-base-300 bg-base-100 text-primary transition-all duration-300 group-hover:border-primary">
-                {createElement(Icon, { size: 20 })}
-              </div>
-              <span>{label}</span>
+              {row.map(({ icon: Icon, label }) => (
+                <div
+                  key={`${label}-${rowIndex}`}
+                  className="group flex items-center gap-3 text-base font-semibold text-base-content rtl:flex-row-reverse"
+                >
+                  <div className="flex size-11 items-center justify-center rounded-xl border border-base-300 bg-base-100 text-primary transition-all duration-300 group-hover:border-primary">
+                    {createElement(Icon, { size: 20 })}
+                  </div>
+                  <span>{label}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
