@@ -16,8 +16,8 @@ import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
 function planBadgeClass(plan) {
-  if (plan === "pro") return "badge-primary";
   if (plan === "premium") return "badge-secondary";
+  if (plan === "pro") return "badge-primary";
   return "badge-ghost";
 }
 
@@ -48,27 +48,26 @@ function SubscriptionPage() {
   const plan = PLANS[planKey];
   const planNameKey = {
     free: "plans.freeName",
-    pro: "plans.proName",
+    singleInterview: "plans.singleInterviewName",
     premium: "plans.premiumName",
+    pro: "plans.proName",
   };
   const planFeatureKey = (feature) => {
     const map = {
       free: {
-        "3 AI interviews per month": "plans.free.feature1",
-        "Access to live sessions": "plans.free.feature2",
+        "Unlimited coding problems": "plans.free.feature1",
+        "Unlimited live sessions": "plans.free.feature2",
         "Basic progress tracking": "plans.free.feature3",
-        "Community problems": "plans.free.feature4",
+        "AI interviews sold separately": "plans.free.feature4",
       },
-      pro: {
-        "Unlimited AI interviews": "plans.pro.feature1",
-        "Full progress tracking and candidate profile": "plans.pro.feature2",
-        "Detailed scorecards": "plans.pro.feature3",
-        "Priority problem matching": "plans.pro.feature4",
-        "Invite and scheduling system": "plans.pro.feature5",
-        "Everything in Free": "plans.pro.feature6",
+      singleInterview: {
+        "One CV-aware AI interview": "plans.singleInterview.feature1",
+        "Detailed scorecard": "plans.singleInterview.feature2",
+        "Role-focused questions": "plans.singleInterview.feature3",
+        "Problems and sessions stay free": "plans.singleInterview.feature4",
       },
       premium: {
-        "Everything in Pro": "plans.premium.feature1",
+        "10 AI interviews per month": "plans.premium.feature1",
         "Unlimited CV re-uploads": "plans.premium.feature2",
         "Advanced analytics": "plans.premium.feature3",
         "Early access to new features": "plans.premium.feature4",
@@ -82,6 +81,8 @@ function SubscriptionPage() {
   };
   const isFree = planKey === "free";
   const used = subscription?.aiInterviewsUsedThisMonth || 0;
+  const monthlyLimit = plan?.aiInterviewsPerMonth || 0;
+  const credits = subscription?.aiInterviewCredits || 0;
 
   return (
     <div className="min-h-screen bg-base-300">
@@ -141,21 +142,28 @@ function SubscriptionPage() {
                     </div>
                   )}
 
-                  {isFree && (
+                  {monthlyLimit > 0 && (
                     <div>
                       <div className="flex justify-between text-sm mb-1 rtl:flex-row-reverse">
                         <span className="text-base-content/60">
                           {t("subscription.usage")}
                         </span>
-                        <span className="font-medium">{used} / 3</span>
+                        <span className="font-medium">{used} / {monthlyLimit}</span>
                       </div>
                       <progress
                         className="progress progress-primary w-full"
-                        value={Math.min(used, 3)}
-                        max="3"
+                        value={Math.min(used, monthlyLimit)}
+                        max={monthlyLimit}
                       />
                     </div>
                   )}
+
+                  <div className="rounded-2xl bg-base-200/60 p-4">
+                    <p className="text-sm text-base-content/60">
+                      {t("subscription.credits")}
+                    </p>
+                    <p className="mt-1 text-2xl font-black">{credits}</p>
+                  </div>
 
                   <div className="pt-2 flex flex-wrap gap-3">
                     {planKey !== "premium" ? (

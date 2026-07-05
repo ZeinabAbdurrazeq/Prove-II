@@ -67,7 +67,7 @@ function CheckoutModal({ planKey, onClose }) {
         <div className="modal-box text-center">
           <CheckCircle2Icon className="size-20 mx-auto text-success mb-4" />
           <h3 className="text-2xl font-bold mb-2">
-            {t("checkout.welcome")} {plan.name}!
+            {t("checkout.welcome")} {t(plan.nameKey || plan.name)}!
           </h3>
           <p className="text-base-content/70 mb-6">
             {t("checkout.successMessage")}
@@ -104,9 +104,11 @@ function CheckoutModal({ planKey, onClose }) {
         {/* Inline keyframes for the shake effect */}
         <style>{`@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`}</style>
 
-        <h3 className="font-bold text-xl mb-1">{plan.name} plan</h3>
+        <h3 className="font-bold text-xl mb-1">
+          {t(plan.nameKey || plan.name)} {t("checkout.purchase")}
+        </h3>
         <p className="text-base-content/70 mb-4">
-          ${plan.price.toFixed(2)} / month
+          ${plan.price.toFixed(2)} {t(plan.billingKey || "pricing.perMonth")}
         </p>
 
         {error && (

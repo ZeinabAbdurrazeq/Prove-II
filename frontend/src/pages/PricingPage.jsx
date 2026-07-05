@@ -15,32 +15,31 @@ function PricingPage() {
   const t = getTranslator(language);
   const [checkoutPlan, setCheckoutPlan] = useState(null);
 
-  const planOrder = ["free", "pro", "premium"];
+  const planOrder = ["free", "singleInterview", "premium"];
 
   const planNameKey = {
     free: "plans.freeName",
-    pro: "plans.proName",
+    singleInterview: "plans.singleInterviewName",
     premium: "plans.premiumName",
+    pro: "plans.proName",
   };
 
   const planFeatureKey = (feature) => {
     const map = {
       free: {
-        "3 AI interviews per month": "plans.free.feature1",
-        "Access to live sessions": "plans.free.feature2",
+        "Unlimited coding problems": "plans.free.feature1",
+        "Unlimited live sessions": "plans.free.feature2",
         "Basic progress tracking": "plans.free.feature3",
-        "Community problems": "plans.free.feature4",
+        "AI interviews sold separately": "plans.free.feature4",
       },
-      pro: {
-        "Unlimited AI interviews": "plans.pro.feature1",
-        "Full progress tracking and candidate profile": "plans.pro.feature2",
-        "Detailed scorecards": "plans.pro.feature3",
-        "Priority problem matching": "plans.pro.feature4",
-        "Invite and scheduling system": "plans.pro.feature5",
-        "Everything in Free": "plans.pro.feature6",
+      singleInterview: {
+        "One CV-aware AI interview": "plans.singleInterview.feature1",
+        "Detailed scorecard": "plans.singleInterview.feature2",
+        "Role-focused questions": "plans.singleInterview.feature3",
+        "Problems and sessions stay free": "plans.singleInterview.feature4",
       },
       premium: {
-        "Everything in Pro": "plans.premium.feature1",
+        "10 AI interviews per month": "plans.premium.feature1",
         "Unlimited CV re-uploads": "plans.premium.feature2",
         "Advanced analytics": "plans.premium.feature3",
         "Early access to new features": "plans.premium.feature4",
@@ -105,7 +104,9 @@ function PricingPage() {
                     <span className="text-4xl font-black">
                       ${plan.price.toFixed(2)}
                     </span>
-                    <span className="text-base-content/60">{t("pricing.perMonth")}</span>
+                    <span className="text-base-content/60">
+                      {t(plan.billingKey || "pricing.perMonth")}
+                    </span>
                   </div>
 
                   <ul className="space-y-3 my-6">

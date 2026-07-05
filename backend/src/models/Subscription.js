@@ -30,7 +30,11 @@ const subscriptionSchema = new mongoose.Schema(
     },
     aiInterviewsLimit: {
       type: Number,
-      default: 3,
+      default: 0,
+    },
+    aiInterviewCredits: {
+      type: Number,
+      default: 0,
     },
     cancelledAt: {
       type: Date,

@@ -27,7 +27,8 @@ async function findOrCreateSubscription(userId) {
       currentPeriodStart: now,
       currentPeriodEnd: lastDayOfMonth(now),
       aiInterviewsUsedThisMonth: 0,
-      aiInterviewsLimit: 3,
+      aiInterviewsLimit: 0,
+      aiInterviewCredits: 0,
     });
   }
   return subscription;
@@ -69,24 +70,37 @@ export async function simulatePayment(req, res) {
       });
     }
 
+    if (plan === "free") {
+      return res.status(400).json({ msg: "Free plan does not require payment" });
+    }
+
     const now = new Date();
     const newPeriodEnd = sameDayNextMonth(now);
-    const aiInterviewsLimit = plan === "free" ? 3 : -1;
+    let subscription;
 
-    const subscription = await Subscription.findOneAndUpdate(
-      { userId: req.user._id },
-      {
-        userId: req.user._id,
-        plan,
-        status: "active",
-        currentPeriodStart: now,
-        currentPeriodEnd: newPeriodEnd,
-        aiInterviewsLimit,
-        aiInterviewsUsedThisMonth: 0,
-        cancelledAt: null,
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
+    if (plan === "singleInterview") {
+      subscription = await findOrCreateSubscription(req.user._id);
+      subscription.aiInterviewCredits = (subscription.aiInterviewCredits || 0) + 1;
+      subscription.status = "active";
+      await subscription.save();
+    } else {
+      const aiInterviewsLimit = PLANS[plan].aiInterviewsPerMonth || 0;
+
+      subscription = await Subscription.findOneAndUpdate(
+        { userId: req.user._id },
+        {
+          userId: req.user._id,
+          plan,
+          status: "active",
+          currentPeriodStart: now,
+          currentPeriodEnd: newPeriodEnd,
+          aiInterviewsLimit,
+          aiInterviewsUsedThisMonth: 0,
+          cancelledAt: null,
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      );
+    }
 
     // Send a purchase confirmation email (non-blocking; never fails the request).
     try {
@@ -96,7 +110,8 @@ export async function simulatePayment(req, res) {
           name: user.name,
           planName: PLANS[plan].name,
           price: PLANS[plan].price,
-          currentPeriodEnd: newPeriodEnd,
+          billingLabel: plan === "singleInterview" ? "one time" : "month",
+          currentPeriodEnd: plan === "singleInterview" ? null : newPeriodEnd,
         });
       }
     } catch (emailError) {
@@ -130,7 +145,7 @@ export async function cancelSubscription(req, res) {
         status: "active",
         currentPeriodStart: now,
         currentPeriodEnd: lastDayOfMonth(now),
-        aiInterviewsLimit: 3,
+        aiInterviewsLimit: 0,
         aiInterviewsUsedThisMonth: 0,
         cancelledAt: now,
       },
@@ -163,18 +178,27 @@ export async function checkAiInterviewLimit(req, res) {
       await subscription.save();
     }
 
-    if (subscription.plan === "pro" || subscription.plan === "premium") {
+    const hasMonthlyPlan = subscription.plan === "premium" || subscription.plan === "pro";
+    const monthlyLimit = hasMonthlyPlan
+      ? subscription.aiInterviewsLimit > 0
+        ? subscription.aiInterviewsLimit
+        : 10
+      : 0;
+
+    if (
+      hasMonthlyPlan &&
+      subscription.aiInterviewsUsedThisMonth < monthlyLimit
+    ) {
       return res.status(200).json({ canProceed: true });
     }
 
-    // Free plan: 3 per month.
-    if (subscription.aiInterviewsUsedThisMonth < 3) {
+    if ((subscription.aiInterviewCredits || 0) > 0) {
       return res.status(200).json({ canProceed: true });
     }
 
     return res.status(200).json({
       canProceed: false,
-      message: "You have used all 3 free AI interviews this month",
+      message: "Buy one AI interview for $10 or upgrade to Premium for 10 interviews per month",
       upgradeRequired: true,
     });
   } catch (error) {
@@ -188,7 +212,15 @@ export async function checkAiInterviewLimit(req, res) {
 export async function incrementAiInterviewUsage(req, res) {
   try {
     const subscription = await findOrCreateSubscription(req.user._id);
-    subscription.aiInterviewsUsedThisMonth += 1;
+    if (
+      (subscription.plan === "premium" || subscription.plan === "pro") &&
+      subscription.aiInterviewsUsedThisMonth <
+        (subscription.aiInterviewsLimit > 0 ? subscription.aiInterviewsLimit : 10)
+    ) {
+      subscription.aiInterviewsUsedThisMonth += 1;
+    } else if ((subscription.aiInterviewCredits || 0) > 0) {
+      subscription.aiInterviewCredits -= 1;
+    }
     await subscription.save();
     res.status(200).json({ subscription });
   } catch (error) {

@@ -168,22 +168,21 @@ export async function getProfile(req, res) {
 }
 
 // --- Paywall hook (Feature 6 of the subscription branch) -------------------
-// The subscription branch already ships checkAiInterviewLimit /
-// incrementAiInterviewUsage as Express handlers. Those can't be called
-// directly from here without refactoring them into services, so we mirror the
-// free=3/month + pro/premium=unlimited logic against the Subscription model.
-//
-// Kept behind a flag so it is a no-op until the subscription and AI-interview
-// branches are merged into main together.
-// TODO: set PAYWALL_ENABLED = true once both branches are merged.
-const PAYWALL_ENABLED = false;
+// Mirrors the subscription/credit rules used by the pricing model:
+// Premium gets a monthly interview allowance; one-off purchases add credits.
+const PAYWALL_ENABLED = true;
 
 async function checkAndConsumeInterviewQuota(userId) {
   if (!PAYWALL_ENABLED) return { canProceed: true };
 
   const subscription = await Subscription.findOne({ userId });
-  // No subscription record yet => treat as free with full allowance.
-  if (!subscription) return { canProceed: true };
+  if (!subscription) {
+    return {
+      canProceed: false,
+      message: "Buy one AI interview for $10 or upgrade to Premium for 10 interviews per month",
+      upgradeRequired: true,
+    };
+  }
 
   // Monthly reset if the billing period has passed.
   const now = new Date();
@@ -201,20 +200,41 @@ async function checkAndConsumeInterviewQuota(userId) {
     );
   }
 
-  const unlimited =
-    subscription.plan === "pro" || subscription.plan === "premium";
+  const hasMonthlyPlan = subscription.plan === "premium" || subscription.plan === "pro";
+  const monthlyLimit = hasMonthlyPlan
+    ? subscription.aiInterviewsLimit > 0
+      ? subscription.aiInterviewsLimit
+      : 10
+    : 0;
 
-  if (!unlimited && subscription.aiInterviewsUsedThisMonth >= 3) {
+  if (
+    hasMonthlyPlan &&
+    subscription.aiInterviewsUsedThisMonth < monthlyLimit
+  ) {
+    subscription.aiInterviewsUsedThisMonth += 1;
+    await subscription.save();
+    return { canProceed: true };
+  }
+
+  if ((subscription.aiInterviewCredits || 0) > 0) {
+    subscription.aiInterviewCredits -= 1;
+    await subscription.save();
+    return { canProceed: true };
+  }
+
+  if (hasMonthlyPlan) {
     return {
       canProceed: false,
-      message: "You have used all 3 free AI interviews this month",
+      message: "You have used all 10 Premium AI interviews this month",
       upgradeRequired: true,
     };
   }
 
-  subscription.aiInterviewsUsedThisMonth += 1;
-  await subscription.save();
-  return { canProceed: true };
+  return {
+    canProceed: false,
+    message: "Buy one AI interview for $10 or upgrade to Premium for 10 interviews per month",
+    upgradeRequired: true,
+  };
 }
 
 // POST /api/ai-interview/start

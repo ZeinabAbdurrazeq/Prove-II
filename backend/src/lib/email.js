@@ -103,19 +103,22 @@ export async function sendDeclineEmail(to, data) {
 }
 
 export async function sendSubscriptionEmail(to, data) {
-  const { name, planName, price, currentPeriodEnd } = data;
+  const { name, planName, price, currentPeriodEnd, billingLabel = "month" } = data;
   const renews =
     currentPeriodEnd instanceof Date
       ? currentPeriodEnd.toDateString()
       : String(currentPeriodEnd || "");
+  const renewalRow = renews
+    ? `<tr><td>Renews on</td><td>${renews}</td></tr>`
+    : "";
   const body = `
     <p>Hi ${name || "there"}, thanks for upgrading — your payment was successful.</p>
     <table>
       <tbody><tr><td>Plan</td><td>${planName}</td></tr>
-      <tr><td>Price</td><td>$${Number(price || 0).toFixed(2)} / month</td></tr>
-      <tr><td>Renews on</td><td>${renews}</td></tr>
+      <tr><td>Price</td><td>$${Number(price || 0).toFixed(2)} / ${billingLabel}</td></tr>
+      ${renewalRow}
     </tbody></table>
-    <p>Your ${planName} features are active right now. Enjoy unlimited practice!</p>
+    <p>Your ${planName} access is active right now.</p>
   `;
   return send(
     to,

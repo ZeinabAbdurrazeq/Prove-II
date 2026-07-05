@@ -1,42 +1,48 @@
-// Subscription plan definitions. aiInterviewsPerMonth = -1 means unlimited.
+// Pricing product definitions. Keep in sync with frontend/src/data/plans.js.
 export const PLANS = {
   free: {
     name: "Free",
     price: 0,
-    aiInterviewsPerMonth: 3,
+    aiInterviewsPerMonth: 0,
     features: [
-      "3 AI interviews per month",
-      "Access to live sessions",
+      "Unlimited coding problems",
+      "Unlimited live sessions",
       "Basic progress tracking",
-      "Community problems",
+      "AI interviews sold separately",
     ],
     recommended: false,
   },
-  pro: {
-    name: "Pro",
-    price: 9.99,
-    aiInterviewsPerMonth: -1,
+  singleInterview: {
+    name: "AI Interview",
+    price: 10,
+    aiInterviewCredits: 1,
     features: [
-      "Unlimited AI interviews",
-      "Full progress tracking and candidate profile",
-      "Detailed scorecards",
-      "Priority problem matching",
-      "Invite and scheduling system",
-      "Everything in Free",
+      "One CV-aware AI interview",
+      "Detailed scorecard",
+      "Role-focused questions",
+      "Problems and sessions stay free",
     ],
     recommended: true,
   },
   premium: {
     name: "Premium",
-    price: 19.99,
-    aiInterviewsPerMonth: -1,
+    price: 70,
+    aiInterviewsPerMonth: 10,
     features: [
-      "Everything in Pro",
+      "10 AI interviews per month",
       "Unlimited CV re-uploads",
       "Advanced analytics",
       "Early access to new features",
       "Priority support",
     ],
     recommended: false,
+  },
+  pro: {
+    name: "Legacy Pro",
+    price: 9.99,
+    aiInterviewsPerMonth: 10,
+    features: ["Legacy paid plan"],
+    recommended: false,
+    hidden: true,
   },
 };
