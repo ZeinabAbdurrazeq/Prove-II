@@ -9,7 +9,6 @@ import { AdminApiService } from "../../core/services/admin-api.service";
 type UserForm = {
   name: string;
   email: string;
-  clerkId: string;
   profileImage: string;
   role: AdminRole;
   score: number;
@@ -19,7 +18,6 @@ type UserForm = {
 const emptyForm = (): UserForm => ({
   name: "",
   email: "",
-  clerkId: "",
   profileImage: "",
   role: "user",
   score: 0,
@@ -36,13 +34,12 @@ const emptyForm = (): UserForm => ({
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p class="text-sm uppercase tracking-[0.24em] text-base-content/60">Management</p>
-            <h2 class="mt-2 text-2xl font-bold text-white">Users</h2>
+            <h2 class="mt-2 text-2xl font-bold text-base-content">Users</h2>
             <p class="mt-2 text-sm text-base-content/60">Manage user records and update permissions without crowded menus.</p>
           </div>
-          <div class="grid w-full gap-3 sm:grid-cols-[1fr_auto_auto] lg:max-w-xl">
+          <div class="grid w-full gap-3 sm:grid-cols-[1fr_auto] lg:max-w-xl">
             <input class="admin-input" type="text" placeholder="Search name or email" [(ngModel)]="searchTerm" (keydown.enter)="search()" />
             <button class="admin-button-secondary" type="button" (click)="search()">Search</button>
-            <button class="admin-button" type="button" (click)="startCreate()">New user</button>
           </div>
         </div>
       </section>
@@ -52,24 +49,23 @@ const emptyForm = (): UserForm => ({
         <p class="mt-2 text-sm text-red-200/80">{{ error }}</p>
       </section>
 
-      <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(340px,460px)]">
-        <div class="space-y-6">
-          <section *ngIf="loading" class="admin-panel p-5">
+      <section class="space-y-6">
+        <section *ngIf="loading" class="admin-panel p-5">
             <div class="space-y-3">
-              <div *ngFor="let _ of skeletonRows" class="grid grid-cols-5 gap-4 rounded-3xl border border-base-300 bg-white/5 p-4">
-                <div class="h-12 w-12 animate-pulse rounded-2xl bg-white/10"></div>
-                <div class="h-4 animate-pulse rounded-full bg-white/10"></div>
-                <div class="h-4 animate-pulse rounded-full bg-white/10"></div>
-                <div class="h-6 w-24 animate-pulse rounded-full bg-white/10"></div>
-                <div class="h-10 w-24 animate-pulse rounded-2xl bg-white/10"></div>
+              <div *ngFor="let _ of skeletonRows" class="grid grid-cols-5 gap-4 rounded-3xl border border-base-300 bg-base-200 p-4">
+                <div class="h-12 w-12 animate-pulse rounded-2xl bg-base-300"></div>
+                <div class="h-4 animate-pulse rounded-full bg-base-300"></div>
+                <div class="h-4 animate-pulse rounded-full bg-base-300"></div>
+                <div class="h-6 w-24 animate-pulse rounded-full bg-base-300"></div>
+                <div class="h-10 w-24 animate-pulse rounded-2xl bg-base-300"></div>
               </div>
             </div>
-          </section>
+        </section>
 
-          <section *ngIf="!loading" class="admin-panel overflow-hidden p-0">
+        <section *ngIf="!loading" class="admin-panel overflow-hidden p-0">
             <div *ngIf="users.length; else emptyUsers" class="overflow-x-auto">
               <table class="admin-table min-w-[860px]">
-                <thead class="bg-white/5">
+                <thead class="bg-base-200">
                   <tr>
                     <th class="admin-th">Profile</th>
                     <th class="admin-th">Email</th>
@@ -79,14 +75,14 @@ const emptyForm = (): UserForm => ({
                     <th class="admin-th">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-white/10 bg-base-100">
+                <tbody class="divide-y divide-base-300 bg-base-100">
                   <tr *ngFor="let user of users">
                     <td class="admin-td">
                       <div class="flex items-center gap-3">
                         <img [src]="user.profileImage || defaultAvatar" [alt]="user.name" class="h-12 w-12 rounded-2xl border border-base-300 object-cover" />
                         <div>
-                          <p class="font-semibold text-white">{{ user.name }}</p>
-                          <p class="text-xs text-base-content/60">{{ user.clerkId }}</p>
+                          <p class="font-semibold text-base-content">{{ user.name }}</p>
+                          <p class="text-xs text-base-content/60">{{ user.level || 'Entry-Level' }}</p>
                         </div>
                       </div>
                     </td>
@@ -97,17 +93,14 @@ const emptyForm = (): UserForm => ({
                       </span>
                     </td>
                     <td class="admin-td text-base-content/80">
-                      <p class="font-semibold text-white">{{ user.score || 0 }}</p>
+                      <p class="font-semibold text-base-content">{{ user.score || 0 }}</p>
                       <p class="text-xs text-base-content/60">{{ user.level || 'Entry-Level' }}</p>
                     </td>
                     <td class="admin-td text-base-content/80">{{ formatDate(user.createdAt) }}</td>
                     <td class="admin-td">
                       <div class="flex flex-wrap gap-2">
                         <button class="admin-button-secondary !px-3 !py-2" type="button" (click)="startEdit(user)">Edit</button>
-                        <button class="admin-button-secondary !px-3 !py-2" type="button" (click)="toggleRole(user)">
-                          {{ user.role === 'admin' ? 'Make user' : 'Make admin' }}
-                        </button>
-                        <button class="rounded-2xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-100" type="button" (click)="deleteUser(user)">Delete</button>
+                        <button class="rounded-2xl border border-red-600 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100" type="button" (click)="deleteUser(user)">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -117,52 +110,48 @@ const emptyForm = (): UserForm => ({
 
             <ng-template #emptyUsers>
               <div class="p-12 text-center text-base-content/60">
-                <p class="text-lg font-semibold text-white">No users found</p>
+                <p class="text-lg font-semibold text-base-content">No users found</p>
                 <p class="mt-2 text-sm">Try another search or create a new user record.</p>
               </div>
             </ng-template>
-          </section>
+        </section>
 
-          <section class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <section class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-sm text-base-content/60">Page {{ page }} of {{ totalPages }}</p>
             <div class="flex gap-2">
               <button class="admin-button-secondary" type="button" [disabled]="page <= 1 || loading" (click)="goToPage(page - 1)">Previous</button>
               <button class="admin-button-secondary" type="button" [disabled]="page >= totalPages || loading" (click)="goToPage(page + 1)">Next</button>
             </div>
-          </section>
-        </div>
+        </section>
 
         <form class="admin-panel space-y-5 p-5" (ngSubmit)="saveUser()">
           <div>
             <p class="text-sm uppercase tracking-[0.24em] text-base-content/60">{{ editingId ? 'Edit user' : 'Create user' }}</p>
-            <h3 class="mt-2 text-xl font-bold text-white">{{ form.name || 'User record' }}</h3>
-            <p class="mt-2 text-xs leading-5 text-base-content/60">This edits the database record only and does not create a new Clerk account.</p>
+            <h3 class="mt-2 text-xl font-bold text-base-content">{{ form.name || 'User record' }}</h3>
+            <p class="mt-2 text-xs leading-5 text-base-content/60">This section sits under the users table and uses the same full page width.</p>
           </div>
 
-          <label class="block space-y-2">
-            <span class="text-sm font-semibold text-base-content/75">Name</span>
-            <input class="admin-input" required [(ngModel)]="form.name" name="name" />
-          </label>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <label class="block space-y-2">
+              <span class="text-sm font-semibold text-base-content/75">Name</span>
+              <input class="admin-input" required [(ngModel)]="form.name" name="name" />
+            </label>
 
-          <label class="block space-y-2">
-            <span class="text-sm font-semibold text-base-content/75">Email</span>
-            <input class="admin-input" required type="email" [(ngModel)]="form.email" name="email" />
-          </label>
+            <label class="block space-y-2">
+              <span class="text-sm font-semibold text-base-content/75">Email</span>
+              <input class="admin-input" required type="email" [(ngModel)]="form.email" name="email" />
+            </label>
 
-          <label class="block space-y-2">
-            <span class="text-sm font-semibold text-base-content/75">Clerk ID</span>
-            <input class="admin-input" [required]="!!editingId" placeholder="Generated automatically for local users" [(ngModel)]="form.clerkId" name="clerkId" />
-          </label>
-
-          <label class="block space-y-2">
-            <span class="text-sm font-semibold text-base-content/75">Image URL</span>
-            <input class="admin-input" [(ngModel)]="form.profileImage" name="profileImage" />
-          </label>
+            <label class="block space-y-2 lg:col-span-2">
+              <span class="text-sm font-semibold text-base-content/75">Image URL</span>
+              <input class="admin-input" [(ngModel)]="form.profileImage" name="profileImage" />
+            </label>
+          </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="space-y-2">
               <span class="text-sm font-semibold text-base-content/75">Level</span>
-              <select class="admin-input" [(ngModel)]="form.level" name="level">
+              <select class="select select-bordered w-full" [(ngModel)]="form.level" name="level">
                 <option value="Entry-Level">Entry-Level</option>
                 <option value="Junior">Junior</option>
                 <option value="Intermediate">Intermediate</option>
@@ -226,7 +215,6 @@ export class UsersPageComponent implements OnInit {
     this.form = {
       name: user.name || "",
       email: user.email || "",
-      clerkId: user.clerkId || "",
       profileImage: user.profileImage || "",
       role: user.role || "user",
       score: user.score || 0,

@@ -1,4 +1,4 @@
-﻿import { CommonModule } from "@angular/common";
+import { CommonModule } from "@angular/common";
 import { Component, DestroyRef, OnInit, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
@@ -15,10 +15,11 @@ interface NavItem {
 }
 
 type AdminDensity = "comfortable" | "compact";
+type AdminTheme = "corporate" | "night";
 
 const MAIN_THEME_STORAGE_KEY = "provelt-theme";
 const ADMIN_DENSITY_STORAGE_KEY = "provelt-admin-density";
-const DEFAULT_THEME = "proveit";
+const DEFAULT_THEME: AdminTheme = "corporate";
 
 @Component({
   selector: "app-admin-layout",
@@ -42,8 +43,8 @@ const DEFAULT_THEME = "proveit";
         >
           <div class="admin-sidebar-header flex items-center justify-between gap-3 px-5">
             <div class="flex items-center gap-3 overflow-hidden">
-              <div class="admin-brand-mark grid h-11 w-11 place-items-center rounded-2xl text-xl font-black">
-                P
+              <div class="admin-brand-mark grid h-11 w-11 place-items-center overflow-hidden rounded-2xl">
+                <img src="/proveit-admin-logo.png" alt="ProveIt" class="h-full w-full object-cover" />
               </div>
               <div class="min-w-0">
                 <p class="text-xl font-extrabold tracking-tight">ProveIt</p>
@@ -67,14 +68,6 @@ const DEFAULT_THEME = "proveit";
           </nav>
 
           <div class="space-y-3 border-t border-base-300 px-3 py-4">
-            <div class="admin-session-card rounded-2xl border border-base-300 p-4">
-              <p class="text-sm font-semibold text-base-content">{{ text.adminAccess }}</p>
-              <p class="mt-1 text-xs leading-5 text-base-content/60">{{ text.sharedSession }}</p>
-            </div>
-            <a class="admin-button-secondary w-full justify-start" [href]="mainAppUrl">
-              <span>↗</span>
-              <span>{{ text.backToSite }}</span>
-            </a>
             <button class="admin-button-secondary w-full justify-start" type="button" (click)="logout()">
               <span>⎋</span>
               <span>{{ text.logout }}</span>
@@ -94,22 +87,20 @@ const DEFAULT_THEME = "proveit";
               </div>
 
               <div class="flex flex-col gap-3 md:flex-row md:items-center">
-                <label class="admin-search-field">
-                  <span>⌕</span>
-                  <input type="search" [placeholder]="text.search" />
-                </label>
+                <a class="admin-home-link" [href]="mainAppUrl" [attr.aria-label]="text.home" [title]="text.home">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 10.5 9-7 9 7"></path>
+                    <path d="M5 9.5V21h14V9.5"></path>
+                    <path d="M9 21v-7h6v7"></path>
+                  </svg>
+                </a>
 
-                <label class="admin-theme-select">
-                  <span>{{ text.theme }}</span>
-                  <select [ngModel]="currentTheme" (ngModelChange)="setTheme($event)">
-                    <option *ngFor="let theme of themes" [value]="theme">{{ theme }}</option>
-                  </select>
-                </label>
-
-                <div class="admin-segmented" role="group" [attr.aria-label]="text.dataView">
-                  <button type="button" [class.active]="currentDensity === 'comfortable'" (click)="setDensity('comfortable')">{{ text.comfortable }}</button>
-                  <button type="button" [class.active]="currentDensity === 'compact'" (click)="setDensity('compact')">{{ text.compact }}</button>
-                </div>
+                <button class="admin-theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="text.toggleTheme">
+                  <span class="admin-theme-toggle-track">
+                    <span class="admin-theme-toggle-thumb" [class.is-dark]="currentTheme === 'night'"></span>
+                  </span>
+                  <span>{{ currentTheme === 'night' ? text.dark : text.light }}</span>
+                </button>
 
                 <span class="admin-chip">{{ text.admin }}</span>
                 <span class="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-400 sm:inline-flex">{{ adminEmail }}</span>
@@ -135,40 +126,9 @@ export class AdminLayoutComponent implements OnInit {
   pageTitle = "Overview";
   adminEmail = environment.adminEmail;
   mainAppUrl = environment.mainAppUrl;
-  currentTheme = DEFAULT_THEME;
-  currentDensity: AdminDensity = "comfortable";
-  themes = [
-    "proveit",
-    "forest",
-    "nord",
-    "night",
-    "business",
-    "luxury",
-    "dracula",
-    "emerald",
-    "cupcake",
-    "corporate",
-    "synthwave",
-    "retro",
-    "cyberpunk",
-    "valentine",
-    "halloween",
-    "garden",
-    "aqua",
-    "lofi",
-    "pastel",
-    "fantasy",
-    "wireframe",
-    "black",
-    "cmyk",
-    "autumn",
-    "acid",
-    "lemonade",
-    "coffee",
-    "winter",
-    "dim",
-    "sunset",
-  ];
+  currentTheme: AdminTheme = DEFAULT_THEME;
+  currentDensity: AdminDensity = "compact";
+
 
   navItems: NavItem[] = [
     { label: "Overview", path: "/dashboard", icon: "▣" },
@@ -177,27 +137,26 @@ export class AdminLayoutComponent implements OnInit {
     { label: "AI interviews", path: "/ai-interviews", icon: "✦" },
     { label: "Problems", path: "/problems", icon: "⌘" },
     { label: "Submissions", path: "/submissions", icon: "✓" },
+    { label: "Leaderboard", path: "/leaderboard", icon: "★" },
+    { label: "Subscriptions", path: "/subscriptions", icon: "◉" },
     { label: "Blog", path: "/blog-posts", icon: "✎" },
   ];
 
   readonly text = {
     portal: "Admin portal",
-    adminAccess: "Admin access",
-    sharedSession: "Session is shared with Clerk on the main website.",
-    backToSite: "Back to website",
+    home: "Back to main app",
     logout: "Sign out",
     openMenu: "Open menu",
-    search: "Quick search...",
-    theme: "Theme",
-    dataView: "Data view",
-    comfortable: "Comfort",
-    compact: "Compact",
+    toggleTheme: "Toggle dark or light mode",
+    light: "Light",
+    dark: "Dark",
     admin: "Admin",
   } as const;
 
   ngOnInit(): void {
-    this.currentTheme = this.readThemePreference();
-    this.currentDensity = this.readPreference<AdminDensity>(ADMIN_DENSITY_STORAGE_KEY, "comfortable", ["comfortable", "compact"]);
+    this.currentTheme = this.readPreference<AdminTheme>(MAIN_THEME_STORAGE_KEY, DEFAULT_THEME, ["corporate", "night"]);
+    this.currentDensity = "compact";
+    localStorage.setItem(ADMIN_DENSITY_STORAGE_KEY, this.currentDensity);
     this.applyPreferences();
     this.updateTitle();
 
@@ -216,16 +175,16 @@ export class AdminLayoutComponent implements OnInit {
     this.mobileMenuOpen = false;
   }
 
-  setTheme(theme: string): void {
-    if (!this.themes.includes(theme)) return;
-    this.currentTheme = theme;
-    localStorage.setItem(MAIN_THEME_STORAGE_KEY, theme);
-    this.applyPreferences();
-  }
 
   setDensity(density: AdminDensity): void {
     this.currentDensity = density;
     localStorage.setItem(ADMIN_DENSITY_STORAGE_KEY, density);
+    this.applyPreferences();
+  }
+
+  toggleTheme(): void {
+    this.currentTheme = this.currentTheme === "night" ? "corporate" : "night";
+    localStorage.setItem(MAIN_THEME_STORAGE_KEY, this.currentTheme);
     this.applyPreferences();
   }
 
@@ -261,8 +220,4 @@ export class AdminLayoutComponent implements OnInit {
     return value && allowed.includes(value) ? value : fallback;
   }
 
-  private readThemePreference(): string {
-    const stored = localStorage.getItem(MAIN_THEME_STORAGE_KEY);
-    return stored && this.themes.includes(stored) ? stored : DEFAULT_THEME;
-  }
 }

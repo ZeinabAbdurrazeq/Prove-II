@@ -1,0 +1,1088 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 14 /Kids [6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R 20 0 R 22 0 R 24 0 R 26 0 R 28 0 R 30 0 R 32 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+5 0 obj
+<< /Length 5387 >>
+stream
+BT /F1 18 Tf 42 750.00 Td (ProveIt AI Interview Cycle - Code Walkthrough) Tj ET
+BT /F1 10 Tf 42 727.00 Td (Each section captures a code block, explains it, then moves to the next block.) Tj ET
+BT /F1 10 Tf 42 714.00 Td (Generated for the Zara recruiter-agent AI interview flow.) Tj ET
+BT /F1 14 Tf 42 685.00 Td (1. CV upload starts the AI cycle) Tj ET
+BT /F1 9 Tf 42 667.00 Td (Location: backend/src/controllers/aiInterviewController.js:62-76) Tj ET
+BT /F2 7.2 Tf 42 651.00 Td (  62 | export async function uploadCV\(req, res\) {) Tj ET
+BT /F2 7.2 Tf 42 641.80 Td (  63 |   try {) Tj ET
+BT /F2 7.2 Tf 42 632.60 Td (  64 |     if \(!req.file\) {) Tj ET
+BT /F2 7.2 Tf 42 623.40 Td (  65 |       return res.status\(400\).json\({ msg: "No CV file uploaded" }\);) Tj ET
+BT /F2 7.2 Tf 42 614.20 Td (  66 |     }) Tj ET
+BT /F2 7.2 Tf 42 605.00 Td (  67 | ) Tj ET
+BT /F2 7.2 Tf 42 595.80 Td (  68 |     if \(req.file.mimetype !== "application/pdf"\) {) Tj ET
+BT /F2 7.2 Tf 42 586.60 Td (  69 |       return res.status\(400\).json\({ msg: "Only PDF files are allowed" }\);) Tj ET
+BT /F2 7.2 Tf 42 577.40 Td (  70 |     }) Tj ET
+BT /F2 7.2 Tf 42 568.20 Td (  71 | ) Tj ET
+BT /F2 7.2 Tf 42 559.00 Td (  72 |     // In mock mode we bypass PDF parsing entirely so production testing never) Tj ET
+BT /F2 7.2 Tf 42 549.80 Td (  73 |     // depends on pdf-parse or mupdf.) Tj ET
+BT /F2 7.2 Tf 42 540.60 Td (  74 |     let analysis;) Tj ET
+BT /F2 7.2 Tf 42 531.40 Td (  75 |     if \(OPENAI_MOCK_MODE\) {) Tj ET
+BT /F2 7.2 Tf 42 522.20 Td (  76 |       analysis = await analyzeCv\("mock cv upload"\);) Tj ET
+BT /F1 10 Tf 42 508.00 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 495.00 Td (- Line 62 defines the uploadCV controller for POST /api/ai-interview/upload-cv.) Tj ET
+BT /F1 10 Tf 42 482.00 Td (- Lines 64-70 validate that a PDF file exists and reject invalid uploads early.) Tj ET
+BT /F1 10 Tf 42 469.00 Td (- Lines 75-76 switch to local mock CV analysis when OPENAI_MOCK_MODE is true.) Tj ET
+BT /F1 14 Tf 42 442.00 Td (2. CV text is extracted and analyzed) Tj ET
+BT /F1 9 Tf 42 424.00 Td (Location: backend/src/controllers/aiInterviewController.js:78-123) Tj ET
+BT /F2 7.2 Tf 42 408.00 Td (  78 |       // Extract text from the uploaded PDF buffer.) Tj ET
+BT /F2 7.2 Tf 42 398.80 Td (  79 |       let cvText = "";) Tj ET
+BT /F2 7.2 Tf 42 389.60 Td (  80 |       try {) Tj ET
+BT /F2 7.2 Tf 42 380.40 Td (  81 |         const parsed = await pdfParse\(req.file.buffer\);) Tj ET
+BT /F2 7.2 Tf 42 371.20 Td (  82 |         cvText = \(parsed.text || ""\).trim\(\);) Tj ET
+BT /F2 7.2 Tf 42 362.00 Td (  83 |       } catch \(error\) {) Tj ET
+BT /F2 7.2 Tf 42 352.80 Td (  84 |         // A parse failure here is not fatal: we can still try the image fallback.) Tj ET
+BT /F2 7.2 Tf 42 343.60 Td (  85 |         console.error\("Failed to parse PDF text layer:", error.message\);) Tj ET
+BT /F2 7.2 Tf 42 334.40 Td (  86 |       }) Tj ET
+BT /F2 7.2 Tf 42 325.20 Td (  87 | ) Tj ET
+BT /F2 7.2 Tf 42 316.00 Td (  88 |       // Analyze the CV. Prefer the extracted text; if the PDF has no text layer) Tj ET
+BT /F2 7.2 Tf 42 306.80 Td (  89 |       // \(scanned / image-based\), fall back to rendering the pages to images and) Tj ET
+BT /F2 7.2 Tf 42 297.60 Td (  90 |       // reading them with gpt-4o-mini vision.) Tj ET
+BT /F2 7.2 Tf 42 288.40 Td (  91 |       if \(cvText\) {) Tj ET
+BT /F2 7.2 Tf 42 279.20 Td (  92 |         analysis = await analyzeCv\(cvText\);) Tj ET
+BT /F2 7.2 Tf 42 270.00 Td (  93 |       } else {) Tj ET
+BT /F2 7.2 Tf 42 260.80 Td (  94 |         try {) Tj ET
+BT /F2 7.2 Tf 42 251.60 Td (  95 |           const imageBuffers = await pdfToPngBuffers\(req.file.buffer\);) Tj ET
+BT /F2 7.2 Tf 42 242.40 Td (  96 |           analysis = await analyzeCvFromImages\(imageBuffers\);) Tj ET
+BT /F2 7.2 Tf 42 233.20 Td (  97 |         } catch \(error\) {) Tj ET
+BT /F2 7.2 Tf 42 224.00 Td (  98 |           console.error\("Image-based CV analysis failed:", error.message\);) Tj ET
+BT /F2 7.2 Tf 42 214.80 Td (  99 |           return res.status\(400\).json\({) Tj ET
+BT /F2 7.2 Tf 42 205.60 Td ( 100 |             msg:) Tj ET
+BT /F2 7.2 Tf 42 196.40 Td ( 101 |               "We couldn't read this PDF. Please make sure it is a valid CV and " +) Tj ET
+BT /F2 7.2 Tf 42 187.20 Td ( 102 |               "try again, ideally a PDF where the text can be selected.",) Tj ET
+BT /F2 7.2 Tf 42 178.00 Td ( 103 |           }\);) Tj ET
+BT /F2 7.2 Tf 42 168.80 Td ( 104 |         }) Tj ET
+BT /F2 7.2 Tf 42 159.60 Td ( 105 |       }) Tj ET
+BT /F2 7.2 Tf 42 150.40 Td ( 106 |     }) Tj ET
+BT /F2 7.2 Tf 42 141.20 Td ( 107 | ) Tj ET
+BT /F2 7.2 Tf 42 132.00 Td ( 108 |     const cvSummary = [) Tj ET
+BT /F2 7.2 Tf 42 122.80 Td ( 109 |       `Primary field: ${analysis.primaryField}`,) Tj ET
+BT /F2 7.2 Tf 42 113.60 Td ( 110 |       `Years of experience: ${analysis.yearsOfExperience}`,) Tj ET
+BT /F2 7.2 Tf 42 104.40 Td ( 111 |       `Key skills: ${\(analysis.keySkills || []\).join\(", "\)}`,) Tj ET
+BT /F2 7.2 Tf 42 95.20 Td ( 112 |       `Strongest areas: ${\(analysis.strongestAreas || []\).join\(", "\)}`,) Tj ET
+BT /F2 7.2 Tf 42 86.00 Td ( 113 |       `Notable technologies: ${\(analysis.notableTechnologies || []\).join\(", "\)}`,) Tj ET
+BT /F2 7.2 Tf 42 76.80 Td ( 114 |     ].join\("\\n"\);) Tj ET
+BT /F2 7.2 Tf 42 67.60 Td ( 115 | ) Tj ET
+BT /F2 7.2 Tf 42 58.40 Td ( 116 |     const profilePayload = {) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 5305 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 117 |       primaryField: analysis.primaryField,) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 118 |       yearsOfExperience: analysis.yearsOfExperience,) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 119 |       keySkills: analysis.keySkills || [],) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 120 |       strongestAreas: analysis.strongestAreas || [],) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 121 |       notableTechnologies: analysis.notableTechnologies || [],) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 122 |       cvSummary,) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 123 |     };) Tj ET
+BT /F1 10 Tf 42 680.60 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 667.60 Td (- Lines 79-82 extract selectable text from the PDF buffer.) Tj ET
+BT /F1 10 Tf 42 654.60 Td (- Lines 91-92 send extracted CV text to the AI CV analyzer.) Tj ET
+BT /F1 10 Tf 42 641.60 Td (- Lines 95-96 use image-based CV analysis if the PDF has no text layer.) Tj ET
+BT /F1 10 Tf 42 628.60 Td (- Lines 108-114 build the concise CV summary reused during the interview.) Tj ET
+BT /F1 10 Tf 42 615.60 Td (- Lines 116-123 prepare the profile payload saved for this user.) Tj ET
+BT /F1 14 Tf 42 588.60 Td (3. The CV analyzer calls the AI provider) Tj ET
+BT /F1 9 Tf 42 570.60 Td (Location: backend/src/lib/openai.js:329-356) Tj ET
+BT /F2 7.2 Tf 42 554.60 Td ( 329 | export async function analyzeCv\(cvText\) {) Tj ET
+BT /F2 7.2 Tf 42 545.40 Td ( 330 |   try {) Tj ET
+BT /F2 7.2 Tf 42 536.20 Td ( 331 |     if \(MOCK_MODE\) {) Tj ET
+BT /F2 7.2 Tf 42 527.00 Td ( 332 |       return buildMockAnalysis\(cvText\);) Tj ET
+BT /F2 7.2 Tf 42 517.80 Td ( 333 |     }) Tj ET
+BT /F2 7.2 Tf 42 508.60 Td ( 334 | ) Tj ET
+BT /F2 7.2 Tf 42 499.40 Td ( 335 |     const systemPrompt = "You are an expert technical recruiter. You analyze software engineering) Tj ET
+BT /F2 7.2 Tf 42 490.20 Td (CVs and extract a concise structured summary. Respond with ONLY valid JSON and nothing else.";) Tj ET
+BT /F2 7.2 Tf 42 481.00 Td ( 336 |     const messages = [) Tj ET
+BT /F2 7.2 Tf 42 471.80 Td ( 337 |       {) Tj ET
+BT /F2 7.2 Tf 42 462.60 Td ( 338 |         role: "user",) Tj ET
+BT /F2 7.2 Tf 42 453.40 Td ( 339 |         content:) Tj ET
+BT /F2 7.2 Tf 42 444.20 Td ( 340 |           "Analyze the following CV and return a JSON object with this exact " +) Tj ET
+BT /F2 7.2 Tf 42 435.00 Td ( 341 |           "structure:\\n" +) Tj ET
+BT /F2 7.2 Tf 42 425.80 Td ( 342 |           "{\\n" +) Tj ET
+BT /F2 7.2 Tf 42 416.60 Td ( 343 |           '  "primaryField": string \(one of: frontend, backend, fullstack, "data science", mobile,) Tj ET
+BT /F2 7.2 Tf 42 407.40 Td (devops\),\\n' +) Tj ET
+BT /F2 7.2 Tf 42 398.20 Td ( 344 |           '  "yearsOfExperience": number,\\n' +) Tj ET
+BT /F2 7.2 Tf 42 389.00 Td ( 345 |           '  "keySkills": string[],\\n' +) Tj ET
+BT /F2 7.2 Tf 42 379.80 Td ( 346 |           '  "strongestAreas": string[],\\n' +) Tj ET
+BT /F2 7.2 Tf 42 370.60 Td ( 347 |           '  "notableTechnologies": string[]\\n' +) Tj ET
+BT /F2 7.2 Tf 42 361.40 Td ( 348 |           "}\\n\\n" +) Tj ET
+BT /F2 7.2 Tf 42 352.20 Td ( 349 |           "Respond with ONLY valid JSON and nothing else.\\n\\n" +) Tj ET
+BT /F2 7.2 Tf 42 343.00 Td ( 350 |           "CV:\\n" +) Tj ET
+BT /F2 7.2 Tf 42 333.80 Td ( 351 |           cvText,) Tj ET
+BT /F2 7.2 Tf 42 324.60 Td ( 352 |       }) Tj ET
+BT /F2 7.2 Tf 42 315.40 Td ( 353 |     ];) Tj ET
+BT /F2 7.2 Tf 42 306.20 Td ( 354 | ) Tj ET
+BT /F2 7.2 Tf 42 297.00 Td ( 355 |     const responseData = await callITIModel\(messages, systemPrompt, false\);) Tj ET
+BT /F2 7.2 Tf 42 287.80 Td ( 356 |     return parseJsonResponse\(responseData, "analyzing the CV"\);) Tj ET
+BT /F1 10 Tf 42 273.60 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 260.60 Td (- Line 329 defines analyzeCv, which turns CV text into structured profile data.) Tj ET
+BT /F1 10 Tf 42 247.60 Td (- Lines 331-333 return mock profile data when local mock mode is enabled.) Tj ET
+BT /F1 10 Tf 42 234.60 Td (- Lines 335-353 build a strict JSON prompt for the AI model.) Tj ET
+BT /F1 10 Tf 42 221.60 Td (- Line 355 calls the configured ITI provider.) Tj ET
+BT /F1 10 Tf 42 208.60 Td (- Line 356 parses the AI response as JSON.) Tj ET
+BT /F1 14 Tf 42 181.60 Td (4. Start Interview loads the candidate profile) Tj ET
+BT /F1 9 Tf 42 163.60 Td (Location: backend/src/controllers/aiInterviewController.js:223-250) Tj ET
+BT /F2 7.2 Tf 42 147.60 Td ( 223 | export async function startInterview\(req, res\) {) Tj ET
+BT /F2 7.2 Tf 42 138.40 Td ( 224 |   try {) Tj ET
+BT /F2 7.2 Tf 42 129.20 Td ( 225 |     const dbProfile = await CandidateProfile.findOne\({ userId: req.user._id }\);) Tj ET
+BT /F2 7.2 Tf 42 120.00 Td ( 226 |     const mockProfile = OPENAI_MOCK_MODE ? req.body?.mockProfile || null : null;) Tj ET
+BT /F2 7.2 Tf 42 110.80 Td ( 227 |     const profile = dbProfile || mockProfile;) Tj ET
+BT /F2 7.2 Tf 42 101.60 Td ( 228 |     if \(!profile\) {) Tj ET
+BT /F2 7.2 Tf 42 92.40 Td ( 229 |       return res) Tj ET
+BT /F2 7.2 Tf 42 83.20 Td ( 230 |         .status\(400\)) Tj ET
+BT /F2 7.2 Tf 42 74.00 Td ( 231 |         .json\({ msg: "Please upload your CV before starting an interview" }\);) Tj ET
+BT /F2 7.2 Tf 42 64.80 Td ( 232 |     }// Paywall \(no-op until enabled\).) Tj ET
+BT /F2 7.2 Tf 42 55.60 Td ( 233 |     const quota = await checkAndConsumeInterviewQuota\(req.user._id\);) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 5385 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 234 |     if \(!quota.canProceed\) {) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 235 |       return res.status\(402\).json\({) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 236 |         msg: quota.message,) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 237 |         upgradeRequired: true,) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 238 |       }\);) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 239 |     }) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 240 | ) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td ( 241 |     // Generate fresh, stack-specific spoken questions with GPT, biased toward) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td ( 242 |     // the candidate's previously weak topics so the interview adapts over time.) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td ( 243 |     const weakTopics = profile.topicWeaknesses) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td ( 244 |       ? Object.keys\(profile.topicWeaknesses\)) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td ( 245 |       : [];) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td ( 246 |     const language = String\(req.body.language || "en"\)) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td ( 247 |       .toLowerCase\(\)) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td ( 248 |       .startsWith\("ar"\)) Tj ET
+BT /F2 7.2 Tf 42 612.00 Td ( 249 |       ? "ar") Tj ET
+BT /F2 7.2 Tf 42 602.80 Td ( 250 |       : "en";) Tj ET
+BT /F1 10 Tf 42 588.60 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 575.60 Td (- Line 223 defines startInterview for POST /api/ai-interview/start.) Tj ET
+BT /F1 10 Tf 42 562.60 Td (- Lines 225-227 load the saved CandidateProfile or mock profile.) Tj ET
+BT /F1 10 Tf 42 549.60 Td (- Lines 228-231 stop the flow if the user has not uploaded a CV.) Tj ET
+BT /F1 10 Tf 42 536.60 Td (- Lines 243-250 prepare weak topics and language for question generation.) Tj ET
+BT /F1 14 Tf 42 509.60 Td (5. Start Interview generates Zara questions) Tj ET
+BT /F1 9 Tf 42 491.60 Td (Location: backend/src/controllers/aiInterviewController.js:252-313) Tj ET
+BT /F2 7.2 Tf 42 475.60 Td ( 252 |     let selected;) Tj ET
+BT /F2 7.2 Tf 42 466.40 Td ( 253 |     const targetRole = String\(req.body.targetRole || profile.primaryField || ""\);) Tj ET
+BT /F2 7.2 Tf 42 457.20 Td ( 254 |     const jobDescription = String\(req.body.jobDescription || ""\);) Tj ET
+BT /F2 7.2 Tf 42 448.00 Td ( 255 |     try {) Tj ET
+BT /F2 7.2 Tf 42 438.80 Td ( 256 |       selected = await prepareInterviewQuestions\({) Tj ET
+BT /F2 7.2 Tf 42 429.60 Td ( 257 |         profile,) Tj ET
+BT /F2 7.2 Tf 42 420.40 Td ( 258 |         weakTopics,) Tj ET
+BT /F2 7.2 Tf 42 411.20 Td ( 259 |         language,) Tj ET
+BT /F2 7.2 Tf 42 402.00 Td ( 260 |         targetRole,) Tj ET
+BT /F2 7.2 Tf 42 392.80 Td ( 261 |         jobDescription,) Tj ET
+BT /F2 7.2 Tf 42 383.60 Td ( 262 |       }\);) Tj ET
+BT /F2 7.2 Tf 42 374.40 Td ( 263 |     } catch \(genError\) {) Tj ET
+BT /F2 7.2 Tf 42 365.20 Td ( 264 |       console.error\("Question generation failed:", genError.message\);) Tj ET
+BT /F2 7.2 Tf 42 356.00 Td ( 265 |       return res) Tj ET
+BT /F2 7.2 Tf 42 346.80 Td ( 266 |         .status\(500\)) Tj ET
+BT /F2 7.2 Tf 42 337.60 Td ( 267 |         .json\({ msg: "Could not prepare your interview, please try again" }\);) Tj ET
+BT /F2 7.2 Tf 42 328.40 Td ( 268 |     }) Tj ET
+BT /F2 7.2 Tf 42 319.20 Td ( 269 | ) Tj ET
+BT /F2 7.2 Tf 42 310.00 Td ( 270 |     if \(!selected || selected.length < MIN_QUESTIONS\) {) Tj ET
+BT /F2 7.2 Tf 42 300.80 Td ( 271 |       return res.status\(404\).json\({) Tj ET
+BT /F2 7.2 Tf 42 291.60 Td ( 272 |         msg: "No questions available, please contact support",) Tj ET
+BT /F2 7.2 Tf 42 282.40 Td ( 273 |       }\);) Tj ET
+BT /F2 7.2 Tf 42 273.20 Td ( 274 |     }) Tj ET
+BT /F2 7.2 Tf 42 264.00 Td ( 275 | ) Tj ET
+BT /F2 7.2 Tf 42 254.80 Td ( 276 |     const session = await AIInterviewSession.create\({) Tj ET
+BT /F2 7.2 Tf 42 245.60 Td ( 277 |       userId: req.user._id,) Tj ET
+BT /F2 7.2 Tf 42 236.40 Td ( 278 |       cvAnalysis: {) Tj ET
+BT /F2 7.2 Tf 42 227.20 Td ( 279 |         primaryField: profile.primaryField,) Tj ET
+BT /F2 7.2 Tf 42 218.00 Td ( 280 |         yearsOfExperience: profile.yearsOfExperience,) Tj ET
+BT /F2 7.2 Tf 42 208.80 Td ( 281 |         keySkills: profile.keySkills,) Tj ET
+BT /F2 7.2 Tf 42 199.60 Td ( 282 |         strongestAreas: profile.strongestAreas,) Tj ET
+BT /F2 7.2 Tf 42 190.40 Td ( 283 |         notableTechnologies: profile.notableTechnologies,) Tj ET
+BT /F2 7.2 Tf 42 181.20 Td ( 284 |         cvSummary: profile.cvSummary,) Tj ET
+BT /F2 7.2 Tf 42 172.00 Td ( 285 |       },) Tj ET
+BT /F2 7.2 Tf 42 162.80 Td ( 286 |       questions: selected.map\(\(q\) => \({) Tj ET
+BT /F2 7.2 Tf 42 153.60 Td ( 287 |         questionText: q.questionText,) Tj ET
+BT /F2 7.2 Tf 42 144.40 Td ( 288 |         topic: q.topic || "general",) Tj ET
+BT /F2 7.2 Tf 42 135.20 Td ( 289 |         difficulty: q.difficulty || "medium",) Tj ET
+BT /F2 7.2 Tf 42 126.00 Td ( 290 |         stage: q.stage || "technical",) Tj ET
+BT /F2 7.2 Tf 42 116.80 Td ( 291 |       }\)\),) Tj ET
+BT /F2 7.2 Tf 42 107.60 Td ( 292 |       language,) Tj ET
+BT /F2 7.2 Tf 42 98.40 Td ( 293 |       interviewerName: "Zara",) Tj ET
+BT /F2 7.2 Tf 42 89.20 Td ( 294 |       currentStage: selected[0]?.stage || "intro",) Tj ET
+BT /F2 7.2 Tf 42 80.00 Td ( 295 |       targetRole,) Tj ET
+BT /F2 7.2 Tf 42 70.80 Td ( 296 |       jobDescription,) Tj ET
+BT /F2 7.2 Tf 42 61.60 Td ( 297 |       stageHistory: [) Tj ET
+BT /F2 7.2 Tf 42 52.40 Td ( 298 |         {) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Length 4672 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 299 |           stage: selected[0]?.stage || "intro",) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 300 |           questionIndex: 0,) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 301 |           enteredAt: new Date\(\),) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 302 |         },) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 303 |       ],) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 304 |       status: "in-progress",) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 305 |     }\);) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td ( 306 |     const firstMeta = buildQuestionResponseMeta\(session.questions[0], 0\);) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td ( 307 | ) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td ( 308 |     res.status\(201\).json\({) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td ( 309 |       sessionId: session._id,) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td ( 310 |       totalQuestions: session.questions.length,) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td ( 311 |       firstQuestion: session.questions[0].questionText,) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td ( 312 |       ...firstMeta,) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td ( 313 |     }\);) Tj ET
+BT /F1 10 Tf 42 607.00 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 594.00 Td (- Lines 253-254 read optional target role and job description.) Tj ET
+BT /F1 10 Tf 42 581.00 Td (- Lines 255-262 call prepareInterviewQuestions to generate staged questions.) Tj ET
+BT /F1 10 Tf 42 568.00 Td (- Lines 276-305 create the AIInterviewSession document.) Tj ET
+BT /F1 10 Tf 42 555.00 Td (- Lines 286-291 store question text, topic, difficulty, and stage.) Tj ET
+BT /F1 10 Tf 42 542.00 Td (- Lines 308-313 return the first question and Zara stage metadata to the frontend.) Tj ET
+BT /F1 14 Tf 42 515.00 Td (6. Service layer normalizes each generated question) Tj ET
+BT /F1 9 Tf 42 497.00 Td (Location: backend/src/ai/aiInterviewService.js:11-37) Tj ET
+BT /F2 7.2 Tf 42 481.00 Td (  11 | export async function prepareInterviewQuestions\({) Tj ET
+BT /F2 7.2 Tf 42 471.80 Td (  12 |   profile,) Tj ET
+BT /F2 7.2 Tf 42 462.60 Td (  13 |   weakTopics = [],) Tj ET
+BT /F2 7.2 Tf 42 453.40 Td (  14 |   language = "en",) Tj ET
+BT /F2 7.2 Tf 42 444.20 Td (  15 |   jobDescription = "",) Tj ET
+BT /F2 7.2 Tf 42 435.00 Td (  16 |   targetRole = "",) Tj ET
+BT /F2 7.2 Tf 42 425.80 Td (  17 | } = {}\) {) Tj ET
+BT /F2 7.2 Tf 42 416.60 Td (  18 |   const generated = await generateInterviewQuestions\({) Tj ET
+BT /F2 7.2 Tf 42 407.40 Td (  19 |     cvSummary: profile?.cvSummary,) Tj ET
+BT /F2 7.2 Tf 42 398.20 Td (  20 |     primaryField: profile?.primaryField,) Tj ET
+BT /F2 7.2 Tf 42 389.00 Td (  21 |     weakTopics,) Tj ET
+BT /F2 7.2 Tf 42 379.80 Td (  22 |     language,) Tj ET
+BT /F2 7.2 Tf 42 370.60 Td (  23 |     jobDescription,) Tj ET
+BT /F2 7.2 Tf 42 361.40 Td (  24 |     targetRole,) Tj ET
+BT /F2 7.2 Tf 42 352.20 Td (  25 |   }\);) Tj ET
+BT /F2 7.2 Tf 42 343.00 Td (  26 | ) Tj ET
+BT /F2 7.2 Tf 42 333.80 Td (  27 |   return generated.map\(\(question, index\) => {) Tj ET
+BT /F2 7.2 Tf 42 324.60 Td (  28 |     const stage = getStageForQuestion\(index, question.stage\);) Tj ET
+BT /F2 7.2 Tf 42 315.40 Td (  29 | ) Tj ET
+BT /F2 7.2 Tf 42 306.20 Td (  30 |     return {) Tj ET
+BT /F2 7.2 Tf 42 297.00 Td (  31 |       questionText: question.questionText,) Tj ET
+BT /F2 7.2 Tf 42 287.80 Td (  32 |       topic: question.topic || stage,) Tj ET
+BT /F2 7.2 Tf 42 278.60 Td (  33 |       difficulty: question.difficulty || "medium",) Tj ET
+BT /F2 7.2 Tf 42 269.40 Td (  34 |       stage,) Tj ET
+BT /F2 7.2 Tf 42 260.20 Td (  35 |     };) Tj ET
+BT /F2 7.2 Tf 42 251.00 Td (  36 |   }\);) Tj ET
+BT /F2 7.2 Tf 42 241.80 Td (  37 | }) Tj ET
+BT /F1 10 Tf 42 227.60 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 214.60 Td (- Lines 11-17 define the clean service API for preparing questions.) Tj ET
+BT /F1 10 Tf 42 201.60 Td (- Lines 18-25 call generateInterviewQuestions with CV, role, JD, weak topics, and language.) Tj ET
+BT /F1 10 Tf 42 188.60 Td (- Line 28 resolves the interview stage for each question.) Tj ET
+BT /F1 10 Tf 42 175.60 Td (- Lines 30-35 normalize the final question object used by the session.) Tj ET
+BT /F1 14 Tf 42 148.60 Td (7. Question generation uses AI, then falls back safely) Tj ET
+BT /F1 9 Tf 42 130.60 Td (Location: backend/src/lib/openai.js:419-520) Tj ET
+BT /F2 7.2 Tf 42 114.60 Td ( 419 | export async function generateInterviewQuestions\({) Tj ET
+BT /F2 7.2 Tf 42 105.40 Td ( 420 |   cvSummary,) Tj ET
+BT /F2 7.2 Tf 42 96.20 Td ( 421 |   primaryField,) Tj ET
+BT /F2 7.2 Tf 42 87.00 Td ( 422 |   weakTopics = [],) Tj ET
+BT /F2 7.2 Tf 42 77.80 Td ( 423 |   language = "en",) Tj ET
+BT /F2 7.2 Tf 42 68.60 Td ( 424 |   jobDescription = "",) Tj ET
+BT /F2 7.2 Tf 42 59.40 Td ( 425 |   targetRole = "",) Tj ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 11 0 R >>
+endobj
+13 0 obj
+<< /Length 6095 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 426 | } = {}\) {) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 427 |   try {) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 428 |     if \(MOCK_MODE\) {) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 429 |       return buildMockQuestions\(primaryField, weakTopics, language\);) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 430 |     }) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 431 | ) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 432 |     const weakTopicsLine =) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td ( 433 |       weakTopics && weakTopics.length > 0) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td ( 434 |         ? `The candidate has previously been weaker in these topics, so ask MORE questions about) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td (them: ${weakTopics.join\(", "\)}.\\n\\n`) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td ( 435 |         : "";) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td ( 436 | ) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td ( 437 |     const arabic = isArabicLanguage\(language\);) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td ( 438 |     const systemPrompt = arabic) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td ( 439 |       ? "??? ????? ???? ????. ??? ????? ????? ?????? ????? ?????? ???????. ??? ?? ???? ???????) Tj ET
+BT /F2 7.2 Tf 42 612.00 Td (?????? ??????? ????? ??????? ??? ???? ?? ?????? ????? ?????. ??? ??? ????? JSON ?????.") Tj ET
+BT /F2 7.2 Tf 42 602.80 Td ( 440 |       : "You are an expert technical interviewer preparing a SPOKEN interview. You generate) Tj ET
+BT /F2 7.2 Tf 42 593.60 Td (up-to-date, relevant questions tailored to the candidate's tech stack using your own knowledge. The) Tj ET
+BT /F2 7.2 Tf 42 584.40 Td (questions are read aloud and answered by voice, so they must be conversational and must NEVER ask the) Tj ET
+BT /F2 7.2 Tf 42 575.20 Td (candidate to write or type code. Respond with ONLY valid JSON and nothing else.";) Tj ET
+BT /F2 7.2 Tf 42 566.00 Td ( 441 | ) Tj ET
+BT /F2 7.2 Tf 42 556.80 Td ( 442 |     const messages = [) Tj ET
+BT /F2 7.2 Tf 42 547.60 Td ( 443 |       {) Tj ET
+BT /F2 7.2 Tf 42 538.40 Td ( 444 |         role: "user",) Tj ET
+BT /F2 7.2 Tf 42 529.20 Td ( 445 |         content: arabic) Tj ET
+BT /F2 7.2 Tf 42 520.00 Td ( 446 |           ? `?????? ??????? ??????: ${primaryField}\\n\\n` +) Tj ET
+BT /F2 7.2 Tf 42 510.80 Td ( 447 |             `???????:\\n${cvSummary}\\n\\n` +) Tj ET
+BT /F2 7.2 Tf 42 501.60 Td ( 448 |             weakTopicsLine +) Tj ET
+BT /F2 7.2 Tf 42 492.40 Td ( 449 |             "???? ??? 5 ?7 ????? ?????? ????? ?????? ???? ??????? ?? ?????? ??? ??????. ???? JSON) Tj ET
+BT /F2 7.2 Tf 42 483.20 Td (??????? ??????:\\n" +) Tj ET
+BT /F2 7.2 Tf 42 474.00 Td ( 450 |             "{\\n" +) Tj ET
+BT /F2 7.2 Tf 42 464.80 Td ( 451 |             '  "questions": [\\n' +) Tj ET
+BT /F2 7.2 Tf 42 455.60 Td ( 452 |             "    {\\n" +) Tj ET
+BT /F2 7.2 Tf 42 446.40 Td ( 453 |             '      "questionText": string,\\n' +) Tj ET
+BT /F2 7.2 Tf 42 437.20 Td ( 454 |             '      "topic": string,\\n' +) Tj ET
+BT /F2 7.2 Tf 42 428.00 Td ( 455 |             '      "difficulty": string \(one of: easy, medium, hard\)\\n' +) Tj ET
+BT /F2 7.2 Tf 42 418.80 Td ( 456 |             "    }\\n" +) Tj ET
+BT /F2 7.2 Tf 42 409.60 Td ( 457 |             "  ]\\n" +) Tj ET
+BT /F2 7.2 Tf 42 400.40 Td ( 458 |             "}\\n\\n" +) Tj ET
+BT /F2 7.2 Tf 42 391.20 Td ( 459 |             "??? ??? ????? JSON ?????.") Tj ET
+BT /F2 7.2 Tf 42 382.00 Td ( 460 |           : `Candidate primary field: ${primaryField}\\n\\n` +) Tj ET
+BT /F2 7.2 Tf 42 372.80 Td ( 461 |             `Candidate background:\\n${cvSummary}\\n\\n` +) Tj ET
+BT /F2 7.2 Tf 42 363.60 Td ( 462 |             weakTopicsLine +) Tj ET
+BT /F2 7.2 Tf 42 354.40 Td ( 463 |             "Generate between 5 and 7 spoken interview questions tailored to " +) Tj ET
+BT /F2 7.2 Tf 42 345.20 Td ( 464 |             "this candidate's tech stack and experience, ramping from easier " +) Tj ET
+BT /F2 7.2 Tf 42 336.00 Td ( 465 |             "to harder. Return a JSON object with this exact structure:\\n" +) Tj ET
+BT /F2 7.2 Tf 42 326.80 Td ( 466 |             "{\\n" +) Tj ET
+BT /F2 7.2 Tf 42 317.60 Td ( 467 |             '  "questions": [\\n' +) Tj ET
+BT /F2 7.2 Tf 42 308.40 Td ( 468 |             "    {\\n" +) Tj ET
+BT /F2 7.2 Tf 42 299.20 Td ( 469 |             '      "questionText": string \(a spoken question, no code writing\),\\n' +) Tj ET
+BT /F2 7.2 Tf 42 290.00 Td ( 470 |             '      "topic": string \(a short kebab-case tag, e.g. "react-hooks", "system-design",) Tj ET
+BT /F2 7.2 Tf 42 280.80 Td ("sql-indexing"\),\\n' +) Tj ET
+BT /F2 7.2 Tf 42 271.60 Td ( 471 |             '      "difficulty": string \(one of: easy, medium, hard\)\\n' +) Tj ET
+BT /F2 7.2 Tf 42 262.40 Td ( 472 |             "    }\\n" +) Tj ET
+BT /F2 7.2 Tf 42 253.20 Td ( 473 |             "  ]\\n" +) Tj ET
+BT /F2 7.2 Tf 42 244.00 Td ( 474 |             "}\\n\\n" +) Tj ET
+BT /F2 7.2 Tf 42 234.80 Td ( 475 |             "Respond with ONLY valid JSON and nothing else.",) Tj ET
+BT /F2 7.2 Tf 42 225.60 Td ( 476 |       }) Tj ET
+BT /F2 7.2 Tf 42 216.40 Td ( 477 |     ];) Tj ET
+BT /F2 7.2 Tf 42 207.20 Td ( 478 | ) Tj ET
+BT /F2 7.2 Tf 42 198.00 Td ( 479 |     const responseData = await callITIModel\() Tj ET
+BT /F2 7.2 Tf 42 188.80 Td ( 480 |       [) Tj ET
+BT /F2 7.2 Tf 42 179.60 Td ( 481 |         {) Tj ET
+BT /F2 7.2 Tf 42 170.40 Td ( 482 |           role: "user",) Tj ET
+BT /F2 7.2 Tf 42 161.20 Td ( 483 |           content: buildQuestionPlanPrompt\({) Tj ET
+BT /F2 7.2 Tf 42 152.00 Td ( 484 |             cvSummary,) Tj ET
+BT /F2 7.2 Tf 42 142.80 Td ( 485 |             primaryField,) Tj ET
+BT /F2 7.2 Tf 42 133.60 Td ( 486 |             weakTopics,) Tj ET
+BT /F2 7.2 Tf 42 124.40 Td ( 487 |             language,) Tj ET
+BT /F2 7.2 Tf 42 115.20 Td ( 488 |             jobDescription,) Tj ET
+BT /F2 7.2 Tf 42 106.00 Td ( 489 |             targetRole,) Tj ET
+BT /F2 7.2 Tf 42 96.80 Td ( 490 |           }\),) Tj ET
+BT /F2 7.2 Tf 42 87.60 Td ( 491 |         },) Tj ET
+BT /F2 7.2 Tf 42 78.40 Td ( 492 |       ],) Tj ET
+BT /F2 7.2 Tf 42 69.20 Td ( 493 |       buildZaraSystemPrompt\(language\),) Tj ET
+BT /F2 7.2 Tf 42 60.00 Td ( 494 |       false,) Tj ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 13 0 R >>
+endobj
+15 0 obj
+<< /Length 5418 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 495 |     \);) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 496 |     const parsed = parseJsonResponse\(responseData, "generating interview questions"\);) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 497 |     const questions = Array.isArray\(parsed\) ? parsed : parsed.questions;) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 498 | ) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 499 |     const normalizedQuestions = \(questions || []\)) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 500 |       .filter\(\(q\) => q && q.questionText\)) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 501 |       .map\(\(q\) => \({) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td ( 502 |         questionText: String\(q.questionText\),) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td ( 503 |         topic: String\(q.topic || "general"\),) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td ( 504 |         difficulty: String\(q.difficulty || "medium"\).toLowerCase\(\),) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td ( 505 |         stage: String\(q.stage || ""\),) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td ( 506 |       }\)\)) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td ( 507 |       .slice\(0, 7\);) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td ( 508 | ) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td ( 509 |     if \(normalizedQuestions.length < 5\) {) Tj ET
+BT /F2 7.2 Tf 42 612.00 Td ( 510 |       console.error\() Tj ET
+BT /F2 7.2 Tf 42 602.80 Td ( 511 |         "ITI Gateway returned too few interview questions; using local Zara fallback.",) Tj ET
+BT /F2 7.2 Tf 42 593.60 Td ( 512 |       \);) Tj ET
+BT /F2 7.2 Tf 42 584.40 Td ( 513 |       return buildMockQuestions\(primaryField, weakTopics, language\);) Tj ET
+BT /F2 7.2 Tf 42 575.20 Td ( 514 |     }) Tj ET
+BT /F2 7.2 Tf 42 566.00 Td ( 515 | ) Tj ET
+BT /F2 7.2 Tf 42 556.80 Td ( 516 |     return normalizedQuestions;) Tj ET
+BT /F2 7.2 Tf 42 547.60 Td ( 517 |   } catch \(error\) {) Tj ET
+BT /F2 7.2 Tf 42 538.40 Td ( 518 |     console.error\("generateInterviewQuestions error:", error.message\);) Tj ET
+BT /F2 7.2 Tf 42 529.20 Td ( 519 |     return buildMockQuestions\(primaryField, weakTopics, language\);) Tj ET
+BT /F2 7.2 Tf 42 520.00 Td ( 520 |   }) Tj ET
+BT /F1 10 Tf 42 505.80 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 492.80 Td (- Lines 419-426 define generateInterviewQuestions inputs.) Tj ET
+BT /F1 10 Tf 42 479.80 Td (- Lines 428-430 immediately use local mock questions when mock mode is true.) Tj ET
+BT /F1 10 Tf 42 466.80 Td (- Lines 479-495 call the AI provider with Zara's staged recruiter prompt.) Tj ET
+BT /F1 10 Tf 42 453.80 Td (- Lines 496-507 parse and normalize the model's question list.) Tj ET
+BT /F1 10 Tf 42 440.80 Td (- Lines 509-514 fall back if the model returns fewer than five questions.) Tj ET
+BT /F1 10 Tf 42 427.80 Td (- Lines 517-519 fall back if the AI provider throws an error.) Tj ET
+BT /F1 14 Tf 42 400.80 Td (8. ITI provider reads env variables and calls the gateway) Tj ET
+BT /F1 9 Tf 42 382.80 Td (Location: backend/src/ai/providers/itiProvider.js:7-44) Tj ET
+BT /F2 7.2 Tf 42 366.80 Td (   7 | export function getItiConfig\({ isVision = false } = {}\) {) Tj ET
+BT /F2 7.2 Tf 42 357.60 Td (   8 |   return {) Tj ET
+BT /F2 7.2 Tf 42 348.40 Td (   9 |     baseUrl: ENV.ITI_API_BASE_URL || DEFAULT_BASE_URL,) Tj ET
+BT /F2 7.2 Tf 42 339.20 Td (  10 |     apiKey: ENV.ITI_API_KEY || ENV.OPENAI_API_KEY,) Tj ET
+BT /F2 7.2 Tf 42 330.00 Td (  11 |     model: isVision) Tj ET
+BT /F2 7.2 Tf 42 320.80 Td (  12 |       ? ENV.ITI_VISION_MODEL || DEFAULT_VISION_MODEL) Tj ET
+BT /F2 7.2 Tf 42 311.60 Td (  13 |       : ENV.ITI_MODEL || DEFAULT_MODEL,) Tj ET
+BT /F2 7.2 Tf 42 302.40 Td (  14 |   };) Tj ET
+BT /F2 7.2 Tf 42 293.20 Td (  15 | }) Tj ET
+BT /F2 7.2 Tf 42 284.00 Td (  16 | ) Tj ET
+BT /F2 7.2 Tf 42 274.80 Td (  17 | export async function callItiProvider\(messages, systemPrompt, options = {}\) {) Tj ET
+BT /F2 7.2 Tf 42 265.60 Td (  18 |   const { baseUrl, apiKey, model } = getItiConfig\(options\);) Tj ET
+BT /F2 7.2 Tf 42 256.40 Td (  19 |   const selectedModel = options.model || model;) Tj ET
+BT /F2 7.2 Tf 42 247.20 Td (  20 | ) Tj ET
+BT /F2 7.2 Tf 42 238.00 Td (  21 |   if \(!apiKey\) {) Tj ET
+BT /F2 7.2 Tf 42 228.80 Td (  22 |     throw new Error\("ITI API key is not configured"\);) Tj ET
+BT /F2 7.2 Tf 42 219.60 Td (  23 |   }) Tj ET
+BT /F2 7.2 Tf 42 210.40 Td (  24 | ) Tj ET
+BT /F2 7.2 Tf 42 201.20 Td (  25 |   const response = await fetch\(baseUrl, {) Tj ET
+BT /F2 7.2 Tf 42 192.00 Td (  26 |     method: "POST",) Tj ET
+BT /F2 7.2 Tf 42 182.80 Td (  27 |     headers: {) Tj ET
+BT /F2 7.2 Tf 42 173.60 Td (  28 |       Authorization: `Bearer ${apiKey}`,) Tj ET
+BT /F2 7.2 Tf 42 164.40 Td (  29 |       "Content-Type": "application/json",) Tj ET
+BT /F2 7.2 Tf 42 155.20 Td (  30 |     },) Tj ET
+BT /F2 7.2 Tf 42 146.00 Td (  31 |     body: JSON.stringify\({) Tj ET
+BT /F2 7.2 Tf 42 136.80 Td (  32 |       model_id: selectedModel,) Tj ET
+BT /F2 7.2 Tf 42 127.60 Td (  33 |       messages,) Tj ET
+BT /F2 7.2 Tf 42 118.40 Td (  34 |       system_prompt: systemPrompt || "",) Tj ET
+BT /F2 7.2 Tf 42 109.20 Td (  35 |     }\),) Tj ET
+BT /F2 7.2 Tf 42 100.00 Td (  36 |   }\);) Tj ET
+BT /F2 7.2 Tf 42 90.80 Td (  37 | ) Tj ET
+BT /F2 7.2 Tf 42 81.60 Td (  38 |   if \(!response.ok\) {) Tj ET
+BT /F2 7.2 Tf 42 72.40 Td (  39 |     const errorText = await response.text\(\).catch\(\(\) => ""\);) Tj ET
+BT /F2 7.2 Tf 42 63.20 Td (  40 |     throw new Error\(`ITI Gateway Error: ${response.status} - ${errorText}`\);) Tj ET
+BT /F2 7.2 Tf 42 54.00 Td (  41 |   }) Tj ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 15 0 R >>
+endobj
+17 0 obj
+<< /Length 4435 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td (  42 | ) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td (  43 |   return response.json\(\);) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td (  44 | }) Tj ET
+BT /F1 10 Tf 42 717.40 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 704.40 Td (- Lines 7-15 read ITI_API_BASE_URL, ITI_API_KEY, ITI_MODEL, and vision model config.) Tj ET
+BT /F1 10 Tf 42 691.40 Td (- Lines 17-19 choose the selected model for this request.) Tj ET
+BT /F1 10 Tf 42 678.40 Td (- Lines 21-23 fail fast if no API key is configured.) Tj ET
+BT /F1 10 Tf 42 665.40 Td (- Lines 25-36 send the POST request to the ITI Gateway.) Tj ET
+BT /F1 10 Tf 42 652.40 Td (- Lines 38-40 throw a useful error when the gateway rejects the request.) Tj ET
+BT /F1 10 Tf 42 639.40 Td (- Line 43 returns the gateway JSON response.) Tj ET
+BT /F1 14 Tf 42 612.40 Td (9. Interview stages define Zara's structure) Tj ET
+BT /F1 9 Tf 42 594.40 Td (Location: backend/src/ai/interviewStateMachine.js:1-31) Tj ET
+BT /F2 7.2 Tf 42 578.40 Td (   1 | export const INTERVIEW_STAGES = [) Tj ET
+BT /F2 7.2 Tf 42 569.20 Td (   2 |   "intro",) Tj ET
+BT /F2 7.2 Tf 42 560.00 Td (   3 |   "cv_review",) Tj ET
+BT /F2 7.2 Tf 42 550.80 Td (   4 |   "jd_review",) Tj ET
+BT /F2 7.2 Tf 42 541.60 Td (   5 |   "behavioral",) Tj ET
+BT /F2 7.2 Tf 42 532.40 Td (   6 |   "technical",) Tj ET
+BT /F2 7.2 Tf 42 523.20 Td (   7 |   "coding_challenge",) Tj ET
+BT /F2 7.2 Tf 42 514.00 Td (   8 |   "evaluation",) Tj ET
+BT /F2 7.2 Tf 42 504.80 Td (   9 |   "final_feedback",) Tj ET
+BT /F2 7.2 Tf 42 495.60 Td (  10 | ];) Tj ET
+BT /F2 7.2 Tf 42 486.40 Td (  11 | ) Tj ET
+BT /F2 7.2 Tf 42 477.20 Td (  12 | export const STAGE_LABELS = {) Tj ET
+BT /F2 7.2 Tf 42 468.00 Td (  13 |   intro: "Interview setup",) Tj ET
+BT /F2 7.2 Tf 42 458.80 Td (  14 |   cv_review: "CV review",) Tj ET
+BT /F2 7.2 Tf 42 449.60 Td (  15 |   jd_review: "Role alignment",) Tj ET
+BT /F2 7.2 Tf 42 440.40 Td (  16 |   behavioral: "Behavioral screen",) Tj ET
+BT /F2 7.2 Tf 42 431.20 Td (  17 |   technical: "Technical depth",) Tj ET
+BT /F2 7.2 Tf 42 422.00 Td (  18 |   coding_challenge: "Problem solving",) Tj ET
+BT /F2 7.2 Tf 42 412.80 Td (  19 |   evaluation: "Answer evaluation",) Tj ET
+BT /F2 7.2 Tf 42 403.60 Td (  20 |   final_feedback: "Final feedback",) Tj ET
+BT /F2 7.2 Tf 42 394.40 Td (  21 | };) Tj ET
+BT /F2 7.2 Tf 42 385.20 Td (  22 | ) Tj ET
+BT /F2 7.2 Tf 42 376.00 Td (  23 | const QUESTION_STAGES = [) Tj ET
+BT /F2 7.2 Tf 42 366.80 Td (  24 |   "intro",) Tj ET
+BT /F2 7.2 Tf 42 357.60 Td (  25 |   "cv_review",) Tj ET
+BT /F2 7.2 Tf 42 348.40 Td (  26 |   "jd_review",) Tj ET
+BT /F2 7.2 Tf 42 339.20 Td (  27 |   "behavioral",) Tj ET
+BT /F2 7.2 Tf 42 330.00 Td (  28 |   "technical",) Tj ET
+BT /F2 7.2 Tf 42 320.80 Td (  29 |   "technical",) Tj ET
+BT /F2 7.2 Tf 42 311.60 Td (  30 |   "coding_challenge",) Tj ET
+BT /F2 7.2 Tf 42 302.40 Td (  31 | ];) Tj ET
+BT /F1 10 Tf 42 288.20 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 275.20 Td (- Lines 1-10 define the full stage list.) Tj ET
+BT /F1 10 Tf 42 262.20 Td (- Lines 12-21 define human-readable labels for the UI.) Tj ET
+BT /F1 10 Tf 42 249.20 Td (- Lines 23-31 map question order to intro, CV, role, behavioral, technical, and) Tj ET
+BT /F1 10 Tf 42 236.20 Td (problem-solving stages.) Tj ET
+BT /F1 14 Tf 42 209.20 Td (10. Stage metadata is returned to the frontend) Tj ET
+BT /F1 9 Tf 42 191.20 Td (Location: backend/src/ai/interviewStateMachine.js:33-83) Tj ET
+BT /F2 7.2 Tf 42 175.20 Td (  33 | export function normalizeStage\(stage\) {) Tj ET
+BT /F2 7.2 Tf 42 166.00 Td (  34 |   return INTERVIEW_STAGES.includes\(stage\) ? stage : "intro";) Tj ET
+BT /F2 7.2 Tf 42 156.80 Td (  35 | }) Tj ET
+BT /F2 7.2 Tf 42 147.60 Td (  36 | ) Tj ET
+BT /F2 7.2 Tf 42 138.40 Td (  37 | export function getStageForQuestion\(index, explicitStage\) {) Tj ET
+BT /F2 7.2 Tf 42 129.20 Td (  38 |   if \(explicitStage && INTERVIEW_STAGES.includes\(explicitStage\)\) {) Tj ET
+BT /F2 7.2 Tf 42 120.00 Td (  39 |     return explicitStage;) Tj ET
+BT /F2 7.2 Tf 42 110.80 Td (  40 |   }) Tj ET
+BT /F2 7.2 Tf 42 101.60 Td (  41 | ) Tj ET
+BT /F2 7.2 Tf 42 92.40 Td (  42 |   return QUESTION_STAGES[Math.min\(Number\(index\) || 0, QUESTION_STAGES.length - 1\)];) Tj ET
+BT /F2 7.2 Tf 42 83.20 Td (  43 | }) Tj ET
+BT /F2 7.2 Tf 42 74.00 Td (  44 | ) Tj ET
+BT /F2 7.2 Tf 42 64.80 Td (  45 | export function getStageLabel\(stage\) {) Tj ET
+BT /F2 7.2 Tf 42 55.60 Td (  46 |   return STAGE_LABELS[normalizeStage\(stage\)];) Tj ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 17 0 R >>
+endobj
+19 0 obj
+<< /Length 5511 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td (  47 | }) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td (  48 | ) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td (  49 | export function getStageTransition\(stage\) {) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td (  50 |   const normalized = normalizeStage\(stage\);) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td (  51 | ) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td (  52 |   const transitions = {) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td (  53 |     intro:) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td (  54 |       "I will start by setting context, then we will move through your background and role fit.",) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td (  55 |     cv_review:) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td (  56 |       "Now I want to connect the interview to what you have actually done.",) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td (  57 |     jd_review:) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td (  58 |       "Next, I will check how your experience maps to the target role.",) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td (  59 |     behavioral:) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td (  60 |       "Let's shift into recruiter-style behavioral signals.",) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td (  61 |     technical:) Tj ET
+BT /F2 7.2 Tf 42 612.00 Td (  62 |       "Now we will go deeper technically and keep the questions role-based.",) Tj ET
+BT /F2 7.2 Tf 42 602.80 Td (  63 |     coding_challenge:) Tj ET
+BT /F2 7.2 Tf 42 593.60 Td (  64 |       "I will use a short problem-solving prompt to understand your approach.",) Tj ET
+BT /F2 7.2 Tf 42 584.40 Td (  65 |     evaluation:) Tj ET
+BT /F2 7.2 Tf 42 575.20 Td (  66 |       "I am reviewing your answer before deciding the next best question.",) Tj ET
+BT /F2 7.2 Tf 42 566.00 Td (  67 |     final_feedback:) Tj ET
+BT /F2 7.2 Tf 42 556.80 Td (  68 |       "I am preparing a structured summary with strengths, gaps, and readiness.",) Tj ET
+BT /F2 7.2 Tf 42 547.60 Td (  69 |   };) Tj ET
+BT /F2 7.2 Tf 42 538.40 Td (  70 | ) Tj ET
+BT /F2 7.2 Tf 42 529.20 Td (  71 |   return transitions[normalized];) Tj ET
+BT /F2 7.2 Tf 42 520.00 Td (  72 | }) Tj ET
+BT /F2 7.2 Tf 42 510.80 Td (  73 | ) Tj ET
+BT /F2 7.2 Tf 42 501.60 Td (  74 | export function buildStageMeta\(stage\) {) Tj ET
+BT /F2 7.2 Tf 42 492.40 Td (  75 |   const normalized = normalizeStage\(stage\);) Tj ET
+BT /F2 7.2 Tf 42 483.20 Td (  76 | ) Tj ET
+BT /F2 7.2 Tf 42 474.00 Td (  77 |   return {) Tj ET
+BT /F2 7.2 Tf 42 464.80 Td (  78 |     stage: normalized,) Tj ET
+BT /F2 7.2 Tf 42 455.60 Td (  79 |     stageLabel: getStageLabel\(normalized\),) Tj ET
+BT /F2 7.2 Tf 42 446.40 Td (  80 |     transitionMessage: getStageTransition\(normalized\),) Tj ET
+BT /F2 7.2 Tf 42 437.20 Td (  81 |     interviewerName: "Zara",) Tj ET
+BT /F2 7.2 Tf 42 428.00 Td (  82 |   };) Tj ET
+BT /F2 7.2 Tf 42 418.80 Td (  83 | }) Tj ET
+BT /F1 10 Tf 42 404.60 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 391.60 Td (- Lines 33-35 validate stage names.) Tj ET
+BT /F1 10 Tf 42 378.60 Td (- Lines 37-43 choose an explicit stage or stage-by-question index.) Tj ET
+BT /F1 10 Tf 42 365.60 Td (- Lines 49-72 define transition messages Zara displays between stages.) Tj ET
+BT /F1 10 Tf 42 352.60 Td (- Lines 74-83 package stage, label, transition message, and interviewerName.) Tj ET
+BT /F1 14 Tf 42 325.60 Td (11. Frontend initializes the interview session UI) Tj ET
+BT /F1 9 Tf 42 307.60 Td (Location: frontend/src/pages/InterviewPage.jsx:33-67) Tj ET
+BT /F2 7.2 Tf 42 291.60 Td (  33 | function InterviewPage\(\) {) Tj ET
+BT /F2 7.2 Tf 42 282.40 Td (  34 |   const navigate = useNavigate\(\);) Tj ET
+BT /F2 7.2 Tf 42 273.20 Td (  35 |   const { sessionId } = useParams\(\);) Tj ET
+BT /F2 7.2 Tf 42 264.00 Td (  36 |   const { state } = useLocation\(\);) Tj ET
+BT /F2 7.2 Tf 42 254.80 Td (  37 |   const { language: appLanguage } = useLanguage\(\);) Tj ET
+BT /F2 7.2 Tf 42 245.60 Td (  38 | ) Tj ET
+BT /F2 7.2 Tf 42 236.40 Td (  39 |   const submitMutation = useSubmitAnswer\(\);) Tj ET
+BT /F2 7.2 Tf 42 227.20 Td (  40 |   const [interviewLanguage, setInterviewLanguage] = useState\() Tj ET
+BT /F2 7.2 Tf 42 218.00 Td (  41 |     state?.language || appLanguage || "en",) Tj ET
+BT /F2 7.2 Tf 42 208.80 Td (  42 |   \);) Tj ET
+BT /F2 7.2 Tf 42 199.60 Td (  43 |   const t = getTranslator\(interviewLanguage || appLanguage\);) Tj ET
+BT /F2 7.2 Tf 42 190.40 Td (  44 |   const { speak, cancel: cancelSpeech, isSpeaking } = useSpeechSynthesis\({) Tj ET
+BT /F2 7.2 Tf 42 181.20 Td (  45 |     language: interviewLanguage,) Tj ET
+BT /F2 7.2 Tf 42 172.00 Td (  46 |   }\);) Tj ET
+BT /F2 7.2 Tf 42 162.80 Td (  47 | ) Tj ET
+BT /F2 7.2 Tf 42 153.60 Td (  48 |   // Interview state.) Tj ET
+BT /F2 7.2 Tf 42 144.40 Td (  49 |   const [questionIndex, setQuestionIndex] = useState\(0\);) Tj ET
+BT /F2 7.2 Tf 42 135.20 Td (  50 |   const [totalQuestions, setTotalQuestions] = useState\() Tj ET
+BT /F2 7.2 Tf 42 126.00 Td (  51 |     state?.totalQuestions || 0,) Tj ET
+BT /F2 7.2 Tf 42 116.80 Td (  52 |   \);) Tj ET
+BT /F2 7.2 Tf 42 107.60 Td (  53 |   const [currentQuestion, setCurrentQuestion] = useState\() Tj ET
+BT /F2 7.2 Tf 42 98.40 Td (  54 |     state?.firstQuestion || "",) Tj ET
+BT /F2 7.2 Tf 42 89.20 Td (  55 |   \);) Tj ET
+BT /F2 7.2 Tf 42 80.00 Td (  56 |   const [status, setStatus] = useState\("speaking"\);) Tj ET
+BT /F2 7.2 Tf 42 70.80 Td (  57 |   const [isTypingMode, setIsTypingMode] = useState\(false\);) Tj ET
+BT /F2 7.2 Tf 42 61.60 Td (  58 |   const [isFollowUp, setIsFollowUp] = useState\(false\);) Tj ET
+BT /F2 7.2 Tf 42 52.40 Td (  59 |   const [loading, setLoading] = useState\(!state?.firstQuestion\);) Tj ET
+endstream
+endobj
+20 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 19 0 R >>
+endobj
+21 0 obj
+<< /Length 4991 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td (  60 |   const [stage, setStage] = useState\(state?.stage || "intro"\);) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td (  61 |   const [stageLabel, setStageLabel] = useState\() Tj ET
+BT /F2 7.2 Tf 42 731.60 Td (  62 |     state?.stageLabel || getStageLabel\(state?.stage || "intro"\),) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td (  63 |   \);) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td (  64 |   const [transitionMessage, setTransitionMessage] = useState\() Tj ET
+BT /F2 7.2 Tf 42 704.00 Td (  65 |     state?.transitionMessage || t\("aiInterview.defaultTransition"\),) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td (  66 |   \);) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td (  67 |   const interviewerName = state?.interviewerName || "Zara";) Tj ET
+BT /F1 10 Tf 42 671.40 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 658.40 Td (- Line 33 defines the InterviewPage component.) Tj ET
+BT /F1 10 Tf 42 645.40 Td (- Lines 34-37 read navigation, session id, route state, and app language.) Tj ET
+BT /F1 10 Tf 42 632.40 Td (- Lines 39-46 initialize the answer mutation, translator, and browser speech synthesis.) Tj ET
+BT /F1 10 Tf 42 619.40 Td (- Lines 49-67 store current question, status, stage, transition message, and interviewer name.) Tj ET
+BT /F1 14 Tf 42 592.40 Td (12. Browser speech recognition captures candidate answer) Tj ET
+BT /F1 9 Tf 42 574.40 Td (Location: frontend/src/pages/InterviewPage.jsx:82-97) Tj ET
+BT /F2 7.2 Tf 42 558.40 Td (  82 |   // Voice recognition: auto-submit after the silence window.) Tj ET
+BT /F2 7.2 Tf 42 549.20 Td (  83 |   const {) Tj ET
+BT /F2 7.2 Tf 42 540.00 Td (  84 |     isSupported,) Tj ET
+BT /F2 7.2 Tf 42 530.80 Td (  85 |     isListening,) Tj ET
+BT /F2 7.2 Tf 42 521.60 Td (  86 |     transcript,) Tj ET
+BT /F2 7.2 Tf 42 512.40 Td (  87 |     setTranscript,) Tj ET
+BT /F2 7.2 Tf 42 503.20 Td (  88 |     start: startListening,) Tj ET
+BT /F2 7.2 Tf 42 494.00 Td (  89 |     stop: stopListening,) Tj ET
+BT /F2 7.2 Tf 42 484.80 Td (  90 |     reset: resetTranscript,) Tj ET
+BT /F2 7.2 Tf 42 475.60 Td (  91 |   } = useSpeechRecognition\({) Tj ET
+BT /F2 7.2 Tf 42 466.40 Td (  92 |     silenceTimeout: 2500,) Tj ET
+BT /F2 7.2 Tf 42 457.20 Td (  93 |     language: interviewLanguage,) Tj ET
+BT /F2 7.2 Tf 42 448.00 Td (  94 |     onSilence: \(finalText\) => {) Tj ET
+BT /F2 7.2 Tf 42 438.80 Td (  95 |       if \(finalText && finalText.trim\(\)\) submitAnswer\(finalText\);) Tj ET
+BT /F2 7.2 Tf 42 429.60 Td (  96 |     },) Tj ET
+BT /F2 7.2 Tf 42 420.40 Td (  97 |   }\);) Tj ET
+BT /F1 10 Tf 42 406.20 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 393.20 Td (- Lines 82-91 initialize the browser SpeechRecognition wrapper.) Tj ET
+BT /F1 10 Tf 42 380.20 Td (- Line 92 sets the silence timeout.) Tj ET
+BT /F1 10 Tf 42 367.20 Td (- Line 93 sets the recognition language.) Tj ET
+BT /F1 10 Tf 42 354.20 Td (- Lines 94-96 auto-submit final speech text when the candidate stops speaking.) Tj ET
+BT /F1 14 Tf 42 327.20 Td (13. Frontend submits each answer) Tj ET
+BT /F1 9 Tf 42 309.20 Td (Location: frontend/src/pages/InterviewPage.jsx:101-166) Tj ET
+BT /F2 7.2 Tf 42 293.20 Td ( 101 |   const submitAnswer = useCallback\() Tj ET
+BT /F2 7.2 Tf 42 284.00 Td ( 102 |     \(answerText, { skipped = false } = {}\) => {) Tj ET
+BT /F2 7.2 Tf 42 274.80 Td ( 103 |       if \(submittingRef.current\) return;) Tj ET
+BT /F2 7.2 Tf 42 265.60 Td ( 104 |       submittingRef.current = true;) Tj ET
+BT /F2 7.2 Tf 42 256.40 Td ( 105 | ) Tj ET
+BT /F2 7.2 Tf 42 247.20 Td ( 106 |       setStatus\("processing"\);) Tj ET
+BT /F2 7.2 Tf 42 238.00 Td ( 107 | ) Tj ET
+BT /F2 7.2 Tf 42 228.80 Td ( 108 |       submitMutation.mutate\() Tj ET
+BT /F2 7.2 Tf 42 219.60 Td ( 109 |         {) Tj ET
+BT /F2 7.2 Tf 42 210.40 Td ( 110 |           sessionId,) Tj ET
+BT /F2 7.2 Tf 42 201.20 Td ( 111 |           questionIndex,) Tj ET
+BT /F2 7.2 Tf 42 192.00 Td ( 112 |           answer: answerText || "",) Tj ET
+BT /F2 7.2 Tf 42 182.80 Td ( 113 |           timeSpent: timeSpentRef.current,) Tj ET
+BT /F2 7.2 Tf 42 173.60 Td ( 114 |           isFollowUp,) Tj ET
+BT /F2 7.2 Tf 42 164.40 Td ( 115 |           skipped,) Tj ET
+BT /F2 7.2 Tf 42 155.20 Td ( 116 |         },) Tj ET
+BT /F2 7.2 Tf 42 146.00 Td ( 117 |         {) Tj ET
+BT /F2 7.2 Tf 42 136.80 Td ( 118 |           onSuccess: \(data\) => {) Tj ET
+BT /F2 7.2 Tf 42 127.60 Td ( 119 |             submittingRef.current = false;) Tj ET
+BT /F2 7.2 Tf 42 118.40 Td ( 120 |             timeSpentRef.current = 0;) Tj ET
+BT /F2 7.2 Tf 42 109.20 Td ( 121 |             resetTranscript\(\);) Tj ET
+BT /F2 7.2 Tf 42 100.00 Td ( 122 |             setTranscript\(""\);) Tj ET
+BT /F2 7.2 Tf 42 90.80 Td ( 123 | ) Tj ET
+BT /F2 7.2 Tf 42 81.60 Td ( 124 |             if \(data.askFollowUp && data.followUpQuestion\) {) Tj ET
+BT /F2 7.2 Tf 42 72.40 Td ( 125 |               setIsFollowUp\(true\);) Tj ET
+BT /F2 7.2 Tf 42 63.20 Td ( 126 |               setCurrentQuestion\(data.followUpQuestion\);) Tj ET
+BT /F2 7.2 Tf 42 54.00 Td ( 127 |               setStage\(data.stage || stage\);) Tj ET
+endstream
+endobj
+22 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 21 0 R >>
+endobj
+23 0 obj
+<< /Length 5013 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 128 |               setStageLabel\(data.stageLabel || stageLabel\);) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 129 |               setTransitionMessage\(data.transitionMessage || transitionMessage\);) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 130 |               setStatus\("speaking"\);) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 131 |               return;) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 132 |             }) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 133 | ) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 134 |             if \(data.isComplete\) {) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td ( 135 |               finishInterview\(\);) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td ( 136 |               return;) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td ( 137 |             }) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td ( 138 | ) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td ( 139 |             setIsFollowUp\(false\);) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td ( 140 |             setQuestionIndex\(data.questionIndex\);) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td ( 141 |             setCurrentQuestion\(data.nextQuestion\);) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td ( 142 |             setStage\(data.stage || stage\);) Tj ET
+BT /F2 7.2 Tf 42 612.00 Td ( 143 |             setStageLabel\(data.stageLabel || stageLabel\);) Tj ET
+BT /F2 7.2 Tf 42 602.80 Td ( 144 |             setTransitionMessage\(data.transitionMessage || transitionMessage\);) Tj ET
+BT /F2 7.2 Tf 42 593.60 Td ( 145 |             setStatus\("speaking"\);) Tj ET
+BT /F2 7.2 Tf 42 584.40 Td ( 146 |           },) Tj ET
+BT /F2 7.2 Tf 42 575.20 Td ( 147 |           onError: \(\) => {) Tj ET
+BT /F2 7.2 Tf 42 566.00 Td ( 148 |             submittingRef.current = false;) Tj ET
+BT /F2 7.2 Tf 42 556.80 Td ( 149 |             setStatus\("listening"\);) Tj ET
+BT /F2 7.2 Tf 42 547.60 Td ( 150 |           },) Tj ET
+BT /F2 7.2 Tf 42 538.40 Td ( 151 |         },) Tj ET
+BT /F2 7.2 Tf 42 529.20 Td ( 152 |       \);) Tj ET
+BT /F2 7.2 Tf 42 520.00 Td ( 153 |     },) Tj ET
+BT /F2 7.2 Tf 42 510.80 Td ( 154 |     [) Tj ET
+BT /F2 7.2 Tf 42 501.60 Td ( 155 |       finishInterview,) Tj ET
+BT /F2 7.2 Tf 42 492.40 Td ( 156 |       isFollowUp,) Tj ET
+BT /F2 7.2 Tf 42 483.20 Td ( 157 |       questionIndex,) Tj ET
+BT /F2 7.2 Tf 42 474.00 Td ( 158 |       resetTranscript,) Tj ET
+BT /F2 7.2 Tf 42 464.80 Td ( 159 |       sessionId,) Tj ET
+BT /F2 7.2 Tf 42 455.60 Td ( 160 |       stage,) Tj ET
+BT /F2 7.2 Tf 42 446.40 Td ( 161 |       stageLabel,) Tj ET
+BT /F2 7.2 Tf 42 437.20 Td ( 162 |       setTranscript,) Tj ET
+BT /F2 7.2 Tf 42 428.00 Td ( 163 |       submitMutation,) Tj ET
+BT /F2 7.2 Tf 42 418.80 Td ( 164 |       transitionMessage,) Tj ET
+BT /F2 7.2 Tf 42 409.60 Td ( 165 |     ],) Tj ET
+BT /F2 7.2 Tf 42 400.40 Td ( 166 |   \);) Tj ET
+BT /F1 10 Tf 42 386.20 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 373.20 Td (- Lines 101-103 define submitAnswer and prevent duplicate submits.) Tj ET
+BT /F1 10 Tf 42 360.20 Td (- Line 106 switches the UI to processing.) Tj ET
+BT /F1 10 Tf 42 347.20 Td (- Lines 108-116 send the answer payload to the backend.) Tj ET
+BT /F1 10 Tf 42 334.20 Td (- Lines 124-131 handle adaptive follow-up questions.) Tj ET
+BT /F1 10 Tf 42 321.20 Td (- Lines 134-136 navigate to results when complete.) Tj ET
+BT /F1 10 Tf 42 308.20 Td (- Lines 139-145 move to the next main question and update stage metadata.) Tj ET
+BT /F1 14 Tf 42 281.20 Td (14. Browser speech synthesis reads Zara's question aloud) Tj ET
+BT /F1 9 Tf 42 263.20 Td (Location: frontend/src/pages/InterviewPage.jsx:212-227) Tj ET
+BT /F2 7.2 Tf 42 247.20 Td ( 212 |   // Speak each new question, then start listening \(voice mode only\).) Tj ET
+BT /F2 7.2 Tf 42 238.00 Td ( 213 |   useEffect\(\(\) => {) Tj ET
+BT /F2 7.2 Tf 42 228.80 Td ( 214 |     if \(!currentQuestion || status !== "speaking"\) return;) Tj ET
+BT /F2 7.2 Tf 42 219.60 Td ( 215 | ) Tj ET
+BT /F2 7.2 Tf 42 210.40 Td ( 216 |     if \(isTypingMode || !isSupported\) {) Tj ET
+BT /F2 7.2 Tf 42 201.20 Td ( 217 |       setStatus\("listening"\);) Tj ET
+BT /F2 7.2 Tf 42 192.00 Td ( 218 |       return;) Tj ET
+BT /F2 7.2 Tf 42 182.80 Td ( 219 |     }) Tj ET
+BT /F2 7.2 Tf 42 173.60 Td ( 220 | ) Tj ET
+BT /F2 7.2 Tf 42 164.40 Td ( 221 |     resetTranscript\(\);) Tj ET
+BT /F2 7.2 Tf 42 155.20 Td ( 222 |     speak\(currentQuestion, \(\) => {) Tj ET
+BT /F2 7.2 Tf 42 146.00 Td ( 223 |       setStatus\("listening"\);) Tj ET
+BT /F2 7.2 Tf 42 136.80 Td ( 224 |       startListening\(\);) Tj ET
+BT /F2 7.2 Tf 42 127.60 Td ( 225 |     }\);) Tj ET
+BT /F2 7.2 Tf 42 118.40 Td ( 226 |     // eslint-disable-next-line react-hooks/exhaustive-deps) Tj ET
+BT /F2 7.2 Tf 42 109.20 Td ( 227 |   }, [currentQuestion, status, isTypingMode, isSupported, speak, startListening]\);) Tj ET
+BT /F1 10 Tf 42 95.00 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 82.00 Td (- Lines 213-214 only run when there is a question and Zara is speaking.) Tj ET
+BT /F1 10 Tf 42 69.00 Td (- Lines 216-219 skip voice when typing mode or unsupported browser is used.) Tj ET
+BT /F1 10 Tf 42 56.00 Td (- Line 221 clears old transcript.) Tj ET
+endstream
+endobj
+24 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 23 0 R >>
+endobj
+25 0 obj
+<< /Length 5460 >>
+stream
+BT /F1 10 Tf 42 750.00 Td (- Lines 222-225 speak the question, then start listening.) Tj ET
+BT /F1 14 Tf 42 723.00 Td (15. Browser voice implementation) Tj ET
+BT /F1 9 Tf 42 705.00 Td (Location: frontend/src/hooks/useSpeechSynthesis.js:10-80) Tj ET
+BT /F2 7.2 Tf 42 689.00 Td (  10 | export default function useSpeechSynthesis\({ language = "en" } = {}\) {) Tj ET
+BT /F2 7.2 Tf 42 679.80 Td (  11 |   const isSupported =) Tj ET
+BT /F2 7.2 Tf 42 670.60 Td (  12 |     typeof window !== "undefined" && "speechSynthesis" in window;) Tj ET
+BT /F2 7.2 Tf 42 661.40 Td (  13 | ) Tj ET
+BT /F2 7.2 Tf 42 652.20 Td (  14 |   const [isSpeaking, setIsSpeaking] = useState\(false\);) Tj ET
+BT /F2 7.2 Tf 42 643.00 Td (  15 |   const voiceRef = useRef\(null\);) Tj ET
+BT /F2 7.2 Tf 42 633.80 Td (  16 | ) Tj ET
+BT /F2 7.2 Tf 42 624.60 Td (  17 |   // Resolve the preferred voice now and again when the list loads.) Tj ET
+BT /F2 7.2 Tf 42 615.40 Td (  18 |   useEffect\(\(\) => {) Tj ET
+BT /F2 7.2 Tf 42 606.20 Td (  19 |     if \(!isSupported\) return;) Tj ET
+BT /F2 7.2 Tf 42 597.00 Td (  20 | ) Tj ET
+BT /F2 7.2 Tf 42 587.80 Td (  21 |     const loadVoice = \(\) => {) Tj ET
+BT /F2 7.2 Tf 42 578.60 Td (  22 |       const voices = window.speechSynthesis?.getVoices?.\(\) || [];) Tj ET
+BT /F2 7.2 Tf 42 569.40 Td (  23 |       const isArabic = String\(language\).toLowerCase\(\).startsWith\("ar"\);) Tj ET
+BT /F2 7.2 Tf 42 560.20 Td (  24 |       const preferredPrefix = isArabic ? "ar" : "en";) Tj ET
+BT /F2 7.2 Tf 42 551.00 Td (  25 |       voiceRef.current =) Tj ET
+BT /F2 7.2 Tf 42 541.80 Td (  26 |         voices.find\(\(v\) => v.lang?.toLowerCase\(\).startsWith\(preferredPrefix\)\) ||) Tj ET
+BT /F2 7.2 Tf 42 532.60 Td (  27 |         voices.find\(\(v\) => v.lang?.toLowerCase\(\).startsWith\("en"\)\) ||) Tj ET
+BT /F2 7.2 Tf 42 523.40 Td (  28 |         voices[0] ||) Tj ET
+BT /F2 7.2 Tf 42 514.20 Td (  29 |         null;) Tj ET
+BT /F2 7.2 Tf 42 505.00 Td (  30 |     };) Tj ET
+BT /F2 7.2 Tf 42 495.80 Td (  31 |     loadVoice\(\);) Tj ET
+BT /F2 7.2 Tf 42 486.60 Td (  32 |     window.speechSynthesis.addEventListener\("voiceschanged", loadVoice\);) Tj ET
+BT /F2 7.2 Tf 42 477.40 Td (  33 | ) Tj ET
+BT /F2 7.2 Tf 42 468.20 Td (  34 |     return \(\) => {) Tj ET
+BT /F2 7.2 Tf 42 459.00 Td (  35 |       window.speechSynthesis.removeEventListener\("voiceschanged", loadVoice\);) Tj ET
+BT /F2 7.2 Tf 42 449.80 Td (  36 |       window.speechSynthesis.cancel\(\);) Tj ET
+BT /F2 7.2 Tf 42 440.60 Td (  37 |     };) Tj ET
+BT /F2 7.2 Tf 42 431.40 Td (  38 |   }, [isSupported, language]\);) Tj ET
+BT /F2 7.2 Tf 42 422.20 Td (  39 | ) Tj ET
+BT /F2 7.2 Tf 42 413.00 Td (  40 |   const cancel = useCallback\(\(\) => {) Tj ET
+BT /F2 7.2 Tf 42 403.80 Td (  41 |     if \(!isSupported\) return;) Tj ET
+BT /F2 7.2 Tf 42 394.60 Td (  42 |     window.speechSynthesis.cancel\(\);) Tj ET
+BT /F2 7.2 Tf 42 385.40 Td (  43 |     setIsSpeaking\(false\);) Tj ET
+BT /F2 7.2 Tf 42 376.20 Td (  44 |   }, [isSupported]\);) Tj ET
+BT /F2 7.2 Tf 42 367.00 Td (  45 | ) Tj ET
+BT /F2 7.2 Tf 42 357.80 Td (  46 |   // Speak text, invoking onEnd when finished \(or immediately if unsupported\).) Tj ET
+BT /F2 7.2 Tf 42 348.60 Td (  47 |   const speak = useCallback\() Tj ET
+BT /F2 7.2 Tf 42 339.40 Td (  48 |     \(text, onEnd\) => {) Tj ET
+BT /F2 7.2 Tf 42 330.20 Td (  49 |       if \(!isSupported || !text\) {) Tj ET
+BT /F2 7.2 Tf 42 321.00 Td (  50 |         onEnd?.\(\);) Tj ET
+BT /F2 7.2 Tf 42 311.80 Td (  51 |         return;) Tj ET
+BT /F2 7.2 Tf 42 302.60 Td (  52 |       }) Tj ET
+BT /F2 7.2 Tf 42 293.40 Td (  53 | ) Tj ET
+BT /F2 7.2 Tf 42 284.20 Td (  54 |       // Always cancel ongoing speech first to avoid overlap.) Tj ET
+BT /F2 7.2 Tf 42 275.00 Td (  55 |       window.speechSynthesis.cancel\(\);) Tj ET
+BT /F2 7.2 Tf 42 265.80 Td (  56 | ) Tj ET
+BT /F2 7.2 Tf 42 256.60 Td (  57 |       const utterance = new SpeechSynthesisUtterance\(text\);) Tj ET
+BT /F2 7.2 Tf 42 247.40 Td (  58 |       if \(voiceRef.current\) utterance.voice = voiceRef.current;) Tj ET
+BT /F2 7.2 Tf 42 238.20 Td (  59 |       utterance.lang =) Tj ET
+BT /F2 7.2 Tf 42 229.00 Td (  60 |         voiceRef.current?.lang ||) Tj ET
+BT /F2 7.2 Tf 42 219.80 Td (  61 |         \(String\(language\).toLowerCase\(\).startsWith\("ar"\) ? "ar-SA" : "en-US"\);) Tj ET
+BT /F2 7.2 Tf 42 210.60 Td (  62 |       utterance.rate = 1;) Tj ET
+BT /F2 7.2 Tf 42 201.40 Td (  63 |       utterance.pitch = 1;) Tj ET
+BT /F2 7.2 Tf 42 192.20 Td (  64 | ) Tj ET
+BT /F2 7.2 Tf 42 183.00 Td (  65 |       utterance.onstart = \(\) => setIsSpeaking\(true\);) Tj ET
+BT /F2 7.2 Tf 42 173.80 Td (  66 |       utterance.onend = \(\) => {) Tj ET
+BT /F2 7.2 Tf 42 164.60 Td (  67 |         setIsSpeaking\(false\);) Tj ET
+BT /F2 7.2 Tf 42 155.40 Td (  68 |         onEnd?.\(\);) Tj ET
+BT /F2 7.2 Tf 42 146.20 Td (  69 |       };) Tj ET
+BT /F2 7.2 Tf 42 137.00 Td (  70 |       utterance.onerror = \(\) => {) Tj ET
+BT /F2 7.2 Tf 42 127.80 Td (  71 |         setIsSpeaking\(false\);) Tj ET
+BT /F2 7.2 Tf 42 118.60 Td (  72 |         onEnd?.\(\);) Tj ET
+BT /F2 7.2 Tf 42 109.40 Td (  73 |       };) Tj ET
+BT /F2 7.2 Tf 42 100.20 Td (  74 | ) Tj ET
+BT /F2 7.2 Tf 42 91.00 Td (  75 |       window.speechSynthesis.speak\(utterance\);) Tj ET
+BT /F2 7.2 Tf 42 81.80 Td (  76 |     },) Tj ET
+BT /F2 7.2 Tf 42 72.60 Td (  77 |     [isSupported, language],) Tj ET
+BT /F2 7.2 Tf 42 63.40 Td (  78 |   \);) Tj ET
+BT /F2 7.2 Tf 42 54.20 Td (  79 | ) Tj ET
+endstream
+endobj
+26 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 25 0 R >>
+endobj
+27 0 obj
+<< /Length 5469 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td (  80 |   return { speak, cancel, isSpeaking, isSupported };) Tj ET
+BT /F1 10 Tf 42 735.80 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 722.80 Td (- Lines 10-13 check browser SpeechSynthesis support.) Tj ET
+BT /F1 10 Tf 42 709.80 Td (- Lines 21-30 choose a voice matching the interview language.) Tj ET
+BT /F1 10 Tf 42 696.80 Td (- Lines 47-52 define the speak function and handle unsupported browsers.) Tj ET
+BT /F1 10 Tf 42 683.80 Td (- Lines 57-63 create the browser utterance and set language, rate, and pitch.) Tj ET
+BT /F1 10 Tf 42 670.80 Td (- Line 75 calls window.speechSynthesis.speak, so Zara's sound is from the browser.) Tj ET
+BT /F1 14 Tf 42 643.80 Td (16. Backend evaluates answers and returns follow-ups) Tj ET
+BT /F1 9 Tf 42 625.80 Td (Location: backend/src/controllers/aiInterviewController.js:324-417) Tj ET
+BT /F2 7.2 Tf 42 609.80 Td ( 324 | export async function submitAnswer\(req, res\) {) Tj ET
+BT /F2 7.2 Tf 42 600.60 Td ( 325 |   try {) Tj ET
+BT /F2 7.2 Tf 42 591.40 Td ( 326 |     const { sessionId } = req.params;) Tj ET
+BT /F2 7.2 Tf 42 582.20 Td ( 327 |     const {) Tj ET
+BT /F2 7.2 Tf 42 573.00 Td ( 328 |       questionIndex,) Tj ET
+BT /F2 7.2 Tf 42 563.80 Td ( 329 |       answer = "",) Tj ET
+BT /F2 7.2 Tf 42 554.60 Td ( 330 |       timeSpent = 0,) Tj ET
+BT /F2 7.2 Tf 42 545.40 Td ( 331 |       isFollowUp = false,) Tj ET
+BT /F2 7.2 Tf 42 536.20 Td ( 332 |       skipped = false,) Tj ET
+BT /F2 7.2 Tf 42 527.00 Td ( 333 |     } = req.body;) Tj ET
+BT /F2 7.2 Tf 42 517.80 Td ( 334 | ) Tj ET
+BT /F2 7.2 Tf 42 508.60 Td ( 335 |     const session = await AIInterviewSession.findOne\({) Tj ET
+BT /F2 7.2 Tf 42 499.40 Td ( 336 |       _id: sessionId,) Tj ET
+BT /F2 7.2 Tf 42 490.20 Td ( 337 |       userId: req.user._id,) Tj ET
+BT /F2 7.2 Tf 42 481.00 Td ( 338 |     }\);) Tj ET
+BT /F2 7.2 Tf 42 471.80 Td ( 339 | ) Tj ET
+BT /F2 7.2 Tf 42 462.60 Td ( 340 |     if \(!session\) return res.status\(404\).json\({ msg: "Session not found" }\);) Tj ET
+BT /F2 7.2 Tf 42 453.40 Td ( 341 |     if \(session.status === "completed"\) {) Tj ET
+BT /F2 7.2 Tf 42 444.20 Td ( 342 |       return res.status\(400\).json\({ msg: "Interview already completed" }\);) Tj ET
+BT /F2 7.2 Tf 42 435.00 Td ( 343 |     }) Tj ET
+BT /F2 7.2 Tf 42 425.80 Td ( 344 | ) Tj ET
+BT /F2 7.2 Tf 42 416.60 Td ( 345 |     const index = Number\(questionIndex\);) Tj ET
+BT /F2 7.2 Tf 42 407.40 Td ( 346 |     const current = session.questions[index];) Tj ET
+BT /F2 7.2 Tf 42 398.20 Td ( 347 |     if \(!current\) {) Tj ET
+BT /F2 7.2 Tf 42 389.00 Td ( 348 |       return res.status\(400\).json\({ msg: "Invalid question index" }\);) Tj ET
+BT /F2 7.2 Tf 42 379.80 Td ( 349 |     }) Tj ET
+BT /F2 7.2 Tf 42 370.60 Td ( 350 | ) Tj ET
+BT /F2 7.2 Tf 42 361.40 Td ( 351 |     // Skipped question: zero score, no GPT call, no follow-up.) Tj ET
+BT /F2 7.2 Tf 42 352.20 Td ( 352 |     if \(skipped\) {) Tj ET
+BT /F2 7.2 Tf 42 343.00 Td ( 353 |       current.userAnswer = "";) Tj ET
+BT /F2 7.2 Tf 42 333.80 Td ( 354 |       current.aiFeedback = "Question skipped.";) Tj ET
+BT /F2 7.2 Tf 42 324.60 Td ( 355 |       current.score = 0;) Tj ET
+BT /F2 7.2 Tf 42 315.40 Td ( 356 |       current.timeSpent = Number\(timeSpent\) || 0;) Tj ET
+BT /F2 7.2 Tf 42 306.20 Td ( 357 |       current.followUpAsked = false;) Tj ET
+BT /F2 7.2 Tf 42 297.00 Td ( 358 |       await session.save\(\);) Tj ET
+BT /F2 7.2 Tf 42 287.80 Td ( 359 |     } else if \(isFollowUp\) {) Tj ET
+BT /F2 7.2 Tf 42 278.60 Td ( 360 |       // Store the follow-up answer against the same question \(no re-scoring\).) Tj ET
+BT /F2 7.2 Tf 42 269.40 Td ( 361 |       current.followUpAnswer = answer;) Tj ET
+BT /F2 7.2 Tf 42 260.20 Td ( 362 |       current.timeSpent += Number\(timeSpent\) || 0;) Tj ET
+BT /F2 7.2 Tf 42 251.00 Td ( 363 |       await session.save\(\);) Tj ET
+BT /F2 7.2 Tf 42 241.80 Td ( 364 |     } else {) Tj ET
+BT /F2 7.2 Tf 42 232.60 Td ( 365 |       // Main answer: evaluate with GPT.) Tj ET
+BT /F2 7.2 Tf 42 223.40 Td ( 366 |       const cvSummary = session.cvAnalysis?.cvSummary || "";) Tj ET
+BT /F2 7.2 Tf 42 214.20 Td ( 367 |       const userField = session.cvAnalysis?.primaryField || "fullstack";) Tj ET
+BT /F2 7.2 Tf 42 205.00 Td ( 368 | ) Tj ET
+BT /F2 7.2 Tf 42 195.80 Td ( 369 |       const evaluation = await evaluateInterviewAnswer\({) Tj ET
+BT /F2 7.2 Tf 42 186.60 Td ( 370 |         question: current,) Tj ET
+BT /F2 7.2 Tf 42 177.40 Td ( 371 |         answer,) Tj ET
+BT /F2 7.2 Tf 42 168.20 Td ( 372 |         cvSummary,) Tj ET
+BT /F2 7.2 Tf 42 159.00 Td ( 373 |         userField,) Tj ET
+BT /F2 7.2 Tf 42 149.80 Td ( 374 |         language: session.language || "en",) Tj ET
+BT /F2 7.2 Tf 42 140.60 Td ( 375 |       }\);) Tj ET
+BT /F2 7.2 Tf 42 131.40 Td ( 376 | ) Tj ET
+BT /F2 7.2 Tf 42 122.20 Td ( 377 |       current.userAnswer = answer;) Tj ET
+BT /F2 7.2 Tf 42 113.00 Td ( 378 |       current.aiFeedback = evaluation.feedback || "";) Tj ET
+BT /F2 7.2 Tf 42 103.80 Td ( 379 |       current.score = Math.max\(0, Math.min\(10, Number\(evaluation.score\) || 0\)\);) Tj ET
+BT /F2 7.2 Tf 42 94.60 Td ( 380 |       current.timeSpent = Number\(timeSpent\) || 0;) Tj ET
+BT /F2 7.2 Tf 42 85.40 Td ( 381 |       current.followUpAsked = !!evaluation.askFollowUp;) Tj ET
+BT /F2 7.2 Tf 42 76.20 Td ( 382 |       session.currentStage = current.stage || session.currentStage;) Tj ET
+BT /F2 7.2 Tf 42 67.00 Td ( 383 |       await session.save\(\);) Tj ET
+BT /F2 7.2 Tf 42 57.80 Td ( 384 | ) Tj ET
+endstream
+endobj
+28 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 27 0 R >>
+endobj
+29 0 obj
+<< /Length 5310 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 385 |       if \(evaluation.askFollowUp && evaluation.followUpQuestion\) {) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 386 |         const meta = buildQuestionResponseMeta\(current, index\);) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 387 |         return res.status\(200\).json\({) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 388 |           askFollowUp: true,) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 389 |           followUpQuestion: evaluation.followUpQuestion,) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 390 |           questionIndex: index,) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 391 |           isComplete: false,) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td ( 392 |           ...meta,) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td ( 393 |         }\);) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td ( 394 |       }) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td ( 395 |     }) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td ( 396 | ) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td ( 397 |     // Move to the next main question, if any.) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td ( 398 |     const nextIndex = index + 1;) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td ( 399 |     if \(nextIndex < session.questions.length\) {) Tj ET
+BT /F2 7.2 Tf 42 612.00 Td ( 400 |       const nextQuestion = session.questions[nextIndex];) Tj ET
+BT /F2 7.2 Tf 42 602.80 Td ( 401 |       const meta = buildQuestionResponseMeta\(nextQuestion, nextIndex\);) Tj ET
+BT /F2 7.2 Tf 42 593.60 Td ( 402 |       session.currentStage = meta.stage;) Tj ET
+BT /F2 7.2 Tf 42 584.40 Td ( 403 |       session.stageHistory = session.stageHistory || [];) Tj ET
+BT /F2 7.2 Tf 42 575.20 Td ( 404 |       session.stageHistory.push\({) Tj ET
+BT /F2 7.2 Tf 42 566.00 Td ( 405 |         stage: meta.stage,) Tj ET
+BT /F2 7.2 Tf 42 556.80 Td ( 406 |         questionIndex: nextIndex,) Tj ET
+BT /F2 7.2 Tf 42 547.60 Td ( 407 |         enteredAt: new Date\(\),) Tj ET
+BT /F2 7.2 Tf 42 538.40 Td ( 408 |       }\);) Tj ET
+BT /F2 7.2 Tf 42 529.20 Td ( 409 |       await session.save\(\);) Tj ET
+BT /F2 7.2 Tf 42 520.00 Td ( 410 | ) Tj ET
+BT /F2 7.2 Tf 42 510.80 Td ( 411 |       return res.status\(200\).json\({) Tj ET
+BT /F2 7.2 Tf 42 501.60 Td ( 412 |         askFollowUp: false,) Tj ET
+BT /F2 7.2 Tf 42 492.40 Td ( 413 |         isComplete: false,) Tj ET
+BT /F2 7.2 Tf 42 483.20 Td ( 414 |         questionIndex: nextIndex,) Tj ET
+BT /F2 7.2 Tf 42 474.00 Td ( 415 |         nextQuestion: nextQuestion.questionText,) Tj ET
+BT /F2 7.2 Tf 42 464.80 Td ( 416 |         ...meta,) Tj ET
+BT /F2 7.2 Tf 42 455.60 Td ( 417 |       }\);) Tj ET
+BT /F1 10 Tf 42 441.40 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 428.40 Td (- Lines 324-333 receive the answer payload.) Tj ET
+BT /F1 10 Tf 42 415.40 Td (- Lines 335-348 load and validate the session and question.) Tj ET
+BT /F1 10 Tf 42 402.40 Td (- Lines 352-358 handle skipped questions without AI.) Tj ET
+BT /F1 10 Tf 42 389.40 Td (- Lines 365-375 evaluate the main answer with AI.) Tj ET
+BT /F1 10 Tf 42 376.40 Td (- Lines 377-383 save feedback, score, timing, and stage.) Tj ET
+BT /F1 10 Tf 42 363.40 Td (- Lines 385-393 return a follow-up question if needed.) Tj ET
+BT /F1 10 Tf 42 350.40 Td (- Lines 397-417 return the next main question and stage metadata.) Tj ET
+BT /F1 14 Tf 42 323.40 Td (17. Final feedback and recommendation) Tj ET
+BT /F1 9 Tf 42 305.40 Td (Location: backend/src/controllers/aiInterviewController.js:460-510) Tj ET
+BT /F2 7.2 Tf 42 289.40 Td ( 460 | export async function getResults\(req, res\) {) Tj ET
+BT /F2 7.2 Tf 42 280.20 Td ( 461 |   try {) Tj ET
+BT /F2 7.2 Tf 42 271.00 Td ( 462 |     const { sessionId } = req.params;) Tj ET
+BT /F2 7.2 Tf 42 261.80 Td ( 463 | ) Tj ET
+BT /F2 7.2 Tf 42 252.60 Td ( 464 |     const session = await AIInterviewSession.findOne\({) Tj ET
+BT /F2 7.2 Tf 42 243.40 Td ( 465 |       _id: sessionId,) Tj ET
+BT /F2 7.2 Tf 42 234.20 Td ( 466 |       userId: req.user._id,) Tj ET
+BT /F2 7.2 Tf 42 225.00 Td ( 467 |     }\);) Tj ET
+BT /F2 7.2 Tf 42 215.80 Td ( 468 | ) Tj ET
+BT /F2 7.2 Tf 42 206.60 Td ( 469 |     if \(!session\) return res.status\(404\).json\({ msg: "Session not found" }\);) Tj ET
+BT /F2 7.2 Tf 42 197.40 Td ( 470 | ) Tj ET
+BT /F2 7.2 Tf 42 188.20 Td ( 471 |     // If already finalized, just return it \(idempotent\).) Tj ET
+BT /F2 7.2 Tf 42 179.00 Td ( 472 |     if \(session.status === "completed"\) {) Tj ET
+BT /F2 7.2 Tf 42 169.80 Td ( 473 |       return res.status\(200\).json\({ session }\);) Tj ET
+BT /F2 7.2 Tf 42 160.60 Td ( 474 |     }) Tj ET
+BT /F2 7.2 Tf 42 151.40 Td ( 475 | ) Tj ET
+BT /F2 7.2 Tf 42 142.20 Td ( 476 |     const scorecard = await buildFinalInterviewFeedback\(session\);) Tj ET
+BT /F2 7.2 Tf 42 133.00 Td ( 477 | ) Tj ET
+BT /F2 7.2 Tf 42 123.80 Td ( 478 |     // Trust our own per-question average for overallScore rather than GPT's,) Tj ET
+BT /F2 7.2 Tf 42 114.60 Td ( 479 |     // so it always matches the displayed per-question scores.) Tj ET
+BT /F2 7.2 Tf 42 105.40 Td ( 480 |     const scored = session.questions.filter\(\(q\) => typeof q.score === "number"\);) Tj ET
+BT /F2 7.2 Tf 42 96.20 Td ( 481 |     const computedAverage =) Tj ET
+BT /F2 7.2 Tf 42 87.00 Td ( 482 |       scored.length > 0) Tj ET
+BT /F2 7.2 Tf 42 77.80 Td ( 483 |         ? scored.reduce\(\(sum, q\) => sum + q.score, 0\) / scored.length) Tj ET
+BT /F2 7.2 Tf 42 68.60 Td ( 484 |         : 0;) Tj ET
+BT /F2 7.2 Tf 42 59.40 Td ( 485 | ) Tj ET
+endstream
+endobj
+30 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 29 0 R >>
+endobj
+31 0 obj
+<< /Length 2622 >>
+stream
+BT /F2 7.2 Tf 42 750.00 Td ( 486 |     session.overallScore = Math.round\(computedAverage * 10\) / 10;) Tj ET
+BT /F2 7.2 Tf 42 740.80 Td ( 487 |     session.overallFeedback = scorecard.overallFeedback || "";) Tj ET
+BT /F2 7.2 Tf 42 731.60 Td ( 488 |     session.strengths = scorecard.strengths || [];) Tj ET
+BT /F2 7.2 Tf 42 722.40 Td ( 489 |     session.weaknesses = scorecard.weaknesses || [];) Tj ET
+BT /F2 7.2 Tf 42 713.20 Td ( 490 |     session.recommendation = scorecard.recommendation || "";) Tj ET
+BT /F2 7.2 Tf 42 704.00 Td ( 491 |     session.reportSummary = scorecard.reportSummary || "";) Tj ET
+BT /F2 7.2 Tf 42 694.80 Td ( 492 |     session.currentStage = "final_feedback";) Tj ET
+BT /F2 7.2 Tf 42 685.60 Td ( 493 |     session.status = "completed";) Tj ET
+BT /F2 7.2 Tf 42 676.40 Td ( 494 |     await session.save\(\);) Tj ET
+BT /F2 7.2 Tf 42 667.20 Td ( 495 | ) Tj ET
+BT /F2 7.2 Tf 42 658.00 Td ( 496 |     // Fire the background progress-tracking job \(Feature 6\).) Tj ET
+BT /F2 7.2 Tf 42 648.80 Td ( 497 |     try {) Tj ET
+BT /F2 7.2 Tf 42 639.60 Td ( 498 |       await inngest.send\({) Tj ET
+BT /F2 7.2 Tf 42 630.40 Td ( 499 |         name: "ai-interview/completed",) Tj ET
+BT /F2 7.2 Tf 42 621.20 Td ( 500 |         data: { sessionId: session._id.toString\(\) },) Tj ET
+BT /F2 7.2 Tf 42 612.00 Td ( 501 |       }\);) Tj ET
+BT /F2 7.2 Tf 42 602.80 Td ( 502 |     } catch \(sendError\) {) Tj ET
+BT /F2 7.2 Tf 42 593.60 Td ( 503 |       // Don't fail the request if the event can't be queued.) Tj ET
+BT /F2 7.2 Tf 42 584.40 Td ( 504 |       console.error\() Tj ET
+BT /F2 7.2 Tf 42 575.20 Td ( 505 |         "Failed to send ai-interview/completed event:",) Tj ET
+BT /F2 7.2 Tf 42 566.00 Td ( 506 |         sendError.message,) Tj ET
+BT /F2 7.2 Tf 42 556.80 Td ( 507 |       \);) Tj ET
+BT /F2 7.2 Tf 42 547.60 Td ( 508 |     }) Tj ET
+BT /F2 7.2 Tf 42 538.40 Td ( 509 | ) Tj ET
+BT /F2 7.2 Tf 42 529.20 Td ( 510 |     res.status\(200\).json\({ session }\);) Tj ET
+BT /F1 10 Tf 42 515.00 Td (Explanation:) Tj ET
+BT /F1 10 Tf 42 502.00 Td (- Line 460 defines getResults for the final scorecard.) Tj ET
+BT /F1 10 Tf 42 489.00 Td (- Lines 464-474 load the session and keep the endpoint idempotent.) Tj ET
+BT /F1 10 Tf 42 476.00 Td (- Line 476 asks AI to build final interview feedback.) Tj ET
+BT /F1 10 Tf 42 463.00 Td (- Lines 480-486 compute the average score from saved per-question scores.) Tj ET
+BT /F1 10 Tf 42 450.00 Td (- Lines 487-493 save final feedback, strengths, weaknesses, recommendation, and status.) Tj ET
+BT /F1 10 Tf 42 437.00 Td (- Line 510 returns the completed session to the frontend.) Tj ET
+endstream
+endobj
+32 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 31 0 R >>
+endobj
+xref
+0 33
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000212 00000 n 
+0000000282 00000 n 
+0000000350 00000 n 
+0000005789 00000 n 
+0000005925 00000 n 
+0000011282 00000 n 
+0000011418 00000 n 
+0000016855 00000 n 
+0000016992 00000 n 
+0000021717 00000 n 
+0000021855 00000 n 
+0000028003 00000 n 
+0000028141 00000 n 
+0000033612 00000 n 
+0000033750 00000 n 
+0000038238 00000 n 
+0000038376 00000 n 
+0000043940 00000 n 
+0000044078 00000 n 
+0000049122 00000 n 
+0000049260 00000 n 
+0000054326 00000 n 
+0000054464 00000 n 
+0000059977 00000 n 
+0000060115 00000 n 
+0000065637 00000 n 
+0000065775 00000 n 
+0000071138 00000 n 
+0000071276 00000 n 
+0000073951 00000 n 
+trailer
+<< /Size 33 /Root 1 0 R >>
+startxref
+74089
+%%EOF

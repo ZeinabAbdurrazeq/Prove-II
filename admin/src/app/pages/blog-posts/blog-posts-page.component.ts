@@ -32,13 +32,12 @@ const emptyForm = (): BlogForm => ({
         <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <p class="text-sm uppercase tracking-[0.24em] text-base-content/60">Content</p>
-            <h2 class="mt-2 text-2xl font-bold text-white">Blog posts</h2>
+            <h2 class="mt-2 text-2xl font-bold text-base-content">Blog posts</h2>
             <p class="mt-2 max-w-2xl text-sm text-base-content/60">Create, edit, delete, and publish public blog articles in English and Arabic.</p>
           </div>
           <div class="flex w-full flex-col gap-3 sm:flex-row xl:max-w-xl">
             <input class="admin-input" type="text" placeholder="Search posts" [(ngModel)]="searchTerm" (keydown.enter)="loadPosts()" />
             <button class="admin-button-secondary" type="button" (click)="loadPosts()">Search</button>
-            <button class="admin-button" type="button" (click)="startCreate()">New post</button>
           </div>
         </div>
       </section>
@@ -47,16 +46,16 @@ const emptyForm = (): BlogForm => ({
         {{ error }}
       </section>
 
-      <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(340px,520px)]">
+      <section class="space-y-6">
         <div class="admin-panel overflow-hidden p-0">
           <div *ngIf="loading" class="p-8 text-base-content/70">Loading posts...</div>
 
           <div *ngIf="!loading && posts.length === 0" class="p-10 text-center text-base-content/60">
-            <p class="text-lg font-semibold text-white">No posts yet</p>
+            <p class="text-lg font-semibold text-base-content">No posts yet</p>
             <p class="mt-2 text-sm">Create the first blog article from the form.</p>
           </div>
 
-          <div *ngIf="!loading && posts.length" class="divide-y divide-white/10">
+          <div *ngIf="!loading && posts.length" class="divide-y divide-base-300">
             <article *ngFor="let post of posts" class="p-5">
               <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="min-w-0">
@@ -66,7 +65,7 @@ const emptyForm = (): BlogForm => ({
                       {{ post.published ? 'Published' : 'Draft' }}
                     </span>
                   </div>
-                  <h3 class="mt-3 break-words text-xl font-bold text-white">{{ post.title.en }}</h3>
+                  <h3 class="mt-3 break-words text-xl font-bold text-base-content">{{ post.title.en }}</h3>
                   <p class="mt-2 break-words text-sm text-base-content/65">{{ post.excerpt.en }}</p>
                   <p class="mt-2 text-xs text-base-content/45">/{{ post.slug }}</p>
                 </div>
@@ -75,7 +74,7 @@ const emptyForm = (): BlogForm => ({
                   <button class="admin-button-secondary" type="button" (click)="togglePublish(post)">
                     {{ post.published ? 'Unpublish' : 'Publish' }}
                   </button>
-                  <button class="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-100" type="button" (click)="deletePost(post)">Delete</button>
+                  <button class="rounded-2xl border border-red-600 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100" type="button" (click)="deletePost(post)">Delete</button>
                 </div>
               </div>
             </article>
@@ -85,7 +84,7 @@ const emptyForm = (): BlogForm => ({
         <form class="admin-panel blog-editor-panel space-y-5 p-5" (ngSubmit)="savePost()">
           <div>
             <p class="text-sm uppercase tracking-[0.24em] text-base-content/70">{{ editingId ? 'Edit post' : 'Create post' }}</p>
-            <h3 class="mt-2 text-xl font-bold text-white">{{ form.title.en || 'Untitled post' }}</h3>
+            <h3 class="mt-2 text-xl font-bold text-base-content">{{ form.title.en || 'Untitled post' }}</h3>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
@@ -137,7 +136,7 @@ const emptyForm = (): BlogForm => ({
 
           <div class="space-y-4">
             <div class="flex items-center justify-between gap-3">
-              <h4 class="font-bold text-white">Content sections</h4>
+              <h4 class="font-bold text-base-content">Content sections</h4>
               <button class="admin-button-secondary" type="button" (click)="addSection()">Add section</button>
             </div>
             <div *ngFor="let section of form.content; let i = index" class="blog-section-card rounded-3xl p-4">

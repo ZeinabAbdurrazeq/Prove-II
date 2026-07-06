@@ -1,0 +1,1577 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DB SCHEMA</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 15mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      color: #172033;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    h1, h2, h3, h4 {
+      color: #0a2947;
+      line-height: 1.25;
+      margin: 1.1em 0 0.45em;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      border-bottom: 2px solid #0a2947;
+      font-size: 26px;
+      margin-top: 0;
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      border-bottom: 1px solid #d7dee8;
+      font-size: 18px;
+      padding-bottom: 4px;
+    }
+
+    h3 {
+      font-size: 14px;
+    }
+
+    p, ul, ol, table, pre {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    table {
+      border-collapse: collapse;
+      page-break-inside: avoid;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #cfd8e3;
+      padding: 5px 6px;
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    th {
+      background: #eef3f8;
+      color: #0a2947;
+      font-weight: 700;
+    }
+
+    code {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 3px;
+      color: #12314d;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 10px;
+      padding: 1px 3px;
+    }
+
+    pre {
+      background: #f8fafc;
+      border: 1px solid #d7dee8;
+      border-radius: 6px;
+      overflow-wrap: break-word;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+
+    pre code {
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
+
+    blockquote {
+      border-left: 4px solid #0a2947;
+      color: #475569;
+      margin: 0 0 10px;
+      padding: 4px 0 4px 12px;
+    }
+
+    a {
+      color: #0a5ea8;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+<h1>ProveIt Database Schema</h1>
+<p>This document describes the current MongoDB schema used by the ProveIt platform. It was generated from the Mongoose models in <code>backend/src/models</code>.</p>
+<h2>Database</h2>
+<ul>
+<li>Database type: MongoDB</li>
+<li>ODM: Mongoose</li>
+<li>Main connection: <code>backend/src/lib/db.js</code></li>
+<li>Connection environment variable: <code>DB_URL</code></li>
+</ul>
+<h2>Collections Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Collection</th>
+<th>Mongoose Model</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>users</code></td>
+<td><code>User</code></td>
+<td>Stores application users, Clerk identity mapping, score, level, and role.</td>
+</tr>
+<tr>
+<td><code>subscriptions</code></td>
+<td><code>Subscription</code></td>
+<td>Stores plan, billing period, and AI interview limits per user.</td>
+</tr>
+<tr>
+<td><code>sessions</code></td>
+<td><code>Session</code></td>
+<td>Stores live coding sessions, host/participant state, difficulty, selected problem, and Stream call id.</td>
+</tr>
+<tr>
+<td><code>invitations</code></td>
+<td><code>Invitation</code></td>
+<td>Stores scheduled session invitations and acceptance/decline state.</td>
+</tr>
+<tr>
+<td><code>notifications</code></td>
+<td><code>Notification</code></td>
+<td>Stores in-app notifications for invitations and session events.</td>
+</tr>
+<tr>
+<td><code>availabilities</code></td>
+<td><code>Availability</code></td>
+<td>Stores weekly availability slots for scheduling.</td>
+</tr>
+<tr>
+<td><code>codesubmissions</code></td>
+<td><code>CodeSubmission</code></td>
+<td>Stores Judge0-backed problem submission attempts and score deltas.</td>
+</tr>
+<tr>
+<td><code>candidateprofiles</code></td>
+<td><code>CandidateProfile</code></td>
+<td>Stores AI CV analysis and adaptive interview progress per user.</td>
+</tr>
+<tr>
+<td><code>aiinterviewsessions</code></td>
+<td><code>AIInterviewSession</code></td>
+<td>Stores AI interview attempts, questions, answers, scores, and final reports.</td>
+</tr>
+<tr>
+<td><code>interviewquestions</code></td>
+<td><code>InterviewQuestions</code></td>
+<td>Stores seeded interview question bank records for RAG/question selection.</td>
+</tr>
+<tr>
+<td><code>blogposts</code></td>
+<td><code>BlogPost</code></td>
+<td>Stores localized public/admin blog posts.</td>
+</tr>
+</tbody></table>
+<h2>Entity Relationship Summary</h2>
+<pre><code class="language-text">User 1--1 Subscription
+User 1--1 Availability
+User 1--1 CandidateProfile
+User 1--N CodeSubmission
+User 1--N AIInterviewSession
+User 1--N Session as host
+User 1--N Session as participant/invitedParticipant
+User 1--N Invitation as sender
+User 1--N Invitation as recipient
+User 1--N Notification as recipient/sender
+Invitation 0--1 Session
+Session 0--1 Invitation
+AIInterviewSession N--N InterviewQuestions through questions.questionId
+</code></pre>
+<h2>User</h2>
+<p>Model file: <code>backend/src/models/User.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>name</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Display name.</td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Unique.</td>
+</tr>
+<tr>
+<td><code>profileImage</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Avatar URL.</td>
+</tr>
+<tr>
+<td><code>clerkId</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Unique Clerk user id.</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>user</code></td>
+<td><code>user</code>, <code>admin</code>.</td>
+</tr>
+<tr>
+<td><code>score</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Minimum 0.</td>
+</tr>
+<tr>
+<td><code>level</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>Entry-Level</code></td>
+<td><code>Entry-Level</code>, <code>Junior</code>, <code>Intermediate</code>, <code>Advanced</code>.</td>
+</tr>
+<tr>
+<td><code>scoreStats.easySolved</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Minimum 0.</td>
+</tr>
+<tr>
+<td><code>scoreStats.mediumSolved</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Minimum 0.</td>
+</tr>
+<tr>
+<td><code>scoreStats.hardSolved</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Minimum 0.</td>
+</tr>
+<tr>
+<td><code>scoreStats.totalSolved</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Minimum 0.</td>
+</tr>
+<tr>
+<td><code>scoreStats.successRate</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>0 to 100.</td>
+</tr>
+<tr>
+<td><code>scoreStats.lastActivityBonusDate</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Daily bonus date key.</td>
+</tr>
+<tr>
+<td><code>scoreStats.lastUpdated</code></td>
+<td>Date</td>
+<td>No</td>
+<td><code>Date.now</code></td>
+<td>Stats update time.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes and constraints:</p>
+<ul>
+<li>Unique: <code>email</code></li>
+<li>Unique: <code>clerkId</code></li>
+</ul>
+<h2>Subscription</h2>
+<p>Model file: <code>backend/src/models/Subscription.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>userId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Unique subscription owner.</td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>free</code></td>
+<td><code>free</code>, <code>pro</code>, <code>premium</code>.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>active</code></td>
+<td><code>active</code>, <code>cancelled</code>, <code>expired</code>.</td>
+</tr>
+<tr>
+<td><code>currentPeriodStart</code></td>
+<td>Date</td>
+<td>No</td>
+<td>none</td>
+<td>Billing period start.</td>
+</tr>
+<tr>
+<td><code>currentPeriodEnd</code></td>
+<td>Date</td>
+<td>No</td>
+<td>none</td>
+<td>Billing period end.</td>
+</tr>
+<tr>
+<td><code>aiInterviewsUsedThisMonth</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Monthly usage counter.</td>
+</tr>
+<tr>
+<td><code>aiInterviewsLimit</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>3</code></td>
+<td><code>-1</code> means unlimited in plan logic.</td>
+</tr>
+<tr>
+<td><code>cancelledAt</code></td>
+<td>Date</td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Cancellation time.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes and constraints:</p>
+<ul>
+<li>Unique: <code>userId</code></li>
+</ul>
+<h2>Session</h2>
+<p>Model file: <code>backend/src/models/Session.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>problem</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Current selected problem title.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>String enum</td>
+<td>Yes</td>
+<td>none</td>
+<td><code>easy</code>, <code>medium</code>, <code>hard</code>.</td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Session creator/host.</td>
+</tr>
+<tr>
+<td><code>participant</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>User who joined or accepted invitation.</td>
+</tr>
+<tr>
+<td><code>invitedParticipant</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Reserved invited user for private sessions.</td>
+</tr>
+<tr>
+<td><code>invitation</code></td>
+<td>ObjectId ref <code>Invitation</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Source invitation.</td>
+</tr>
+<tr>
+<td><code>selectedProblemId</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Current selected problem id.</td>
+</tr>
+<tr>
+<td><code>startedNotificationSentAt</code></td>
+<td>Date</td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Host-started notification marker.</td>
+</tr>
+<tr>
+<td><code>participantStartedNotificationSentAt</code></td>
+<td>Date</td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Participant-started notification marker.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>active</code></td>
+<td><code>active</code>, <code>completed</code>.</td>
+</tr>
+<tr>
+<td><code>callId</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Unique Stream video/chat id.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes and constraints:</p>
+<ul>
+<li>Unique: <code>callId</code></li>
+<li>Index: <code>{ status: 1, createdAt: -1 }</code></li>
+<li>Index: <code>{ host: 1 }</code></li>
+<li>Index: <code>{ participant: 1 }</code></li>
+<li>Index: <code>{ invitedParticipant: 1 }</code></li>
+</ul>
+<h2>Invitation</h2>
+<p>Model file: <code>backend/src/models/Invitation.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>senderId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Inviter.</td>
+</tr>
+<tr>
+<td><code>recipientId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Invitee.</td>
+</tr>
+<tr>
+<td><code>scheduledDate</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Format <code>YYYY-MM-DD</code>.</td>
+</tr>
+<tr>
+<td><code>scheduledTime</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Format <code>HH:MM</code>.</td>
+</tr>
+<tr>
+<td><code>duration</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>60</code></td>
+<td>Minutes.</td>
+</tr>
+<tr>
+<td><code>problem</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Legacy/optional problem title.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>String enum</td>
+<td>Yes</td>
+<td>none</td>
+<td><code>easy</code>, <code>medium</code>, <code>hard</code>.</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Optional sender note.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>pending</code></td>
+<td><code>pending</code>, <code>accepted</code>, <code>declined</code>.</td>
+</tr>
+<tr>
+<td><code>sessionId</code></td>
+<td>ObjectId ref <code>Session</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Created after acceptance.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes:</p>
+<ul>
+<li><code>{ recipientId: 1, status: 1 }</code></li>
+<li><code>{ senderId: 1 }</code></li>
+</ul>
+<h2>Notification</h2>
+<p>Model file: <code>backend/src/models/Notification.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>recipientId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Notification owner.</td>
+</tr>
+<tr>
+<td><code>senderId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Notification actor.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>String enum</td>
+<td>Yes</td>
+<td>none</td>
+<td><code>session-invitation</code>, <code>invitation-accepted</code>, <code>invitation-declined</code>, <code>session-reminder</code>, <code>session-started</code>.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>unread</code></td>
+<td><code>unread</code>, <code>read</code>.</td>
+</tr>
+<tr>
+<td><code>relatedInvitationId</code></td>
+<td>ObjectId ref <code>Invitation</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Related invitation.</td>
+</tr>
+<tr>
+<td><code>relatedSessionId</code></td>
+<td>ObjectId ref <code>Session</code></td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Related session.</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Display message.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes:</p>
+<ul>
+<li><code>{ recipientId: 1, status: 1 }</code></li>
+</ul>
+<h2>Availability</h2>
+<p>Model file: <code>backend/src/models/Availability.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>userId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Unique owner.</td>
+</tr>
+<tr>
+<td><code>weeklySchedule.monday</code></td>
+<td>Slot[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Time ranges.</td>
+</tr>
+<tr>
+<td><code>weeklySchedule.tuesday</code></td>
+<td>Slot[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Time ranges.</td>
+</tr>
+<tr>
+<td><code>weeklySchedule.wednesday</code></td>
+<td>Slot[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Time ranges.</td>
+</tr>
+<tr>
+<td><code>weeklySchedule.thursday</code></td>
+<td>Slot[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Time ranges.</td>
+</tr>
+<tr>
+<td><code>weeklySchedule.friday</code></td>
+<td>Slot[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Time ranges.</td>
+</tr>
+<tr>
+<td><code>weeklySchedule.saturday</code></td>
+<td>Slot[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Time ranges.</td>
+</tr>
+<tr>
+<td><code>weeklySchedule.sunday</code></td>
+<td>Slot[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Time ranges.</td>
+</tr>
+<tr>
+<td><code>timezone</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>Africa/Cairo</code></td>
+<td>Scheduling timezone.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>No</td>
+<td><code>Date.now</code></td>
+<td>Explicit update marker plus timestamps.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Slot subdocument:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>startTime</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>Format <code>HH:MM</code>.</td>
+</tr>
+<tr>
+<td><code>endTime</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>Format <code>HH:MM</code>.</td>
+</tr>
+</tbody></table>
+<p>Indexes and constraints:</p>
+<ul>
+<li>Unique: <code>userId</code></li>
+</ul>
+<h2>CodeSubmission</h2>
+<p>Model file: <code>backend/src/models/CodeSubmission.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>userId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Submitter.</td>
+</tr>
+<tr>
+<td><code>problemId</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Practice problem id.</td>
+</tr>
+<tr>
+<td><code>problemTitle</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Practice problem title.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>String enum</td>
+<td>Yes</td>
+<td>none</td>
+<td><code>easy</code>, <code>medium</code>, <code>hard</code>.</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td><code>javascript</code>, <code>python</code>, or <code>java</code> from frontend runner.</td>
+</tr>
+<tr>
+<td><code>accepted</code></td>
+<td>Boolean</td>
+<td>Yes</td>
+<td>none</td>
+<td>Whether output matched expected output.</td>
+</tr>
+<tr>
+<td><code>firstTry</code></td>
+<td>Boolean</td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Accepted with no previous attempts.</td>
+</tr>
+<tr>
+<td><code>solvedPointsAwarded</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Easy 10, medium 20, hard 35.</td>
+</tr>
+<tr>
+<td><code>firstTryBonusAwarded</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>5 when applicable.</td>
+</tr>
+<tr>
+<td><code>dailyBonusAwarded</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>3 when applicable.</td>
+</tr>
+<tr>
+<td><code>wrongPenaltyApplied</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>-2 once per problem for wrong attempt.</td>
+</tr>
+<tr>
+<td><code>scoreDelta</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Total score impact of this submission.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes:</p>
+<ul>
+<li><code>{ userId: 1, problemId: 1, createdAt: 1 }</code></li>
+<li><code>{ userId: 1, accepted: 1 }</code></li>
+</ul>
+<h2>CandidateProfile</h2>
+<p>Model file: <code>backend/src/models/CandidateProfile.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>userId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Unique owner.</td>
+</tr>
+<tr>
+<td><code>primaryField</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>fullstack</code></td>
+<td>CV-inferred field.</td>
+</tr>
+<tr>
+<td><code>yearsOfExperience</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>CV-inferred experience.</td>
+</tr>
+<tr>
+<td><code>keySkills</code></td>
+<td>String[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>CV skills.</td>
+</tr>
+<tr>
+<td><code>strongestAreas</code></td>
+<td>String[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>CV strengths.</td>
+</tr>
+<tr>
+<td><code>notableTechnologies</code></td>
+<td>String[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>CV technologies.</td>
+</tr>
+<tr>
+<td><code>cvSummary</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Summary fed to AI interview.</td>
+</tr>
+<tr>
+<td><code>preferredDifficulty</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>medium</code></td>
+<td><code>easy</code>, <code>medium</code>, <code>hard</code>.</td>
+</tr>
+<tr>
+<td><code>questionsAskedIds</code></td>
+<td>ObjectId[] ref <code>InterviewQuestions</code></td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Prevents repeats.</td>
+</tr>
+<tr>
+<td><code>totalInterviewsCompleted</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Progress metric.</td>
+</tr>
+<tr>
+<td><code>overallAverageScore</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Progress metric.</td>
+</tr>
+<tr>
+<td><code>topicWeaknesses</code></td>
+<td>Object</td>
+<td>No</td>
+<td><code>{}</code></td>
+<td>Adaptive topic tracking.</td>
+</tr>
+<tr>
+<td><code>topicStrengths</code></td>
+<td>Object</td>
+<td>No</td>
+<td><code>{}</code></td>
+<td>Adaptive topic tracking.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes and constraints:</p>
+<ul>
+<li>Unique: <code>userId</code></li>
+</ul>
+<h2>AIInterviewSession</h2>
+<p>Model file: <code>backend/src/models/AIInterviewSession.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>userId</code></td>
+<td>ObjectId ref <code>User</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Candidate.</td>
+</tr>
+<tr>
+<td><code>cvAnalysis</code></td>
+<td>Object</td>
+<td>No</td>
+<td><code>{}</code></td>
+<td>Snapshot of candidate profile.</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>en</code></td>
+<td><code>en</code>, <code>ar</code>.</td>
+</tr>
+<tr>
+<td><code>interviewerName</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>Zara</code></td>
+<td>AI interviewer.</td>
+</tr>
+<tr>
+<td><code>currentStage</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>intro</code></td>
+<td>Interview stage.</td>
+</tr>
+<tr>
+<td><code>targetRole</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Optional target role.</td>
+</tr>
+<tr>
+<td><code>jobDescription</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Optional job description.</td>
+</tr>
+<tr>
+<td><code>questions</code></td>
+<td>Question[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Asked questions and answers.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>String enum</td>
+<td>No</td>
+<td><code>in-progress</code></td>
+<td><code>in-progress</code>, <code>completed</code>.</td>
+</tr>
+<tr>
+<td><code>overallScore</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Final score.</td>
+</tr>
+<tr>
+<td><code>overallFeedback</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Final feedback.</td>
+</tr>
+<tr>
+<td><code>strengths</code></td>
+<td>String[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Final strengths.</td>
+</tr>
+<tr>
+<td><code>weaknesses</code></td>
+<td>String[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Final weaknesses.</td>
+</tr>
+<tr>
+<td><code>recommendation</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Final recommendation.</td>
+</tr>
+<tr>
+<td><code>reportSummary</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Final report summary.</td>
+</tr>
+<tr>
+<td><code>stageHistory</code></td>
+<td>Object[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Stage transitions.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Question subdocument:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>questionId</code></td>
+<td>ObjectId ref <code>InterviewQuestions</code></td>
+<td>No</td>
+<td>none</td>
+<td>Optional question bank link.</td>
+</tr>
+<tr>
+<td><code>questionText</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Spoken question.</td>
+</tr>
+<tr>
+<td><code>topic</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Topic tag.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td><code>easy</code>, <code>medium</code>, <code>hard</code>.</td>
+</tr>
+<tr>
+<td><code>stage</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>technical</code></td>
+<td>Interview stage.</td>
+</tr>
+<tr>
+<td><code>userAnswer</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Transcribed answer.</td>
+</tr>
+<tr>
+<td><code>aiFeedback</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Per-answer feedback.</td>
+</tr>
+<tr>
+<td><code>score</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>0 to 10.</td>
+</tr>
+<tr>
+<td><code>timeSpent</code></td>
+<td>Number</td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Seconds.</td>
+</tr>
+<tr>
+<td><code>followUpAsked</code></td>
+<td>Boolean</td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Follow-up flag.</td>
+</tr>
+<tr>
+<td><code>followUpAnswer</code></td>
+<td>String</td>
+<td>No</td>
+<td><code>&quot;&quot;</code></td>
+<td>Follow-up answer.</td>
+</tr>
+</tbody></table>
+<p>Indexes:</p>
+<ul>
+<li><code>{ userId: 1, createdAt: -1 }</code></li>
+</ul>
+<h2>InterviewQuestions</h2>
+<p>Model file: <code>backend/src/models/InterviewQuestions.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>questionText</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Question prompt.</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Topic category.</td>
+</tr>
+<tr>
+<td><code>fieldRelevance</code></td>
+<td>String[]</td>
+<td>Yes</td>
+<td>none</td>
+<td>Relevant candidate fields.</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>String enum</td>
+<td>Yes</td>
+<td>none</td>
+<td><code>easy</code>, <code>medium</code>, <code>hard</code>.</td>
+</tr>
+<tr>
+<td><code>followUpQuestions</code></td>
+<td>String[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Suggested follow-ups.</td>
+</tr>
+<tr>
+<td><code>expectedKeywords</code></td>
+<td>String[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Evaluation hints.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes:</p>
+<ul>
+<li><code>fieldRelevance</code> indexed through field definition.</li>
+<li><code>{ fieldRelevance: 1, difficulty: 1 }</code></li>
+</ul>
+<h2>BlogPost</h2>
+<p>Model file: <code>backend/src/models/BlogPost.js</code></p>
+<p>Localized text subdocument:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>en</code></td>
+<td>String</td>
+<td><code>&quot;&quot;</code></td>
+</tr>
+<tr>
+<td><code>ar</code></td>
+<td>String</td>
+<td><code>&quot;&quot;</code></td>
+</tr>
+</tbody></table>
+<p>Blog section subdocument:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>heading</code></td>
+<td>LocalizedText</td>
+<td>Section heading.</td>
+</tr>
+<tr>
+<td><code>body</code></td>
+<td>LocalizedText</td>
+<td>Section body.</td>
+</tr>
+</tbody></table>
+<p>Blog post document:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>title</code></td>
+<td>LocalizedText</td>
+<td>No</td>
+<td>localized empty strings</td>
+<td>Title in EN/AR.</td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>String</td>
+<td>Yes</td>
+<td>none</td>
+<td>Unique, lowercase.</td>
+</tr>
+<tr>
+<td><code>excerpt</code></td>
+<td>LocalizedText</td>
+<td>No</td>
+<td>localized empty strings</td>
+<td>Listing excerpt.</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td>LocalizedText</td>
+<td>No</td>
+<td>localized empty strings</td>
+<td>Post category.</td>
+</tr>
+<tr>
+<td><code>readTime</code></td>
+<td>LocalizedText</td>
+<td>No</td>
+<td>localized empty strings</td>
+<td>Read-time label.</td>
+</tr>
+<tr>
+<td><code>author</code></td>
+<td>LocalizedText</td>
+<td>No</td>
+<td>localized empty strings</td>
+<td>Author label.</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>BlogSection[]</td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Localized article sections.</td>
+</tr>
+<tr>
+<td><code>published</code></td>
+<td>Boolean</td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Public visibility.</td>
+</tr>
+<tr>
+<td><code>publishedAt</code></td>
+<td>Date</td>
+<td>No</td>
+<td><code>null</code></td>
+<td>Publication date.</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>Date</td>
+<td>Auto</td>
+<td>auto</td>
+<td>Mongoose timestamp.</td>
+</tr>
+</tbody></table>
+<p>Indexes and constraints:</p>
+<ul>
+<li>Unique: <code>slug</code></li>
+<li>Index: <code>{ published: 1, publishedAt: -1 }</code></li>
+<li>Index: <code>{ slug: 1 }</code>, unique</li>
+</ul>
+<h2>Scoring Rules</h2>
+<p>Source: <code>backend/src/services/scoreService.js</code></p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Easy solved points</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Medium solved points</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Hard solved points</td>
+<td>35</td>
+</tr>
+<tr>
+<td>First try bonus</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Daily activity bonus</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Wrong submission penalty</td>
+<td>-2</td>
+</tr>
+</tbody></table>
+<p>User level thresholds:</p>
+<table>
+<thead>
+<tr>
+<th>Score Range</th>
+<th>Level</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0 to 99</td>
+<td>Entry-Level</td>
+</tr>
+<tr>
+<td>100 to 199</td>
+<td>Junior</td>
+</tr>
+<tr>
+<td>200 to 299</td>
+<td>Intermediate</td>
+</tr>
+<tr>
+<td>300+</td>
+<td>Advanced</td>
+</tr>
+</tbody></table>
+<h2>Notes</h2>
+<ul>
+<li>Practice problems are currently frontend data in <code>frontend/src/data/problems.js</code>; solved attempts are persisted in <code>CodeSubmission</code>.</li>
+<li>Session video/chat state is created in Stream using <code>callId</code>; MongoDB stores the durable session metadata.</li>
+<li>Authentication identity is owned by Clerk; MongoDB stores the application user mapping through <code>clerkId</code>.</li>
+</ul>
+
+</body>
+</html>

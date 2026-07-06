@@ -1,0 +1,59 @@
+BrowserMainParts-state=PostBrowserStart
+BrowserProcessImpl-shutdownstate=running
+IsOfficialBuild=1
+KeepAliveCount=2
+KeepAliveRestartCount=0
+KeepAliveShuttingDown=0
+KeepAlives=HEADLESS_COMMAND (1), BROWSER (1)
+LOG_FATAL=gpu_data_manager_impl_private.cc:428: GPU process isn't usable. Goodbye.
+
+LocaleDataPakExists-found_attrs=32
+LocaleDataPakExists-found_path=C:\Program Files (x86)\Microsoft\Edge\Application\149.0.4022.98\Locales\en-US.pak
+breadcrumbs=0:00:06 Microsoft.BrowserList.AddBrowser
+0:00:00 Microsoft.NewBrowser_Normal
+0:00:00 Microsoft.DeleteProfileHelper.CleanUpDeletedProfiles
+0:00:00 Microsoft.DeleteProfileHelper.CleanUpEphemeralProfiles
+0:00:00 Startup
+
+browser_window_count=1
+chrome-trace-id=7301515433546785645
+chromium-version=149.0.7827.201
+exception_code=0x80000003
+exception_module_path=C:\Program Files (x86)\Microsoft\Edge\Application\149.0.4022.98\msedge.dll
+exception_module_version=149.0.4022.98
+exe=C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+guid=59514ab0-3da5-497f-bc3f-2c10f7b14951
+last_gpu_crash_exit_code=STATUS_ACCESS_DENIED
+metrics_client_id_hash=7109083355615420399
+metrics_session_id=0
+module_offset=172213773
+num-experiments=12
+num-extensions=0
+num-switches=17
+osarch=x86_64
+pid=21112
+plat=Win64
+process_id=21112
+prod=Edge
+ptype=browser
+reentry_guard_tls_slot=unused
+rwhva_teardown=1
+ss_ver=1.2.2604.3
+switch-1=--headless=new
+switch-10=--no-default-browser-check
+switch-11=--user-data-dir=D:\ITI_MEARN\FinalProject\UI\FinalProveIt\Provelt-Final\docs\.pdf-build\chrome-profile-DB_SCHEMA
+switch-12=--no-pdf-header-footer
+switch-13=--print-to-pdf=D:\ITI_MEARN\FinalProject\UI\FinalProveIt\Provelt-Final\docs\DB_SCHEMA.pdf
+switch-14=--noerrdialogs
+switch-15=file:///D:/ITI_MEARN/FinalProject/UI/FinalProveIt/Provelt-Final/docs/.pdf-build/DB_SCHEMA.html
+switch-2=--disable-gpu
+switch-3=--disable-gpu-compositing
+switch-4=--disable-software-rasterizer
+switch-5=--disable-dev-shm-usage
+switch-6=--disable-extensions
+switch-7=--disable-background-networking
+switch-8=--disable-sync
+switch-9=--no-first-run
+third_party_modules=UMPDC.dll;TextShaping.dll;WindowManagementAPI.dll
+variations=b6f29041-ca7d8d80,b357b792-3d47f4f4,f4f00e05-ca7d8d80,9481ce98-3d47f4f4,2a426c03-3d47f4f4,4b935545-3d47f4f4,ce263fae-3d47f4f4,9a38bae3-3d47f4f4,41ad04e1-16e9df14,2d1e43a3-3d47f4f4,370ace14-3f4a17df,386dc267-3d47f4f4,
+ver=149.0.4022.98
