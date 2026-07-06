@@ -11,7 +11,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const ALLOWED_USER_ROLES = ["user", "admin"];
 const SESSION_STATUSES = ["active", "completed"];
 const INTERVIEW_STATUSES = ["in-progress", "completed"];
-const PLAN_ORDER = ["free", "pro", "premium"];
+const PLAN_ORDER = ["free", "singleInterview", "premium", "pro"];
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -113,10 +113,32 @@ export const getDashboardStats = async (req, res) => {
           },
         },
       ]),
-      Subscription.countDocuments({ status: "active", plan: { $in: ["pro", "premium"] } }),
+      Subscription.countDocuments({
+        status: "active",
+        $or: [
+          { plan: { $in: ["pro", "premium"] } },
+          { aiInterviewCredits: { $gt: 0 } },
+        ],
+      }),
       Invitation.countDocuments({ status: "pending" }),
       Subscription.aggregate([
-        { $group: { _id: "$plan", count: { $sum: 1 } } },
+        {
+          $group: {
+            _id: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$plan", "free"] },
+                    { $gt: ["$aiInterviewCredits", 0] },
+                  ],
+                },
+                "singleInterview",
+                "$plan",
+              ],
+            },
+            count: { $sum: 1 },
+          },
+        },
       ]),
     ]);
 
