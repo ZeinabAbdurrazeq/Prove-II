@@ -420,6 +420,14 @@ export const translations = {
       "Your payment was successful and your plan is now active.",
     "checkout.goToDashboard": "Go to Dashboard",
     "checkout.declined": "Payment declined. Your card was declined",
+    "checkout.paypalSandbox": "Complete this payment with a PayPal Sandbox buyer account.",
+    "checkout.paypalSecure": "Secured by PayPal Sandbox. No real money is charged.",
+    "checkout.paypalLoading": "Loading PayPal checkout...",
+    "checkout.paypalCapturing": "Confirming PayPal payment...",
+    "checkout.paypalError": "PayPal payment could not be completed.",
+    "checkout.paypalCancelled": "PayPal payment was cancelled.",
+    "checkout.paypalLoadError": "PayPal checkout could not be loaded.",
+    "checkout.paypalMissing": "PayPal Sandbox Client ID is missing.",
 
     // Paywall
     "paywall.title": "AI interview required",
@@ -989,6 +997,14 @@ export const translations = {
     "checkout.successMessage": "تم الدفع بنجاح وخطتك نشطة الآن.",
     "checkout.goToDashboard": "اذهب إلى لوحة التحكم",
     "checkout.declined": "تم رفض الدفع. تم رفض بطاقتك",
+    "checkout.paypalSandbox": "أكمل الدفع باستخدام حساب مشتري PayPal Sandbox.",
+    "checkout.paypalSecure": "الدفع مؤمن بواسطة PayPal Sandbox ولا يتم خصم أموال حقيقية.",
+    "checkout.paypalLoading": "جاري تحميل دفع PayPal...",
+    "checkout.paypalCapturing": "جاري تأكيد دفع PayPal...",
+    "checkout.paypalError": "تعذر إكمال دفع PayPal.",
+    "checkout.paypalCancelled": "تم إلغاء دفع PayPal.",
+    "checkout.paypalLoadError": "تعذر تحميل دفع PayPal.",
+    "checkout.paypalMissing": "معرف PayPal Sandbox Client ID غير موجود.",
 
     // Paywall
     "paywall.title": "لقد وصلت إلى حدك المجاني",

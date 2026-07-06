@@ -14,6 +14,21 @@ export const subscriptionApi = {
     return response.data;
   },
 
+  createPaypalOrder: async ({ plan }) => {
+    const response = await axiosInstance.post("/subscription/paypal/create-order", {
+      plan,
+    });
+    return response.data;
+  },
+
+  capturePaypalOrder: async ({ plan, orderId }) => {
+    const response = await axiosInstance.post("/subscription/paypal/capture-order", {
+      plan,
+      orderId,
+    });
+    return response.data;
+  },
+
   cancelSubscription: async () => {
     const response = await axiosInstance.post("/subscription/cancel");
     return response.data;

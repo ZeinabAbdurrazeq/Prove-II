@@ -2,6 +2,7 @@ import Subscription from "../models/Subscription.js";
 import User from "../models/User.js";
 import { PLANS } from "../lib/plans.js";
 import { sendSubscriptionEmail } from "../lib/email.js";
+import { capturePaypalOrder, createPaypalOrder } from "../lib/paypal.js";
 
 // Last day of the month for a given date (end of current billing period
 // for the auto-created free plan).
@@ -34,6 +35,57 @@ async function findOrCreateSubscription(userId) {
   return subscription;
 }
 
+async function activatePaidPlan(userId, plan) {
+  const now = new Date();
+  const newPeriodEnd = sameDayNextMonth(now);
+  let subscription;
+
+  if (plan === "singleInterview") {
+    subscription = await findOrCreateSubscription(userId);
+    subscription.aiInterviewCredits = (subscription.aiInterviewCredits || 0) + 1;
+    subscription.status = "active";
+    await subscription.save();
+  } else {
+    const aiInterviewsLimit = PLANS[plan].aiInterviewsPerMonth || 0;
+
+    subscription = await Subscription.findOneAndUpdate(
+      { userId },
+      {
+        userId,
+        plan,
+        status: "active",
+        currentPeriodStart: now,
+        currentPeriodEnd: newPeriodEnd,
+        aiInterviewsLimit,
+        aiInterviewsUsedThisMonth: 0,
+        cancelledAt: null,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  // Send a purchase confirmation email (non-blocking; never fails the request).
+  try {
+    const user = await User.findById(userId).select("name email");
+    if (user?.email) {
+      await sendSubscriptionEmail(user.email, {
+        name: user.name,
+        planName: PLANS[plan].name,
+        price: PLANS[plan].price,
+        billingLabel: plan === "singleInterview" ? "one time" : "month",
+        currentPeriodEnd: plan === "singleInterview" ? null : newPeriodEnd,
+      });
+    }
+  } catch (emailError) {
+    console.error(
+      "Failed to send subscription email:",
+      emailError?.message || emailError,
+    );
+  }
+
+  return subscription;
+}
+
 export async function getMySubscription(req, res) {
   try {
     const subscription = await findOrCreateSubscription(req.user._id);
@@ -41,6 +93,83 @@ export async function getMySubscription(req, res) {
   } catch (error) {
     console.error("Error in getMySubscription Controller:", error.message);
     res.status(500).json({ msg: "Internal Server Error" });
+  }
+}
+
+export async function createPaypalCheckoutOrder(req, res) {
+  try {
+    const { plan } = req.body;
+
+    if (!plan || !PLANS[plan]) {
+      return res.status(400).json({ msg: "Invalid plan" });
+    }
+
+    if (plan === "free") {
+      return res.status(400).json({ msg: "Free plan does not require payment" });
+    }
+
+    const order = await createPaypalOrder({ planKey: plan, plan: PLANS[plan] });
+    res.status(201).json({ id: order.id });
+  } catch (error) {
+    console.error("Error in createPaypalCheckoutOrder Controller:", error.message);
+    res.status(error.status || 500).json({
+      msg: error.status ? error.message : "Internal Server Error",
+    });
+  }
+}
+
+export async function capturePaypalCheckoutOrder(req, res) {
+  try {
+    const { plan, orderId } = req.body;
+
+    if (!plan || !PLANS[plan]) {
+      return res.status(400).json({ msg: "Invalid plan" });
+    }
+
+    if (!orderId) {
+      return res.status(400).json({ msg: "Missing PayPal order id" });
+    }
+
+    if (plan === "free") {
+      return res.status(400).json({ msg: "Free plan does not require payment" });
+    }
+
+    const capture = await capturePaypalOrder(orderId);
+    if (capture.status !== "COMPLETED") {
+      return res.status(402).json({
+        message: "PayPal payment was not completed",
+        paypalStatus: capture.status,
+      });
+    }
+
+    const purchaseUnit = capture.purchase_units?.[0];
+    const capturedAmount =
+      purchaseUnit?.payments?.captures?.[0]?.amount?.value;
+    const capturedCurrency =
+      purchaseUnit?.payments?.captures?.[0]?.amount?.currency_code;
+    const capturedPlan = purchaseUnit?.custom_id || purchaseUnit?.reference_id;
+    const expectedAmount = Number(PLANS[plan].price).toFixed(2);
+
+    if (
+      capturedPlan !== plan ||
+      capturedCurrency !== "USD" ||
+      capturedAmount !== expectedAmount
+    ) {
+      return res.status(400).json({ msg: "PayPal amount did not match plan" });
+    }
+
+    const subscription = await activatePaidPlan(req.user._id, plan);
+
+    res.status(200).json({
+      subscription,
+      paypalOrderId: capture.id,
+      message: `Payment successful. Welcome to ${PLANS[plan].name}!`,
+    });
+  } catch (error) {
+    console.error("Error in capturePaypalCheckoutOrder Controller:", error.message);
+    res.status(error.status || 500).json({
+      msg: error.status ? error.message : "Internal Server Error",
+    });
   }
 }
 
@@ -74,52 +203,7 @@ export async function simulatePayment(req, res) {
       return res.status(400).json({ msg: "Free plan does not require payment" });
     }
 
-    const now = new Date();
-    const newPeriodEnd = sameDayNextMonth(now);
-    let subscription;
-
-    if (plan === "singleInterview") {
-      subscription = await findOrCreateSubscription(req.user._id);
-      subscription.aiInterviewCredits = (subscription.aiInterviewCredits || 0) + 1;
-      subscription.status = "active";
-      await subscription.save();
-    } else {
-      const aiInterviewsLimit = PLANS[plan].aiInterviewsPerMonth || 0;
-
-      subscription = await Subscription.findOneAndUpdate(
-        { userId: req.user._id },
-        {
-          userId: req.user._id,
-          plan,
-          status: "active",
-          currentPeriodStart: now,
-          currentPeriodEnd: newPeriodEnd,
-          aiInterviewsLimit,
-          aiInterviewsUsedThisMonth: 0,
-          cancelledAt: null,
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
-      );
-    }
-
-    // Send a purchase confirmation email (non-blocking; never fails the request).
-    try {
-      const user = await User.findById(req.user._id).select("name email");
-      if (user?.email) {
-        await sendSubscriptionEmail(user.email, {
-          name: user.name,
-          planName: PLANS[plan].name,
-          price: PLANS[plan].price,
-          billingLabel: plan === "singleInterview" ? "one time" : "month",
-          currentPeriodEnd: plan === "singleInterview" ? null : newPeriodEnd,
-        });
-      }
-    } catch (emailError) {
-      console.error(
-        "Failed to send subscription email:",
-        emailError?.message || emailError,
-      );
-    }
+    const subscription = await activatePaidPlan(req.user._id, plan);
 
     res.status(200).json({
       subscription,

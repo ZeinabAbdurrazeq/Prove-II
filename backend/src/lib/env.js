@@ -30,4 +30,7 @@ export const ENV = {
   ADMIN_EMAIL: process.env.ADMIN_EMAIL,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
+  PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
+  PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
+  PAYPAL_ENV: process.env.PAYPAL_ENV || "sandbox",
 };

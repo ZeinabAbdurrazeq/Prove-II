@@ -1,65 +1,137 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { useMutation } from "@tanstack/react-query";
 import {
   Loader2Icon,
   LockIcon,
   CheckCircle2Icon,
   XIcon,
+  ShieldCheckIcon,
 } from "lucide-react";
 import { subscriptionApi } from "../api/subscription";
 import { PLANS } from "../data/plans";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
 
-// Full checkout modal styled like a real payment page. Handles card input
-// formatting, the simulated payment call, a decline shake, and a success state.
+function loadPaypalScript(clientId) {
+  const scriptId = "paypal-js-sdk";
+  const existingScript = document.getElementById(scriptId);
+
+  if (window.paypal) return Promise.resolve(window.paypal);
+
+  if (existingScript) {
+    return new Promise((resolve, reject) => {
+      existingScript.addEventListener("load", () => resolve(window.paypal), {
+        once: true,
+      });
+      existingScript.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons`;
+    script.async = true;
+    script.onload = () => resolve(window.paypal);
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+}
+
+// PayPal Sandbox checkout. The backend creates and captures the order, then
+// activates the app subscription only after PayPal confirms the capture.
 function CheckoutModal({ planKey, onClose }) {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const t = getTranslator(language);
   const plan = PLANS[planKey];
+  const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+  const paypalContainerRef = useRef(null);
+  const buttonsRef = useRef(null);
 
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [shake, setShake] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isLoadingPaypal, setIsLoadingPaypal] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
 
-  const payMutation = useMutation({
-    mutationFn: subscriptionApi.simulatePayment,
-    onSuccess: () => {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function renderPaypalButtons() {
+      if (!paypalClientId) {
+        setError(t("checkout.paypalMissing"));
+        return;
+      }
+
+      if (!paypalContainerRef.current || success) return;
+
+      setIsLoadingPaypal(true);
       setError("");
-      setSuccess(true);
-    },
-    onError: (err) => {
-      setError(
-        err.response?.data?.message || t("checkout.declined"),
-      );
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-    },
-  });
 
-  const formatCardNumber = (value) =>
-    value
-      .replace(/\D/g, "")
-      .slice(0, 16)
-      .replace(/(.{4})/g, "$1 ")
-      .trim();
+      try {
+        const paypal = await loadPaypalScript(paypalClientId);
+        if (cancelled || !paypalContainerRef.current) return;
 
-  const formatExpiry = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, 4);
-    if (digits.length <= 2) return digits;
-    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  };
+        paypalContainerRef.current.innerHTML = "";
+        buttonsRef.current = paypal.Buttons({
+          style: {
+            layout: "vertical",
+            color: "gold",
+            shape: "rect",
+            label: "paypal",
+          },
+          createOrder: async () => {
+            const data = await subscriptionApi.createPaypalOrder({ plan: planKey });
+            return data.id;
+          },
+          onApprove: async (data) => {
+            setIsCapturing(true);
+            setError("");
+            try {
+              await subscriptionApi.capturePaypalOrder({
+                plan: planKey,
+                orderId: data.orderID,
+              });
+              if (!cancelled) setSuccess(true);
+            } catch (err) {
+              if (!cancelled) {
+                setError(
+                  err.response?.data?.message ||
+                    err.response?.data?.msg ||
+                    t("checkout.paypalError"),
+                );
+              }
+            } finally {
+              if (!cancelled) setIsCapturing(false);
+            }
+          },
+          onCancel: () => {
+            setError(t("checkout.paypalCancelled"));
+          },
+          onError: (err) => {
+            console.error("PayPal checkout error:", err);
+            setError(t("checkout.paypalError"));
+          },
+        });
 
-  const handlePay = () => {
-    setError("");
-    payMutation.mutate({ cardNumber, plan: planKey });
-  };
+        await buttonsRef.current.render(paypalContainerRef.current);
+      } catch (err) {
+        console.error("PayPal SDK load error:", err);
+        if (!cancelled) setError(t("checkout.paypalLoadError"));
+      } finally {
+        if (!cancelled) setIsLoadingPaypal(false);
+      }
+    }
+
+    renderPaypalButtons();
+
+    return () => {
+      cancelled = true;
+      if (buttonsRef.current?.close) {
+        buttonsRef.current.close().catch(() => {});
+      }
+    };
+  }, [paypalClientId, planKey, success, language]);
 
   if (success) {
     return (
@@ -86,14 +158,7 @@ function CheckoutModal({ planKey, onClose }) {
 
   return (
     <div className="modal modal-open">
-      <div
-        className={`modal-box max-w-md ${shake ? "animate-[wiggle_0.4s_ease-in-out]" : ""}`}
-        style={
-          shake
-            ? { animation: "shake 0.4s" }
-            : undefined
-        }
-      >
+      <div className="modal-box max-w-md">
         <button
           className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 rtl:right-auto rtl:left-3"
           onClick={onClose}
@@ -101,101 +166,54 @@ function CheckoutModal({ planKey, onClose }) {
           <XIcon className="size-4" />
         </button>
 
-        {/* Inline keyframes for the shake effect */}
-        <style>{`@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`}</style>
-
-        <h3 className="font-bold text-xl mb-1">
-          {t(plan.nameKey || plan.name)} {t("checkout.purchase")}
-        </h3>
-        <p className="text-base-content/70 mb-4">
-          ${plan.price.toFixed(2)} {t(plan.billingKey || "pricing.perMonth")}
-        </p>
+        <div className="flex items-start gap-3 pr-8 rtl:flex-row-reverse rtl:pr-0 rtl:pl-8">
+          <div className="rounded-lg bg-warning/15 p-3 text-warning">
+            <LockIcon className="size-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-xl mb-1">
+              {t(plan.nameKey || plan.name)} {t("checkout.purchase")}
+            </h3>
+            <p className="text-sm text-base-content/70">
+              {t("checkout.paypalSandbox")}
+            </p>
+          </div>
+        </div>
 
         {error && (
-          <div className="alert alert-error mb-4 py-2 text-sm">{error}</div>
+          <div className="alert alert-error my-4 py-2 text-sm">{error}</div>
         )}
 
-        <div className="space-y-3">
-          <div>
-            <label className="label">
-              <span className="label-text">{t("checkout.cardNumber")}</span>
-            </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              className="input input-bordered w-full"
-              placeholder="4242 4242 4242 4242"
-              value={cardNumber}
-              onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-            />
-          </div>
-
-          <div className="flex gap-3 rtl:flex-row-reverse">
-            <div className="flex-1">
-              <label className="label">
-                <span className="label-text">{t("checkout.expiry")}</span>
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                className="input input-bordered w-full"
-                placeholder="MM/YY"
-                value={expiry}
-                onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-              />
+        <div className="mt-5 rounded-lg border border-base-300 bg-base-200/70 p-4">
+          <div className="flex items-center justify-between gap-4 rtl:flex-row-reverse">
+            <div>
+              <p className="font-semibold">{t(plan.nameKey || plan.name)}</p>
+              <p className="text-sm text-base-content/60">
+                {t(plan.billingKey || "pricing.perMonth")}
+              </p>
             </div>
-            <div className="flex-1">
-              <label className="label">
-                <span className="label-text">{t("checkout.cvv")}</span>
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                className="input input-bordered w-full"
-                placeholder="123"
-                value={cvv}
-                onChange={(e) =>
-                  setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))
-                }
-              />
-            </div>
+            <span className="text-2xl font-black">${plan.price.toFixed(2)}</span>
           </div>
-
-          <div>
-            <label className="label">
-              <span className="label-text">{t("checkout.cardholder")}</span>
-            </label>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              placeholder="Name on card"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          <div className="divider my-3" />
+          <div className="flex items-center justify-between text-sm rtl:flex-row-reverse">
+            <span className="text-base-content/70">{t("checkout.totalToday")}</span>
+            <span className="font-bold">${plan.price.toFixed(2)} USD</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-5 mb-3 rtl:flex-row-reverse">
-          <span className="text-base-content/70">{t("checkout.totalToday")}</span>
-          <span className="text-xl font-bold">${plan.price.toFixed(2)}</span>
-        </div>
-
-        <button
-          className="btn btn-primary w-full gap-2 rtl:flex-row-reverse"
-          onClick={handlePay}
-          disabled={payMutation.isPending}
-        >
-          {payMutation.isPending ? (
-            <Loader2Icon className="size-4 animate-spin" />
-          ) : (
-            <LockIcon className="size-4" />
+        <div className="mt-5 min-h-32">
+          {(isLoadingPaypal || isCapturing) && (
+            <div className="flex items-center justify-center gap-2 py-4 text-sm text-base-content/70">
+              <Loader2Icon className="size-4 animate-spin" />
+              {isCapturing ? t("checkout.paypalCapturing") : t("checkout.paypalLoading")}
+            </div>
           )}
-          {t("checkout.payNow")}
-        </button>
+          <div ref={paypalContainerRef} className={isCapturing ? "pointer-events-none opacity-50" : ""} />
+        </div>
 
-        <p className="flex items-center justify-center gap-1.5 text-xs text-base-content/50 mt-3">
-          <LockIcon className="size-3" />
-          {t("checkout.simulated")}
+        <p className="flex items-center justify-center gap-1.5 text-xs text-base-content/50 mt-3 rtl:flex-row-reverse">
+          <ShieldCheckIcon className="size-3" />
+          {t("checkout.paypalSecure")}
         </p>
       </div>
       <div className="modal-backdrop" onClick={onClose} />
