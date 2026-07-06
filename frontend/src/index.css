@@ -6,10 +6,28 @@
   name: "proveit";
   default: true;
   color-scheme: "light";
-  --color-primary: #0A2947;
-  --color-base-100: #F3E4C9;
-  --color-base-200: #D3D4C0;
-  --color-accent: #8B5E3C;
+  --color-primary: #051D36;
+  --color-primary-content: #FAFBFC;
+  --color-secondary: #D0BB92;
+  --color-secondary-content: #051D36;
+  --color-accent: #D0BB92;
+  --color-accent-content: #051D36;
+  --color-neutral: #051D36;
+  --color-neutral-content: #FAFBFC;
+  --color-base-100: #FAFBFC;
+  --color-base-200: rgba(84, 122, 149, 0.10);
+  --color-base-300: rgba(84, 122, 149, 0.18);
+  --color-base-content: #051D36;
+  --color-info: #547A95;
+  --color-info-content: #FAFBFC;
+  --color-success: #2F7D5A;
+  --color-success-content: #FAFBFC;
+  --color-warning: #B2872F;
+  --color-warning-content: #051D36;
+  --color-error: #B42318;
+  --color-error-content: #FAFBFC;
+  --radius-box: 1rem;
+  --border: 1px;
 }
 
 @theme {
@@ -22,6 +40,14 @@
   :root {
     --font-ui: "Manrope", ui-sans-serif, system-ui, sans-serif;
     --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --proveit-bg: #FAFBFC;
+    --proveit-text: #051D36;
+    --proveit-accent: #D0BB92;
+    --proveit-surface: rgba(84, 122, 149, 0.10);
+    --proveit-surface-hover: rgba(84, 122, 149, 0.14);
+    --proveit-border: rgba(84, 122, 149, 0.18);
+    --proveit-input-border: rgba(84, 122, 149, 0.20);
+    --proveit-shadow: 0 6px 18px rgba(5, 29, 54, 0.06);
   }
 
   button:not(:disabled),
@@ -38,6 +64,8 @@
     font-family: var(--font-ui);
     font-weight: 400;
     overflow-x: hidden;
+    background: var(--proveit-bg);
+    color: var(--proveit-text);
   }
 
   #root {
@@ -72,6 +100,7 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-ui);
     font-weight: 700;
+    color: var(--proveit-text);
   }
 
   button,
@@ -108,6 +137,136 @@
     font-weight: 500;
   }
 
+}
+
+@layer components {
+  [data-theme="proveit"] .min-h-screen.bg-base-100,
+  [data-theme="proveit"] .min-h-screen.bg-base-300 {
+    background-color: var(--proveit-bg) !important;
+  }
+
+  [data-theme="proveit"] .card,
+  [data-theme="proveit"] .modal-box,
+  [data-theme="proveit"] .dropdown-content,
+  [data-theme="proveit"] .stats,
+  [data-theme="proveit"] .collapse,
+  [data-theme="proveit"] .alert,
+  [data-theme="proveit"] .mockup-code,
+  [data-theme="proveit"] .bg-base-100,
+  [data-theme="proveit"] .bg-base-200 {
+    background-color: var(--proveit-surface) !important;
+    border-color: var(--proveit-border) !important;
+    color: var(--proveit-text);
+    box-shadow: var(--proveit-shadow);
+  }
+
+  [data-theme="proveit"] nav.bg-base-100,
+  [data-theme="proveit"] .navbar,
+  [data-theme="proveit"] .modal-box,
+  [data-theme="proveit"] .dropdown-content {
+    background-color: rgba(250, 251, 252, 0.94) !important;
+    backdrop-filter: blur(18px);
+  }
+
+  [data-theme="proveit"] .card:hover,
+  [data-theme="proveit"] article.bg-base-100:hover,
+  [data-theme="proveit"] article.bg-base-200:hover,
+  [data-theme="proveit"] .hover\:bg-base-200:hover,
+  [data-theme="proveit"] .hover\:bg-base-300:hover,
+  [data-theme="proveit"] .hover\:bg-base-300\/60:hover {
+    background-color: var(--proveit-surface-hover) !important;
+  }
+
+  [data-theme="proveit"] .border-base-300,
+  [data-theme="proveit"] .border-base-300\/40,
+  [data-theme="proveit"] .border-base-300\/60,
+  [data-theme="proveit"] .border-base-300\/70,
+  [data-theme="proveit"] .border-base-300\/80,
+  [data-theme="proveit"] .border-primary\/20 {
+    border-color: var(--proveit-border) !important;
+  }
+
+  [data-theme="proveit"] .btn-primary,
+  [data-theme="proveit"] .bg-primary {
+    background-color: var(--proveit-text) !important;
+    border-color: var(--proveit-text) !important;
+    color: var(--proveit-bg) !important;
+  }
+
+  [data-theme="proveit"] a.bg-gradient-to-r,
+  [data-theme="proveit"] button.bg-gradient-to-r {
+    background-image: none !important;
+    background-color: var(--proveit-text) !important;
+    border-color: var(--proveit-text) !important;
+    color: var(--proveit-bg) !important;
+  }
+
+  [data-theme="proveit"] .btn-primary:hover,
+  [data-theme="proveit"] .bg-primary:hover,
+  [data-theme="proveit"] .hover\:bg-primary:hover,
+  [data-theme="proveit"] a.bg-gradient-to-r:hover,
+  [data-theme="proveit"] button.bg-gradient-to-r:hover {
+    background-color: var(--proveit-accent) !important;
+    border-color: var(--proveit-accent) !important;
+    color: var(--proveit-text) !important;
+  }
+
+  [data-theme="proveit"] .btn-outline:hover,
+  [data-theme="proveit"] .btn-ghost:hover,
+  [data-theme="proveit"] a:hover,
+  [data-theme="proveit"] button:hover {
+    border-color: var(--proveit-accent);
+  }
+
+  [data-theme="proveit"] .btn-ghost:hover,
+  [data-theme="proveit"] .menu li > *:hover {
+    background-color: var(--proveit-surface-hover) !important;
+    color: var(--proveit-text) !important;
+  }
+
+  [data-theme="proveit"] input,
+  [data-theme="proveit"] select,
+  [data-theme="proveit"] textarea,
+  [data-theme="proveit"] .input,
+  [data-theme="proveit"] .select,
+  [data-theme="proveit"] .textarea {
+    background-color: #FFFFFF !important;
+    border-color: var(--proveit-input-border) !important;
+    color: var(--proveit-text) !important;
+  }
+
+  [data-theme="proveit"] input:focus,
+  [data-theme="proveit"] select:focus,
+  [data-theme="proveit"] textarea:focus,
+  [data-theme="proveit"] .input:focus,
+  [data-theme="proveit"] .select:focus,
+  [data-theme="proveit"] .textarea:focus {
+    border-color: var(--proveit-accent) !important;
+    outline-color: var(--proveit-accent) !important;
+    box-shadow: 0 0 0 3px rgba(208, 187, 146, 0.22);
+  }
+
+  [data-theme="proveit"] .shadow-sm,
+  [data-theme="proveit"] .shadow,
+  [data-theme="proveit"] .shadow-lg,
+  [data-theme="proveit"] .shadow-xl,
+  [data-theme="proveit"] .shadow-2xl {
+    box-shadow: var(--proveit-shadow) !important;
+  }
+
+  [data-theme="proveit"] .text-primary,
+  [data-theme="proveit"] .text-secondary,
+  [data-theme="proveit"] .text-accent {
+    color: var(--proveit-text) !important;
+  }
+
+  [data-theme="proveit"] .badge-primary,
+  [data-theme="proveit"] .badge-secondary,
+  [data-theme="proveit"] .badge-accent {
+    background-color: var(--proveit-surface) !important;
+    border-color: var(--proveit-border) !important;
+    color: var(--proveit-text) !important;
+  }
 }
 
 @keyframes powerdby-scroll {
