@@ -1,4 +1,5 @@
 import Problem from "../models/Problem.js";
+import { PROBLEMS } from "../../../frontend/src/data/problems.js";
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -33,6 +34,30 @@ const normalizeExamples = (value) =>
         explanation: String(example?.explanation || "").trim(),
       }))
     : [];
+
+const hardcodedProblems = Object.values(PROBLEMS).map((problem) => ({
+  ...problem,
+  _id: `hardcoded-${problem.id}`,
+  active: problem.active !== false,
+  source: "hardcoded",
+}));
+
+const filterProblems = (problems, { search, difficulty }) => {
+  const normalizedSearch = String(search || "").trim().toLowerCase();
+
+  return problems.filter((problem) => {
+    const matchesDifficulty =
+      !["Easy", "Medium", "Hard"].includes(difficulty) ||
+      problem.difficulty === difficulty;
+
+    if (!matchesDifficulty) return false;
+
+    if (!normalizedSearch) return true;
+
+    const haystack = `${problem.id || ""} ${problem.title || ""} ${problem.category || ""}`.toLowerCase();
+    return haystack.includes(normalizedSearch);
+  });
+};
 
 const normalizePayload = (body = {}) => {
   const title = String(body.title || "").trim();
@@ -73,6 +98,28 @@ export async function getAdminProblems(req, res) {
     const search = String(req.query.search || "").trim();
     const difficulty = String(req.query.difficulty || "").trim();
 
+    const hasDatabaseProblems = (await Problem.estimatedDocumentCount()) > 0;
+
+    if (!hasDatabaseProblems) {
+      const filteredProblems = filterProblems(hardcodedProblems, {
+        search,
+        difficulty,
+      });
+      const pagedProblems = filteredProblems.slice(
+        (page - 1) * limit,
+        page * limit,
+      );
+
+      return res.status(200).json({
+        problems: pagedProblems,
+        page,
+        limit,
+        total: filteredProblems.length,
+        totalPages: Math.max(1, Math.ceil(filteredProblems.length / limit)),
+        source: "hardcoded",
+      });
+    }
+
     const query = {};
 
     if (search) {
@@ -102,6 +149,7 @@ export async function getAdminProblems(req, res) {
       limit,
       total,
       totalPages: Math.max(1, Math.ceil(total / limit)),
+      source: "database",
     });
   } catch (error) {
     res.status(500).json({ msg: "Failed to load problems" });

@@ -8,14 +8,27 @@ import { getDifficultyBadgeClass } from "../lib/utils";
 
 function ProblemsPage() {
   const [difficultyFilter, setDifficultyFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const problems = useMemo(() => Object.values(PROBLEMS), []);
   const filteredProblems = useMemo(
-    () =>
-      difficultyFilter === "All"
-        ? problems
-        : problems.filter((problem) => problem.difficulty === difficultyFilter),
-    [difficultyFilter, problems],
+    () => {
+      const normalizedSearch = searchTerm.trim().toLowerCase();
+
+      return problems.filter((problem) => {
+        const matchesDifficulty =
+          difficultyFilter === "All" ||
+          problem.difficulty === difficultyFilter;
+
+        if (!matchesDifficulty) return false;
+
+        if (!normalizedSearch) return true;
+
+        const haystack = `${problem.id} ${problem.title} ${problem.category}`.toLowerCase();
+        return haystack.includes(normalizedSearch);
+      });
+    },
+    [difficultyFilter, problems, searchTerm],
   );
   const pageSize = 5;
   const totalPages = Math.max(1, Math.ceil(filteredProblems.length / pageSize));
@@ -34,6 +47,11 @@ function ProblemsPage() {
     setCurrentPage(1);
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="min-h-screen bg-base-200">
       <Navbar />
@@ -48,8 +66,19 @@ function ProblemsPage() {
         </div>
 
         <div className="mb-8 rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <label className="form-control w-full max-w-xs">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-end">
+            <label className="form-control w-full">
+              <span className="label-text mb-1 font-semibold">Search</span>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                placeholder="Search title, id, or category"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </label>
+
+            <label className="form-control w-full">
               <span className="label-text mb-1 font-semibold">Difficulty</span>
               <select
                 className="select select-bordered"
@@ -65,7 +94,7 @@ function ProblemsPage() {
               </select>
             </label>
 
-            <label className="flex items-center gap-3 rounded-lg border border-base-300 bg-base-200/50 px-4 py-3">
+            <label className="flex h-12 items-center gap-3 rounded-lg border border-base-300 bg-base-200/50 px-4">
               <input
                 type="checkbox"
                 className="checkbox checkbox-primary"
@@ -120,13 +149,17 @@ function ProblemsPage() {
 
           {filteredProblems.length === 0 ? (
             <div className="rounded-lg border border-dashed border-base-300 bg-base-100 p-10 text-center">
-              <p className="font-semibold">No problems match this difficulty.</p>
+              <p className="font-semibold">No problems match these filters.</p>
               <button
                 type="button"
-                onClick={() => setDifficultyFilter("All")}
+                onClick={() => {
+                  setDifficultyFilter("All");
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
                 className="btn btn-outline btn-sm mt-4 rounded-full"
               >
-                Show all problems
+                Clear filters
               </button>
             </div>
           ) : null}
