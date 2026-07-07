@@ -1,6 +1,7 @@
 import { useUser } from "@clerk/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   useEndSession,
   useJoinSession,
@@ -9,7 +10,7 @@ import {
   useUpdateSessionProblem,
 } from "../hooks/useSessions";
 import { sessionApi } from "../api/sessions";
-import { PROBLEMS } from "../data/problems";
+import { problemsApi } from "../api/problems";
 import { executeCode } from "../lib/judge0";
 import Navbar from "../components/Navbar";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -48,19 +49,26 @@ function SessionPage() {
   const isHost = session?.host?.clerkId === user?.id;
   const isParticipant = session?.participant?.clerkId === user?.id;
   const sessionDifficulty = String(session?.difficulty || "easy").toLowerCase();
+
+  const { data: problemsData, isLoading: loadingProblems } = useQuery({
+    queryKey: ["problems", "active"],
+    queryFn: () => problemsApi.getProblems({ limit: 100 }),
+  });
+
+  const allProblems = problemsData?.problems || [];
   const sessionProblems = useMemo(
     () =>
-      Object.values(PROBLEMS).filter(
+      allProblems.filter(
         (problem) => problem.difficulty.toLowerCase() === sessionDifficulty,
       ),
-    [sessionDifficulty],
+    [allProblems, sessionDifficulty],
   );
   const legacyProblem = useMemo(
     () =>
       session?.problem
-        ? Object.values(PROBLEMS).find((p) => p.title === session.problem)
+        ? allProblems.find((p) => p.title === session.problem)
         : null,
-    [session?.problem],
+    [allProblems, session?.problem],
   );
   const [selectedProblemId, setSelectedProblemId] = useState("");
   const hasSentStartNotificationRef = useRef(false);
@@ -68,7 +76,9 @@ function SessionPage() {
   const { call, channel, chatClient, isInitializingCall, streamClient } =
     useStreamClient(session, loadingSession, isHost, isParticipant);
 
-  const problemData = selectedProblemId ? PROBLEMS[selectedProblemId] : null;
+  const problemData = selectedProblemId
+    ? allProblems.find((problem) => problem.id === selectedProblemId) || null
+    : null;
 
   useEffect(() => {
     const updateLayout = () => {
@@ -122,15 +132,26 @@ function SessionPage() {
   }, [session, loadingSession, navigate]);
 
   useEffect(() => {
+    if (loadingProblems) return;
     const savedProblemId =
-      session?.selectedProblemId && PROBLEMS[session.selectedProblemId]
+      session?.selectedProblemId &&
+      allProblems.some((problem) => problem.id === session.selectedProblemId)
         ? session.selectedProblemId
         : legacyProblem?.id || "";
 
     if (savedProblemId && savedProblemId !== selectedProblemId) {
       setSelectedProblemId(savedProblemId);
+    } else if (!savedProblemId && sessionProblems.length && !selectedProblemId) {
+      setSelectedProblemId(sessionProblems[0].id);
     }
-  }, [legacyProblem, selectedProblemId, session?.selectedProblemId]);
+  }, [
+    allProblems,
+    legacyProblem,
+    loadingProblems,
+    selectedProblemId,
+    session?.selectedProblemId,
+    sessionProblems,
+  ]);
 
   useEffect(() => {
     if (problemData?.starterCode?.[selectedLanguage]) {
@@ -171,10 +192,10 @@ function SessionPage() {
     [],
   );
   const applyRemoteProblem = useCallback((remoteProblemId) => {
-    if (PROBLEMS[remoteProblemId]) {
+    if (allProblems.some((problem) => problem.id === remoteProblemId)) {
       setSelectedProblemId(remoteProblemId);
     }
-  }, []);
+  }, [allProblems]);
 
   // Real-time collaborative editing over the shared Stream channel.
   const { broadcastCode, broadcastLanguage, broadcastProblem } = useCollaborativeCode(
@@ -205,7 +226,7 @@ function SessionPage() {
 
   const handleProblemChange = (e) => {
     const nextProblemId = e.target.value;
-    const nextProblem = PROBLEMS[nextProblemId];
+    const nextProblem = allProblems.find((problem) => problem.id === nextProblemId);
     if (!nextProblem) return;
 
     setSelectedProblemId(nextProblemId);
@@ -322,9 +343,10 @@ function SessionPage() {
                       className="select select-bordered select-sm mt-3 w-full max-w-xs"
                       value={selectedProblemId}
                       onChange={handleProblemChange}
+                      disabled={loadingProblems || !sessionProblems.length}
                     >
                       <option value="" disabled>
-                        Choose a problem
+                        {loadingProblems ? "Loading problems..." : "Choose a problem"}
                       </option>
                       {sessionProblems.map((problem) => (
                         <option key={problem.id} value={problem.id}>
@@ -470,9 +492,10 @@ function SessionPage() {
                             className="select select-bordered w-full"
                             value={selectedProblemId}
                             onChange={handleProblemChange}
+                            disabled={loadingProblems || !sessionProblems.length}
                           >
                             <option value="" disabled>
-                              Choose a problem
+                              {loadingProblems ? "Loading problems..." : "Choose a problem"}
                             </option>
                             {sessionProblems.map((problem) => (
                               <option key={problem.id} value={problem.id}>
