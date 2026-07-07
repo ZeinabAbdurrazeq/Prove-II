@@ -186,7 +186,21 @@ async function checkAndConsumeInterviewQuota(userId) {
 
   // Monthly reset if the billing period has passed.
   const now = new Date();
-  if (subscription.currentPeriodEnd && now > subscription.currentPeriodEnd) {
+  if (
+    subscription.status === "cancelled" &&
+    subscription.currentPeriodEnd &&
+    now > subscription.currentPeriodEnd
+  ) {
+    subscription.plan = "free";
+    subscription.status = "active";
+    subscription.aiInterviewsLimit = 0;
+    subscription.aiInterviewsUsedThisMonth = 0;
+    await subscription.save();
+  } else if (
+    subscription.status === "active" &&
+    subscription.currentPeriodEnd &&
+    now > subscription.currentPeriodEnd
+  ) {
     subscription.aiInterviewsUsedThisMonth = 0;
     subscription.currentPeriodStart = now;
     subscription.currentPeriodEnd = new Date(
@@ -201,6 +215,11 @@ async function checkAndConsumeInterviewQuota(userId) {
   }
 
   const hasMonthlyPlan = subscription.plan === "premium" || subscription.plan === "pro";
+  const periodActive =
+    subscription.status === "active" ||
+    (subscription.status === "cancelled" &&
+      subscription.currentPeriodEnd &&
+      now <= subscription.currentPeriodEnd);
   const monthlyLimit = hasMonthlyPlan
     ? subscription.aiInterviewsLimit > 0
       ? subscription.aiInterviewsLimit
@@ -209,6 +228,7 @@ async function checkAndConsumeInterviewQuota(userId) {
 
   if (
     hasMonthlyPlan &&
+    periodActive &&
     subscription.aiInterviewsUsedThisMonth < monthlyLimit
   ) {
     subscription.aiInterviewsUsedThisMonth += 1;

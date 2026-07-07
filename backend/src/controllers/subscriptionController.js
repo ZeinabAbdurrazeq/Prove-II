@@ -32,6 +32,29 @@ async function findOrCreateSubscription(userId) {
       aiInterviewCredits: 0,
     });
   }
+  await normalizeExpiredSubscription(subscription);
+  return subscription;
+}
+
+async function normalizeExpiredSubscription(subscription) {
+  if (!subscription) return subscription;
+
+  const now = new Date();
+  const paidPlanExpired =
+    subscription.status === "cancelled" &&
+    subscription.currentPeriodEnd &&
+    now > subscription.currentPeriodEnd;
+
+  if (paidPlanExpired) {
+    subscription.plan = "free";
+    subscription.status = "active";
+    subscription.currentPeriodStart = now;
+    subscription.currentPeriodEnd = lastDayOfMonth(now);
+    subscription.aiInterviewsLimit = 0;
+    subscription.aiInterviewsUsedThisMonth = 0;
+    await subscription.save();
+  }
+
   return subscription;
 }
 
@@ -218,19 +241,22 @@ export async function simulatePayment(req, res) {
 export async function cancelSubscription(req, res) {
   try {
     const now = new Date();
+    const currentSubscription = await findOrCreateSubscription(req.user._id);
 
-    // Cancelling reverts the user to the free plan straight away: an active
-    // free plan with the free monthly allowance, rather than leaving a
-    // "cancelled pro" record around.
+    if (currentSubscription.plan === "free") {
+      return res.status(400).json({ msg: "Free plan cannot be cancelled" });
+    }
+
+    const currentPeriodEnd =
+      currentSubscription.currentPeriodEnd || sameDayNextMonth(now);
+
+    // Cancelling stops renewal, but keeps paid access available until the
+    // current billing period ends.
     const subscription = await Subscription.findOneAndUpdate(
       { userId: req.user._id },
       {
-        plan: "free",
-        status: "active",
-        currentPeriodStart: now,
-        currentPeriodEnd: lastDayOfMonth(now),
-        aiInterviewsLimit: 0,
-        aiInterviewsUsedThisMonth: 0,
+        status: "cancelled",
+        currentPeriodEnd,
         cancelledAt: now,
       },
       { new: true },
@@ -241,7 +267,7 @@ export async function cancelSubscription(req, res) {
 
     res.status(200).json({
       subscription,
-      msg: "Subscription cancelled. You are back on the Free plan.",
+      msg: "Subscription cancelled. Your paid access remains active until the end of the billing period.",
     });
   } catch (error) {
     console.error("Error in cancelSubscription Controller:", error.message);
@@ -255,7 +281,11 @@ export async function checkAiInterviewLimit(req, res) {
 
     // Reset monthly usage if the billing period has passed.
     const now = new Date();
-    if (subscription.currentPeriodEnd && now > subscription.currentPeriodEnd) {
+    if (
+      subscription.status === "active" &&
+      subscription.currentPeriodEnd &&
+      now > subscription.currentPeriodEnd
+    ) {
       subscription.aiInterviewsUsedThisMonth = 0;
       subscription.currentPeriodStart = now;
       subscription.currentPeriodEnd = lastDayOfMonth(now);
@@ -263,6 +293,11 @@ export async function checkAiInterviewLimit(req, res) {
     }
 
     const hasMonthlyPlan = subscription.plan === "premium" || subscription.plan === "pro";
+    const periodActive =
+      subscription.status === "active" ||
+      (subscription.status === "cancelled" &&
+        subscription.currentPeriodEnd &&
+        now <= subscription.currentPeriodEnd);
     const monthlyLimit = hasMonthlyPlan
       ? subscription.aiInterviewsLimit > 0
         ? subscription.aiInterviewsLimit
@@ -271,6 +306,7 @@ export async function checkAiInterviewLimit(req, res) {
 
     if (
       hasMonthlyPlan &&
+      periodActive &&
       subscription.aiInterviewsUsedThisMonth < monthlyLimit
     ) {
       return res.status(200).json({ canProceed: true });
@@ -296,8 +332,16 @@ export async function checkAiInterviewLimit(req, res) {
 export async function incrementAiInterviewUsage(req, res) {
   try {
     const subscription = await findOrCreateSubscription(req.user._id);
+    const now = new Date();
+    const periodActive =
+      subscription.status === "active" ||
+      (subscription.status === "cancelled" &&
+        subscription.currentPeriodEnd &&
+        now <= subscription.currentPeriodEnd);
+
     if (
       (subscription.plan === "premium" || subscription.plan === "pro") &&
+      periodActive &&
       subscription.aiInterviewsUsedThisMonth <
         (subscription.aiInterviewsLimit > 0 ? subscription.aiInterviewsLimit : 10)
     ) {

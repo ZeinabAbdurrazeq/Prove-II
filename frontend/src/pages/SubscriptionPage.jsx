@@ -8,6 +8,10 @@ import {
   SparklesIcon,
   AlertTriangleIcon,
   XIcon,
+  ArrowRightIcon,
+  CalendarClockIcon,
+  GaugeIcon,
+  CreditCardIcon,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { subscriptionApi } from "../api/subscription";
@@ -18,6 +22,7 @@ import { getTranslator } from "../lib/translations";
 function planBadgeClass(plan) {
   if (plan === "premium") return "badge-secondary";
   if (plan === "pro") return "badge-primary";
+  if (plan === "singleInterview") return "badge-accent";
   return "badge-ghost";
 }
 
@@ -83,20 +88,42 @@ function SubscriptionPage() {
   const used = subscription?.aiInterviewsUsedThisMonth || 0;
   const monthlyLimit = plan?.aiInterviewsPerMonth || 0;
   const credits = subscription?.aiInterviewCredits || 0;
+  const remainingMonthly = Math.max(monthlyLimit - used, 0);
+  const hasMonthlyLimit = monthlyLimit > 0;
+  const hasInterviewAccess = hasMonthlyLimit ? remainingMonthly > 0 : credits > 0;
+  const isCancelled = subscription?.status === "cancelled";
+  const periodEnd = subscription?.currentPeriodEnd
+    ? new Date(subscription.currentPeriodEnd)
+    : null;
+  const formattedPeriodEnd = periodEnd ? format(periodEnd, "M/d/yyyy") : "";
+  const planStatusLine =
+    isCancelled && formattedPeriodEnd
+      ? `${t(planNameKey[planKey])} ${t("subscription.until")} ${formattedPeriodEnd}`
+      : subscription?.status || "active";
 
   return (
     <div className="min-h-screen bg-base-300">
       <Navbar />
 
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-black">{t("subscription.title")}</h1>
-          <p className="text-sm text-base-content/60">
-            {t("subscription.description")}
-          </p>
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.24em] text-primary">
+              {t("subscription.overview")}
+            </p>
+            <h1 className="mt-2 text-3xl font-black">{t("subscription.title")}</h1>
+            <p className="mt-2 max-w-2xl text-sm text-base-content/60">
+              {t("subscription.description")}
+            </p>
+          </div>
+          <Link to="/pricing" className="btn btn-primary gap-2 self-start lg:self-auto rtl:flex-row-reverse">
+            <SparklesIcon className="size-4" />
+            {t("subscription.viewPricing")}
+            <ArrowRightIcon className="size-4 rtl:rotate-180" />
+          </Link>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
           <div className="space-y-6">
             {isLoading ? (
               <div className="card bg-base-100 border border-base-300 shadow-sm">
@@ -105,45 +132,65 @@ function SubscriptionPage() {
                 </div>
               </div>
             ) : (
-              <div className="card bg-base-100 border border-base-300 shadow-sm">
-                <div className="card-body space-y-5 p-6">
-                  <div className="flex items-center justify-between rtl:flex-row-reverse">
+              <div className="card overflow-hidden bg-base-100 border border-base-300 shadow-sm">
+                <div className="bg-base-200/70 px-6 py-5">
+                  <div className="flex items-start justify-between gap-4 rtl:flex-row-reverse">
                     <div>
                       <p className="text-sm text-base-content/60">
                         {t("subscription.currentPlan")}
                       </p>
                       <div className="flex items-center gap-2 mt-1 rtl:flex-row-reverse">
-                        <span className="text-xl font-bold">{t(planNameKey[planKey])}</span>
+                        <span className="text-2xl font-black">{t(planNameKey[planKey])}</span>
                         <span className={`badge ${planBadgeClass(planKey)}`}>
-                          {subscription?.status}
+                          {planStatusLine}
                         </span>
                       </div>
                     </div>
                     {plan && (
-                      <span className="text-lg font-semibold">
-                        ${plan.price.toFixed(2)}/mo
-                      </span>
+                      <div className="text-right rtl:text-left">
+                        <p className="text-2xl font-black">${plan.price.toFixed(2)}</p>
+                        <p className="text-xs text-base-content/55">
+                          {t(plan.billingKey || "pricing.perMonth")}
+                        </p>
+                      </div>
                     )}
                   </div>
+                </div>
 
+                <div className="card-body space-y-5 p-6">
                   {subscription?.currentPeriodEnd && (
-                    <div className="rounded-2xl bg-base-200/60 p-4">
-                      <p className="text-sm text-base-content/60">
-                        {subscription.status === "cancelled"
-                          ? t("subscription.accessUntil")
-                          : t("subscription.renews")}
-                      </p>
-                      <p className="mt-1 font-medium">
-                        {format(
-                          new Date(subscription.currentPeriodEnd),
-                          "MMMM d, yyyy",
-                        )}
-                      </p>
+                    <div className="rounded-lg border border-base-300 bg-base-200/60 p-4">
+                      <div className="flex items-center gap-3 rtl:flex-row-reverse">
+                        <CalendarClockIcon className="size-5 text-primary" />
+                        <div>
+                          <p className="text-sm text-base-content/60">
+                            {isCancelled
+                              ? t("subscription.accessUntil")
+                              : t("subscription.renews")}
+                          </p>
+                          <p className="mt-1 font-bold">
+                            {format(periodEnd, "MMMM d, yyyy")}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
-                  {monthlyLimit > 0 && (
-                    <div>
+                  <div className="rounded-lg border border-base-300 bg-base-100 p-4">
+                    <div className="flex items-center gap-3 rtl:flex-row-reverse">
+                      <GaugeIcon className="size-5 text-secondary" />
+                      <div>
+                        <p className="font-bold">{t("subscription.interviewLimit")}</p>
+                        <p className="text-sm text-base-content/60">
+                          {hasMonthlyLimit
+                            ? t("subscription.monthlyAllowance")
+                            : t("subscription.creditAllowance")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {hasMonthlyLimit ? (
+                      <div className="mt-4">
                       <div className="flex justify-between text-sm mb-1 rtl:flex-row-reverse">
                         <span className="text-base-content/60">
                           {t("subscription.usage")}
@@ -155,18 +202,48 @@ function SubscriptionPage() {
                         value={Math.min(used, monthlyLimit)}
                         max={monthlyLimit}
                       />
-                    </div>
-                  )}
+                        <p className={`mt-2 text-sm font-semibold ${remainingMonthly ? "text-success" : "text-error"}`}>
+                          {remainingMonthly
+                            ? `${remainingMonthly} ${t("subscription.interviewsRemaining")}`
+                            : t("subscription.limitReached")}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <div className="rounded-lg bg-base-200/70 p-3">
+                          <p className="text-xs text-base-content/60">
+                            {t("subscription.credits")}
+                          </p>
+                          <p className="mt-1 text-2xl font-black">{credits}</p>
+                        </div>
+                        <div className="rounded-lg bg-base-200/70 p-3">
+                          <p className="text-xs text-base-content/60">
+                            {t("subscription.status")}
+                          </p>
+                          <p className={`mt-1 text-sm font-bold ${hasInterviewAccess ? "text-success" : "text-error"}`}>
+                            {hasInterviewAccess
+                              ? t("subscription.ready")
+                              : t("subscription.noInterviewAccess")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="rounded-2xl bg-base-200/60 p-4">
-                    <p className="text-sm text-base-content/60">
-                      {t("subscription.credits")}
-                    </p>
-                    <p className="mt-1 text-2xl font-black">{credits}</p>
+                  <div className="rounded-lg border border-base-300 bg-base-200/60 p-4">
+                    <div className="flex items-center gap-3 rtl:flex-row-reverse">
+                      <CreditCardIcon className="size-5 text-accent" />
+                      <div>
+                        <p className="text-sm text-base-content/60">
+                          {t("subscription.credits")}
+                        </p>
+                        <p className="mt-1 text-2xl font-black">{credits}</p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="pt-2 flex flex-wrap gap-3">
-                    {planKey !== "premium" ? (
+                    {planKey !== "premium" || isCancelled ? (
                       <Link to="/pricing" className="btn btn-primary gap-2 rtl:flex-row-reverse">
                         <SparklesIcon className="size-4" />
                         {t("subscription.upgrade")}
@@ -196,7 +273,7 @@ function SubscriptionPage() {
                     {plan?.features?.map((feature) => (
                       <div
                         key={feature}
-                        className="rounded-2xl bg-base-200/60 p-4 text-sm text-base-content/80"
+                        className="rounded-lg border border-base-300 bg-base-200/60 p-4 text-sm text-base-content/80"
                       >
                         {t(planFeatureKey(feature) || feature)}
                       </div>
@@ -212,6 +289,10 @@ function SubscriptionPage() {
                     <p className="mt-2 text-sm text-base-content/60">
                       {t("subscription.upgradePathBody")}
                     </p>
+                    <Link to="/pricing" className="btn btn-outline btn-sm mt-4 gap-2 rtl:flex-row-reverse">
+                      {t("subscription.viewPricing")}
+                      <ArrowRightIcon className="size-4 rtl:rotate-180" />
+                    </Link>
                   </div>
                 </div>
                 <div className="card bg-base-100 border border-base-300 shadow-sm">

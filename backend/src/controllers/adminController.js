@@ -17,6 +17,24 @@ const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 const roundToOne = (value = 0) => Math.round(Number(value || 0) * 10) / 10;
 
+const effectiveSubscriptionPlan = (subscription) => {
+  if (!subscription) return "free";
+
+  const now = new Date();
+  const expiredCancelledPlan =
+    subscription.status === "cancelled" &&
+    subscription.currentPeriodEnd &&
+    now > subscription.currentPeriodEnd;
+
+  if (expiredCancelledPlan) return "free";
+
+  if (subscription.plan === "free" && Number(subscription.aiInterviewCredits || 0) > 0) {
+    return "singleInterview";
+  }
+
+  return subscription.plan || "free";
+};
+
 const buildLastNDays = (days) => {
   const today = new Date();
   const utcToday = new Date(
@@ -99,7 +117,16 @@ export const adminLogin = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const [totalUsers, totalSessions, totalInterviews, completedInterviewStats, activeSubscriptions, pendingInvitations, subscriptionBreakdown] = await Promise.all([
+    const [
+      totalUsers,
+      totalSessions,
+      totalInterviews,
+      completedInterviewStats,
+      activeSubscriptions,
+      pendingInvitations,
+      usersForPlanRows,
+      subscriptionsForPlanRows,
+    ] = await Promise.all([
       User.countDocuments(),
       Session.countDocuments(),
       AIInterviewSession.countDocuments(),
@@ -114,32 +141,29 @@ export const getDashboardStats = async (req, res) => {
         },
       ]),
       Subscription.countDocuments({
-        status: "active",
-        $or: [
-          { plan: { $in: ["pro", "premium"] } },
-          { aiInterviewCredits: { $gt: 0 } },
+        $and: [
+          {
+            $or: [
+              { status: "active" },
+              { status: "cancelled", currentPeriodEnd: { $gte: new Date() } },
+            ],
+          },
+          {
+            $or: [
+              { plan: { $in: ["pro", "premium"] } },
+              { aiInterviewCredits: { $gt: 0 } },
+            ],
+          },
         ],
       }),
       Invitation.countDocuments({ status: "pending" }),
-      Subscription.aggregate([
-        {
-          $group: {
-            _id: {
-              $cond: [
-                {
-                  $and: [
-                    { $eq: ["$plan", "free"] },
-                    { $gt: ["$aiInterviewCredits", 0] },
-                  ],
-                },
-                "singleInterview",
-                "$plan",
-              ],
-            },
-            count: { $sum: 1 },
-          },
-        },
-      ]),
+      User.find()
+        .select("name email profileImage role createdAt")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Subscription.find()
+        .select("userId plan status currentPeriodEnd aiInterviewsLimit aiInterviewsUsedThisMonth aiInterviewCredits")
+        .lean(),
     ]);
 
     const distributionMap = PLAN_ORDER.reduce((acc, plan) => {
@@ -147,12 +171,40 @@ export const getDashboardStats = async (req, res) => {
       return acc;
     }, {});
 
-    for (const item of subscriptionBreakdown) {
-      const plan = item._id || "free";
+    const planUsersMap = PLAN_ORDER.reduce((acc, plan) => {
+      acc[plan] = [];
+      return acc;
+    }, {});
+
+    const subscriptionsByUser = new Map(
+      subscriptionsForPlanRows.map((subscription) => [
+        String(subscription.userId),
+        subscription,
+      ]),
+    );
+
+    for (const user of usersForPlanRows) {
+      const subscription = subscriptionsByUser.get(String(user._id));
+      const plan = effectiveSubscriptionPlan(subscription);
+
       if (!distributionMap[plan]) {
         distributionMap[plan] = { plan, count: 0, percentage: 0 };
+        planUsersMap[plan] = [];
       }
-      distributionMap[plan].count = item.count;
+
+      distributionMap[plan].count += 1;
+      planUsersMap[plan].push({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage,
+        role: user.role || "user",
+        status: subscription?.status || "active",
+        currentPeriodEnd: subscription?.currentPeriodEnd || null,
+        aiInterviewsLimit: subscription?.aiInterviewsLimit || 0,
+        aiInterviewsUsedThisMonth: subscription?.aiInterviewsUsedThisMonth || 0,
+        aiInterviewCredits: subscription?.aiInterviewCredits || 0,
+      });
     }
 
     const totalSubscriptions = Object.values(distributionMap).reduce((sum, item) => sum + item.count, 0);
@@ -171,6 +223,10 @@ export const getDashboardStats = async (req, res) => {
       activeSubscriptions,
       pendingInvitations,
       subscriptionDistribution: PLAN_ORDER.map((plan) => distributionMap[plan]),
+      subscriptionPlanUsers: PLAN_ORDER.map((plan) => ({
+        plan,
+        users: planUsersMap[plan] || [],
+      })),
     });
   } catch (error) {
     return res.status(500).json({ msg: "Failed to load dashboard stats" });
