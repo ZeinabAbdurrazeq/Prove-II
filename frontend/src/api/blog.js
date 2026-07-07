@@ -14,4 +14,53 @@ export const blogApi = {
     });
     return response.data;
   },
+
+  getMyPosts: async () => {
+    const response = await axiosInstance.get("/blog/community/me");
+    return response.data;
+  },
+
+  createCommunityPost: async (payload) => {
+    const response = await axiosInstance.post("/blog/community", payload);
+    return response.data;
+  },
+
+  updateCommunityPost: async ({ id, payload }) => {
+    const response = await axiosInstance.put(`/blog/community/${id}`, payload);
+    return response.data;
+  },
+
+  deleteCommunityPost: async (id) => {
+    const response = await axiosInstance.delete(`/blog/community/${id}`);
+    return response.data;
+  },
+
+  reactToPost: async ({ id, type }) => {
+    const response = await axiosInstance.post(`/blog/community/${id}/reactions`, {
+      type,
+    });
+    return response.data;
+  },
+
+  addComment: async ({ id, content }) => {
+    const response = await axiosInstance.post(`/blog/community/${id}/comments`, {
+      content,
+    });
+    return response.data;
+  },
+
+  updateComment: async ({ postId, commentId, content }) => {
+    const response = await axiosInstance.put(
+      `/blog/community/${postId}/comments/${commentId}`,
+      { content },
+    );
+    return response.data;
+  },
+
+  deleteComment: async ({ postId, commentId }) => {
+    const response = await axiosInstance.delete(
+      `/blog/community/${postId}/comments/${commentId}`,
+    );
+    return response.data;
+  },
 };

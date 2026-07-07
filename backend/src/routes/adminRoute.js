@@ -22,9 +22,12 @@ import {
   updateAdminProblem,
 } from "../controllers/adminProblemController.js";
 import {
+  approveCommunityPost,
   createAdminBlogPost,
   deleteAdminBlogPost,
+  getAdminCommunityPosts,
   getAdminBlogPosts,
+  rejectCommunityPost,
   updateAdminBlogPost,
 } from "../controllers/blogController.js";
 import { adminAuth } from "../middleware/adminAuth.js";
@@ -56,5 +59,8 @@ router.get("/blog-posts", getAdminBlogPosts);
 router.post("/blog-posts", createAdminBlogPost);
 router.put("/blog-posts/:id", updateAdminBlogPost);
 router.delete("/blog-posts/:id", deleteAdminBlogPost);
+router.get("/community-posts", getAdminCommunityPosts);
+router.patch("/community-posts/:id/approve", approveCommunityPost);
+router.patch("/community-posts/:id/reject", rejectCommunityPost);
 
 export default router;

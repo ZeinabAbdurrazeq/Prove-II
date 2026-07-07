@@ -20,6 +20,9 @@ const notificationSchema = new mongoose.Schema(
         "invitation-declined",
         "session-reminder",
         "session-started",
+        "community-post-pending",
+        "community-post-approved",
+        "community-post-rejected",
       ],
       required: true,
     },
@@ -36,6 +39,11 @@ const notificationSchema = new mongoose.Schema(
     relatedSessionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Session",
+      default: null,
+    },
+    relatedBlogPostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BlogPost",
       default: null,
     },
     message: {
