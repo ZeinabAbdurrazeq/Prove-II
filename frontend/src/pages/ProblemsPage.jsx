@@ -1,22 +1,15 @@
 import { Link } from "react-router";
 import Navbar from "../components/Navbar";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
-import { problemsApi } from "../api/problems";
-import { ChevronRightIcon, Code2Icon, Loader2Icon } from "lucide-react";
+import { PROBLEMS } from "../data/problems";
+import { ChevronRightIcon, Code2Icon } from "lucide-react";
 import { getDifficultyBadgeClass } from "../lib/utils";
 
 function ProblemsPage() {
   const [difficultyFilter, setDifficultyFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["problems", "active"],
-    queryFn: () => problemsApi.getProblems({ limit: 100 }),
-  });
-
-  const problems = useMemo(() => data?.problems || [], [data?.problems]);
+  const problems = useMemo(() => Object.values(PROBLEMS), []);
   const filteredProblems = useMemo(
     () =>
       difficultyFilter === "All"
@@ -88,23 +81,7 @@ function ProblemsPage() {
 
         {/* PROBLEMS LIST */}
         <div className="space-y-4">
-          {isLoading ? (
-            <div className="rounded-lg border border-base-300 bg-base-100 p-10 text-center">
-              <Loader2Icon className="mx-auto size-10 animate-spin text-primary" />
-              <p className="mt-3 font-semibold">Loading problems...</p>
-            </div>
-          ) : null}
-
-          {isError ? (
-            <div className="rounded-lg border border-error/20 bg-error/10 p-10 text-center">
-              <p className="font-semibold text-error">Could not load problems.</p>
-              <p className="mt-2 text-sm text-base-content/60">
-                Please try again in a moment.
-              </p>
-            </div>
-          ) : null}
-
-          {!isLoading && !isError && visibleProblems.map((problem) => (
+          {visibleProblems.map((problem) => (
             <Link
               key={problem.id}
               to={`/problem/${problem.id}`}
@@ -141,13 +118,9 @@ function ProblemsPage() {
             </Link>
           ))}
 
-          {!isLoading && !isError && filteredProblems.length === 0 ? (
+          {filteredProblems.length === 0 ? (
             <div className="rounded-lg border border-dashed border-base-300 bg-base-100 p-10 text-center">
-              <p className="font-semibold">
-                {problems.length
-                  ? "No problems match this difficulty."
-                  : "No active problems found."}
-              </p>
+              <p className="font-semibold">No problems match this difficulty.</p>
               <button
                 type="button"
                 onClick={() => setDifficultyFilter("All")}

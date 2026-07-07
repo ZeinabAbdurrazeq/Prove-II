@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { problemsApi } from "../api/problems";
+import { useQueryClient } from "@tanstack/react-query";
+import { PROBLEMS } from "../data/problems";
 import { getDifficultyBadgeClass } from "../lib/utils";
 import Navbar from "../components/Navbar";
 
@@ -13,38 +13,22 @@ import { executeCode } from "../lib/judge0";
 
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
-import { Loader2Icon } from "lucide-react";
 
 function ProblemPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [currentProblemId, setCurrentProblemId] = useState("two-sum");
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(
+    PROBLEMS[currentProblemId].starterCode.javascript,
+  );
   const [output, setOutput] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  const { data: problemsData, isLoading: loadingProblems } = useQuery({
-    queryKey: ["problems", "active"],
-    queryFn: () => problemsApi.getProblems({ limit: 100 }),
-  });
-
-  const {
-    data: problemData,
-    isLoading: loadingProblem,
-    isError: problemError,
-  } = useQuery({
-    queryKey: ["problem", id],
-    queryFn: () => problemsApi.getProblemById(id),
-    enabled: Boolean(id),
-    retry: false,
-  });
-
-  const allProblems = problemsData?.problems || [];
-  const currentProblem = problemData?.problem || null;
-  const currentProblemId = currentProblem?.id || id;
+  const currentProblem = PROBLEMS[currentProblemId];
 
   useEffect(() => {
     const updateLayout = () => {
@@ -56,23 +40,22 @@ function ProblemPage() {
     return () => window.removeEventListener("resize", updateLayout);
   }, []);
 
+  // update problem when URL param changes; redirect unknown ids to a valid one
   useEffect(() => {
-    if (currentProblem?.starterCode?.[selectedLanguage]) {
-      setCode(currentProblem.starterCode[selectedLanguage]);
+    if (!id) return;
+    if (PROBLEMS[id]) {
+      setCurrentProblemId(id);
+      setCode(PROBLEMS[id].starterCode[selectedLanguage]);
       setOutput(null);
+    } else {
+      navigate("/problem/two-sum", { replace: true });
     }
-  }, [currentProblem, selectedLanguage]);
-
-  useEffect(() => {
-    if (!id && allProblems.length) {
-      navigate(`/problem/${allProblems[0].id}`, { replace: true });
-    }
-  }, [allProblems, id, navigate]);
+  }, [id, selectedLanguage, navigate]);
 
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
     setSelectedLanguage(newLang);
-    setCode(currentProblem?.starterCode?.[newLang] || "");
+    setCode(currentProblem.starterCode[newLang]);
     setOutput(null);
   };
 
@@ -119,8 +102,6 @@ function ProblemPage() {
   };
 
   const handleRunCode = async () => {
-    if (!currentProblem) return;
-
     setIsRunning(true);
     setOutput(null);
 
@@ -165,42 +146,6 @@ function ProblemPage() {
     }
   };
 
-  if (loadingProblem || loadingProblems) {
-    return (
-      <div className="min-h-screen bg-base-100">
-        <Navbar />
-        <div className="flex min-h-[70vh] items-center justify-center">
-          <div className="text-center">
-            <Loader2Icon className="mx-auto size-12 animate-spin text-primary" />
-            <p className="mt-4 font-semibold">Loading problem...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (problemError || !currentProblem) {
-    return (
-      <div className="min-h-screen bg-base-100">
-        <Navbar />
-        <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-6">
-          <div className="rounded-lg border border-base-300 bg-base-200 p-8 text-center">
-            <h1 className="text-2xl font-black">Problem not found</h1>
-            <p className="mt-2 text-base-content/60">
-              This problem may be archived or unavailable.
-            </p>
-            <button
-              className="btn btn-primary mt-5"
-              onClick={() => navigate("/problems")}
-            >
-              Back to problems
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (isMobile) {
     return (
       <div className="min-h-screen bg-base-100 flex flex-col overflow-x-hidden">
@@ -233,7 +178,7 @@ function ProblemPage() {
               problem={currentProblem}
               currentProblemId={currentProblemId}
               onProblemChange={handleProblemChange}
-              allProblems={allProblems}
+              allProblems={Object.values(PROBLEMS)}
             />
           </div>
 
@@ -268,7 +213,7 @@ function ProblemPage() {
               problem={currentProblem}
               currentProblemId={currentProblemId}
               onProblemChange={handleProblemChange}
-              allProblems={allProblems}
+              allProblems={Object.values(PROBLEMS)}
             />
           </Panel>
 
