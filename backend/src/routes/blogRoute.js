@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   addCommunityComment,
+  addCommentReply,
   createCommunityPost,
   deleteCommunityComment,
   deleteMyCommunityPost,
@@ -8,6 +9,7 @@ import {
   getPublishedPosts,
   getMyCommunityPosts,
   reactToCommunityPost,
+  reactToComment,
   updateCommunityComment,
   updateMyCommunityPost,
 } from "../controllers/blogController.js";
@@ -22,6 +24,7 @@ router.put("/community/:id", protectRoute, updateMyCommunityPost);
 router.delete("/community/:id", protectRoute, deleteMyCommunityPost);
 router.post("/community/:id/reactions", protectRoute, reactToCommunityPost);
 router.post("/community/:id/comments", protectRoute, addCommunityComment);
+router.post("/community/:id/comments/:commentId/replies", protectRoute, addCommentReply);
 router.put(
   "/community/:postId/comments/:commentId",
   protectRoute,
@@ -31,6 +34,11 @@ router.delete(
   "/community/:postId/comments/:commentId",
   protectRoute,
   deleteCommunityComment,
+);
+router.post(
+  "/community/:postId/comments/:commentId/reactions",
+  protectRoute,
+  reactToComment,
 );
 router.get("/:slug", getPublishedPostBySlug);
 

@@ -14,7 +14,7 @@ export const translations = {
 
     // Blog
     "blog.badge": "Community insights",
-    "blog.title": "ProveIt Blog & Community",
+    "blog.title": "ProveIt's Blog",
     "blog.subtitle":
       "Share interview lessons, coding insights, and career notes with the ProveIt community after admin review.",
     "blog.readMore": "Read more",
@@ -27,6 +27,25 @@ export const translations = {
     "blog.ctaBody":
       "Turn the ideas from this article into live practice, solo problem solving, and AI interview rehearsal.",
     "blog.ctaButton": "Explore plans",
+    "blog.seeTranslation": "See translation",
+    "blog.seeOriginal": "See original",
+    "blog.translationUnavailable": "Translation unavailable",
+    "blog.reply": "Reply",
+    "blog.replyPlaceholder": "Write a reply...",
+    "blog.send": "Send",
+    "blog.reaction.like": "Like",
+    "blog.reaction.support": "Support",
+    "blog.reaction.love": "Love",
+    "blog.reaction.celebrate": "Celebrate",
+    "blog.reaction.haha": "Haha",
+    "blog.reaction.angry": "Angry",
+    "blog.addPost": "Add Post",
+    "blog.signInToPost": "Sign in to post",
+    "blog.signInToComment": "Sign in to comment",
+    "blog.writeComment": "Write a comment...",
+    "blog.comments": "Comments",
+    "blog.guidelines": "Community guidelines",
+    "blog.guidelinesBody": "Share practical interview lessons, coding insights, and helpful career notes. Every community post is reviewed before it appears publicly.",
 
     // Home hero
     "home.badge": "Real-time Collaboration",
@@ -609,7 +628,7 @@ export const translations = {
 
     // Blog
     "blog.badge": "رؤى المجتمع",
-    "blog.title": "مدونة ومجتمع ProveIt",
+    "blog.title": "مدونة ProveIt",
     "blog.subtitle":
       "شارك دروس المقابلات ورؤى البرمجة وملاحظات المسار المهني مع مجتمع ProveIt بعد مراجعة الإدارة.",
     "blog.readMore": "اقرأ المزيد",
@@ -622,6 +641,25 @@ export const translations = {
     "blog.ctaBody":
       "حوّل أفكار هذا المقال إلى تدريب مباشر وحل مسائل فردي ومحاكاة مقابلات بالذكاء الاصطناعي.",
     "blog.ctaButton": "استكشف الخطط",
+    "blog.seeTranslation": "عرض الترجمة",
+    "blog.seeOriginal": "عرض النص الأصلي",
+    "blog.translationUnavailable": "الترجمة غير متاحة",
+    "blog.reply": "رد",
+    "blog.replyPlaceholder": "اكتب ردًا...",
+    "blog.send": "إرسال",
+    "blog.reaction.like": "إعجاب",
+    "blog.reaction.support": "دعم",
+    "blog.reaction.love": "حب",
+    "blog.reaction.celebrate": "احتفال",
+    "blog.reaction.haha": "هاها",
+    "blog.reaction.angry": "غضب",
+    "blog.addPost": "إضافة منشور",
+    "blog.signInToPost": "سجّل دخولك للنشر",
+    "blog.signInToComment": "سجّل دخولك للتعليق",
+    "blog.writeComment": "اكتب تعليقًا...",
+    "blog.comments": "التعليقات",
+    "blog.guidelines": "إرشادات المجتمع",
+    "blog.guidelinesBody": "شارك دروس المقابلات العملية والرؤى البرمجية والملاحظات المهنية المفيدة. يُراجَع كل منشور مجتمعي قبل ظهوره للعموم.",
 
     // Home hero
     "home.badge": "تعاون في الوقت الفعلي",

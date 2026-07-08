@@ -49,6 +49,22 @@ export const blogApi = {
     return response.data;
   },
 
+  addCommentReply: async ({ postId, commentId, content }) => {
+    const response = await axiosInstance.post(
+      `/blog/community/${postId}/comments/${commentId}/replies`,
+      { content },
+    );
+    return response.data;
+  },
+
+  reactToComment: async ({ postId, commentId, type }) => {
+    const response = await axiosInstance.post(
+      `/blog/community/${postId}/comments/${commentId}/reactions`,
+      { type },
+    );
+    return response.data;
+  },
+
   updateComment: async ({ postId, commentId, content }) => {
     const response = await axiosInstance.put(
       `/blog/community/${postId}/comments/${commentId}`,

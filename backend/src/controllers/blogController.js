@@ -3,9 +3,10 @@ import Notification from "../models/Notification.js";
 import User from "../models/User.js";
 import { ENV } from "../lib/env.js";
 import { ensureBlogSeed } from "../lib/blogSeed.js";
+import { translatePost } from "../services/translationService.js";
 
 const COMMUNITY_STATUSES = ["pending", "approved", "rejected"];
-const REACTION_TYPES = ["like", "celebrate", "insightful"];
+const REACTION_TYPES = ["like", "support", "love", "celebrate", "haha", "angry"];
 const MAX_IMAGE_URL_LENGTH = 1000;
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -85,6 +86,13 @@ function reactionCounts(reactions = []) {
   }, {});
 }
 
+function commentReactionCounts(reactions = []) {
+  return REACTION_TYPES.reduce((counts, type) => {
+    counts[type] = reactions.filter((r) => r.type === type).length;
+    return counts;
+  }, {});
+}
+
 function publicUser(user) {
   if (!user) return null;
   return {
@@ -95,17 +103,24 @@ function publicUser(user) {
   };
 }
 
-function formatComment(comment, currentUserId = null) {
+function formatComment(comment, currentUserId = null, replies = []) {
   const currentId = currentUserId ? String(currentUserId) : "";
   const authorId = comment.userId?._id || comment.userId;
+  const myReaction = (comment.reactions || []).find(
+    (r) => String(r.userId) === currentId,
+  );
 
   return {
     _id: comment._id,
     content: comment.content,
     author: publicUser(comment.userId),
+    parentCommentId: comment.parentCommentId || null,
     canManage: Boolean(currentId && String(authorId) === currentId),
     createdAt: comment.createdAt,
     updatedAt: comment.updatedAt,
+    reactionCounts: commentReactionCounts(comment.reactions || []),
+    myReaction: myReaction?.type || null,
+    replies: replies.map((reply) => formatComment(reply, currentUserId, [])),
   };
 }
 
@@ -115,6 +130,18 @@ function formatCommunityPost(post, currentUserId = null, includePrivate = false)
     (reaction) => String(reaction.userId?._id || reaction.userId) === currentId,
   );
   const isOwner = currentId && String(post.authorId?._id || post.authorId) === currentId;
+
+  // Separate top-level comments from replies
+  const allComments = post.comments || [];
+  const topLevel = allComments.filter((c) => !c.parentCommentId);
+  const repliesMap = {};
+  allComments.forEach((c) => {
+    if (c.parentCommentId) {
+      const key = String(c.parentCommentId);
+      if (!repliesMap[key]) repliesMap[key] = [];
+      repliesMap[key].push(c);
+    }
+  });
 
   return {
     _id: post._id,
@@ -135,8 +162,15 @@ function formatCommunityPost(post, currentUserId = null, includePrivate = false)
     canDelete: Boolean(isOwner && post.status !== "approved"),
     reactionCounts: reactionCounts(post.reactions),
     myReaction: userReaction?.type || null,
-    comments: (post.comments || []).map((comment) => formatComment(comment, currentUserId)),
+    comments: topLevel.map((c) =>
+      formatComment(c, currentUserId, repliesMap[String(c._id)] || []),
+    ),
     moderationHistory: includePrivate ? post.moderationHistory || [] : undefined,
+    // Translation
+    originalLanguage: post.originalLanguage || "",
+    translatedContent: post.translatedContent || "",
+    translatedLanguage: post.translatedLanguage || "",
+    translationStatus: post.translationStatus || "",
   };
 }
 
@@ -180,6 +214,13 @@ function buildCommunitySlug(userId, content, title = "") {
   return `${base || "community-post"}-${String(userId).slice(-6)}-${Date.now().toString(36)}`;
 }
 
+function isAdminUser(user) {
+  if (!user) return false;
+  const adminEmail = String(ENV.ADMIN_EMAIL || "").trim().toLowerCase();
+  const userEmail = String(user.email || "").trim().toLowerCase();
+  return user.role === "admin" || (adminEmail && userEmail === adminEmail);
+}
+
 async function notifyAdmins(senderId, postId) {
   const adminEmail = String(ENV.ADMIN_EMAIL || "").trim().toLowerCase();
   const admins = await User.find({
@@ -218,6 +259,8 @@ async function notifyAuthor(recipientId, senderId, postId, approved) {
 async function findCommunityPostForUser(id, userId) {
   return BlogPost.findOne({ _id: id, postType: "community", authorId: userId });
 }
+
+// ─── Public routes ────────────────────────────────────────────────────────────
 
 export async function getPublishedPosts(req, res) {
   try {
@@ -301,6 +344,9 @@ export async function createCommunityPost(req, res) {
     const payload = normalizeCommunityBody(req.body);
     if (payload.error) return res.status(400).json({ msg: payload.error });
 
+    const adminPost = isAdminUser(req.user);
+    const now = new Date();
+
     const post = await BlogPost.create({
       postType: "community",
       title: toLocalized(payload.title),
@@ -310,18 +356,30 @@ export async function createCommunityPost(req, res) {
       readTime: toLocalized("Community post"),
       author: toLocalized(req.user.name),
       content: [],
-      published: false,
-      publishedAt: null,
+      published: adminPost,
+      publishedAt: adminPost ? now : null,
       authorId: req.user._id,
       communityContent: payload.content,
       imageUrl: payload.imageUrl,
-      status: "pending",
+      status: adminPost ? "approved" : "pending",
+      approvedBy: adminPost ? req.user._id : null,
+      approvedAt: adminPost ? now : null,
       moderationHistory: [
-        { action: "submitted", by: req.user._id, note: "Submitted for review" },
+        {
+          action: adminPost ? "approved" : "submitted",
+          by: req.user._id,
+          note: adminPost ? "Auto-approved (admin)" : "Submitted for review",
+        },
       ],
     });
 
-    await notifyAdmins(req.user._id, post._id);
+    // Notify admins only for non-admin posts
+    if (!adminPost) {
+      await notifyAdmins(req.user._id, post._id);
+    }
+
+    // Trigger translation asynchronously — do NOT await
+    translatePost(post._id, payload.content).catch(() => {});
 
     const populated = await BlogPost.findById(post._id)
       .populate("authorId", "name profileImage level")
@@ -342,24 +400,47 @@ export async function updateMyCommunityPost(req, res) {
     const post = await findCommunityPostForUser(req.params.id, req.user._id);
     if (!post) return res.status(404).json({ msg: "Post not found" });
 
+    const adminPost = isAdminUser(req.user);
+    const now = new Date();
+
     post.title = toLocalized(payload.title);
     post.excerpt = toLocalized(payload.content.slice(0, 160));
     post.communityContent = payload.content;
     post.imageUrl = payload.imageUrl;
-    post.published = false;
-    post.publishedAt = null;
-    post.status = "pending";
-    post.rejectedBy = null;
-    post.rejectedAt = null;
-    post.rejectionReason = "";
+
+    if (adminPost) {
+      post.published = true;
+      post.publishedAt = now;
+      post.status = "approved";
+      post.approvedBy = req.user._id;
+      post.approvedAt = now;
+    } else {
+      post.published = false;
+      post.publishedAt = null;
+      post.status = "pending";
+      post.rejectedBy = null;
+      post.rejectedAt = null;
+      post.rejectionReason = "";
+    }
+
     post.moderationHistory.push({
-      action: "edited",
+      action: adminPost ? "approved" : "edited",
       by: req.user._id,
-      note: "Edited by author and returned to pending review",
+      note: adminPost ? "Edited and auto-approved (admin)" : "Edited by author and returned to pending review",
     });
 
+    // Reset translation when content changes
+    post.translationStatus = "pending";
+    post.translatedContent = "";
+
     await post.save();
-    await notifyAdmins(req.user._id, post._id);
+
+    if (!adminPost) {
+      await notifyAdmins(req.user._id, post._id);
+    }
+
+    // Re-translate asynchronously
+    translatePost(post._id, payload.content).catch(() => {});
 
     await post.populate("authorId", "name profileImage level");
     await post.populate("comments.userId", "name profileImage level");
@@ -375,7 +456,7 @@ export async function deleteMyCommunityPost(req, res) {
     const post = await findCommunityPostForUser(req.params.id, req.user._id);
     if (!post) return res.status(404).json({ msg: "Post not found" });
 
-    if (post.status === "approved") {
+    if (post.status === "approved" && !isAdminUser(req.user)) {
       return res.status(400).json({ msg: "Approved posts cannot be deleted by the author" });
     }
 
@@ -441,7 +522,7 @@ export async function addCommunityComment(req, res) {
 
     if (!post) return res.status(404).json({ msg: "Approved post not found" });
 
-    post.comments.push({ userId: req.user._id, content });
+    post.comments.push({ userId: req.user._id, content, parentCommentId: null });
     await post.save();
     await post.populate("authorId", "name profileImage level");
     await post.populate("comments.userId", "name profileImage level");
@@ -450,6 +531,88 @@ export async function addCommunityComment(req, res) {
   } catch (error) {
     console.error("Error in addCommunityComment:", error.message);
     res.status(500).json({ msg: "Failed to add comment" });
+  }
+}
+
+export async function addCommentReply(req, res) {
+  try {
+    const content = String(req.body?.content || "").trim();
+    if (!content) return res.status(400).json({ msg: "Reply content is required" });
+    if (content.length > 1000) return res.status(400).json({ msg: "Reply is too long" });
+
+    const post = await BlogPost.findOne({
+      _id: req.params.id,
+      postType: "community",
+      status: "approved",
+    });
+
+    if (!post) return res.status(404).json({ msg: "Approved post not found" });
+
+    const parentComment = post.comments.id(req.params.commentId);
+    if (!parentComment) return res.status(404).json({ msg: "Parent comment not found" });
+
+    // Enforce one-level nesting: only reply to top-level comments
+    if (parentComment.parentCommentId) {
+      return res.status(400).json({ msg: "Cannot reply to a reply" });
+    }
+
+    post.comments.push({
+      userId: req.user._id,
+      content,
+      parentCommentId: parentComment._id,
+    });
+
+    await post.save();
+    await post.populate("authorId", "name profileImage level");
+    await post.populate("comments.userId", "name profileImage level");
+
+    res.status(201).json({ post: formatCommunityPost(post, req.user._id) });
+  } catch (error) {
+    console.error("Error in addCommentReply:", error.message);
+    res.status(500).json({ msg: "Failed to add reply" });
+  }
+}
+
+export async function reactToComment(req, res) {
+  try {
+    const type = String(req.body?.type || "").trim().toLowerCase();
+    if (!REACTION_TYPES.includes(type)) {
+      return res.status(400).json({ msg: "Invalid reaction type" });
+    }
+
+    const post = await BlogPost.findOne({
+      _id: req.params.postId,
+      postType: "community",
+      status: "approved",
+    });
+
+    if (!post) return res.status(404).json({ msg: "Approved post not found" });
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ msg: "Comment not found" });
+
+    const existingIndex = (comment.reactions || []).findIndex(
+      (r) => String(r.userId) === String(req.user._id),
+    );
+
+    if (existingIndex >= 0) {
+      if (comment.reactions[existingIndex].type === type) {
+        comment.reactions.splice(existingIndex, 1);
+      } else {
+        comment.reactions[existingIndex].type = type;
+      }
+    } else {
+      comment.reactions.push({ userId: req.user._id, type });
+    }
+
+    await post.save();
+    await post.populate("authorId", "name profileImage level");
+    await post.populate("comments.userId", "name profileImage level");
+
+    res.status(200).json({ post: formatCommunityPost(post, req.user._id) });
+  } catch (error) {
+    console.error("Error in reactToComment:", error.message);
+    res.status(500).json({ msg: "Failed to update comment reaction" });
   }
 }
 
@@ -512,6 +675,8 @@ export async function deleteCommunityComment(req, res) {
     res.status(500).json({ msg: "Failed to delete comment" });
   }
 }
+
+// ─── Admin routes ─────────────────────────────────────────────────────────────
 
 export async function getAdminBlogPosts(req, res) {
   try {

@@ -16,6 +16,8 @@ const blogSectionSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const REACTION_TYPES = ["like", "support", "love", "celebrate", "haha", "angry"];
+
 const reactionSchema = new mongoose.Schema(
   {
     userId: {
@@ -25,11 +27,27 @@ const reactionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["like", "celebrate", "insightful"],
+      enum: REACTION_TYPES,
       required: true,
     },
   },
   { _id: false, timestamps: true },
+);
+
+const commentReactionSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: REACTION_TYPES,
+      required: true,
+    },
+  },
+  { _id: false },
 );
 
 const commentSchema = new mongoose.Schema(
@@ -44,6 +62,14 @@ const commentSchema = new mongoose.Schema(
       required: true,
       trim: true,
       maxlength: 1000,
+    },
+    parentCommentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+    reactions: {
+      type: [commentReactionSchema],
+      default: [],
     },
   },
   { timestamps: true },
@@ -163,6 +189,27 @@ const blogPostSchema = new mongoose.Schema(
     moderationHistory: {
       type: [moderationHistorySchema],
       default: [],
+    },
+    // AI translation fields
+    originalLanguage: {
+      type: String,
+      enum: ["en", "ar", ""],
+      default: "",
+    },
+    translatedContent: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    translatedLanguage: {
+      type: String,
+      enum: ["en", "ar", ""],
+      default: "",
+    },
+    translationStatus: {
+      type: String,
+      enum: ["pending", "done", "failed", "skipped", ""],
+      default: "",
     },
   },
   { timestamps: true },
