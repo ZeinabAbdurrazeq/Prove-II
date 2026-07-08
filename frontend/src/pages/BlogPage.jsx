@@ -181,13 +181,29 @@ function ReactionPicker({ postId, myReaction, reactionCounts, isSignedIn, busy, 
 
   const activeEmoji = myReaction ? reactionEmoji(myReaction) : null;
 
+  // Reaction-specific button colors
+  const REACTION_STYLES = {
+    like:      { bg: "#1877f2", color: "#fff" },
+    support:   { bg: "#00936b", color: "#fff" },
+    love:      { bg: "#f33e58", color: "#fff" },
+    celebrate: { bg: "#7c3aed", color: "#fff" },
+    haha:      { bg: "#f59e0b", color: "#fff" },
+    angry:     { bg: "#ef4444", color: "#fff" },
+  };
+
+  const activeStyle = myReaction ? REACTION_STYLES[myReaction] : null;
+
   return (
     <div className="relative inline-flex" ref={containerRef}>
       <button
         type="button"
-        className={`btn btn-sm rounded-full gap-1.5 select-none ${
-          myReaction ? "btn-primary" : "btn-ghost"
+        className={`btn btn-sm rounded-full gap-1.5 select-none transition-all duration-200 ${
+          myReaction ? "border-0" : "btn-ghost"
         }`}
+        style={activeStyle
+          ? { backgroundColor: activeStyle.bg, color: activeStyle.color, borderColor: activeStyle.bg }
+          : undefined
+        }
         onClick={handleMainClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -196,12 +212,19 @@ function ReactionPicker({ postId, myReaction, reactionCounts, isSignedIn, busy, 
         disabled={busy}
         aria-label="React to post"
       >
-        <span className="text-base leading-none">{activeEmoji ?? "👍"}</span>
+        <span className={`leading-none select-none ${myReaction ? "text-lg" : "text-base"}`}>
+          {activeEmoji ?? "👍"}
+        </span>
         <span className="hidden sm:inline text-xs font-semibold">
           {myReaction ? t(`blog.reaction.${myReaction}`) : t("blog.reaction.like")}
         </span>
         {totalReactions > 0 && (
-          <span className="badge badge-sm">{totalReactions}</span>
+          <span
+            className="badge badge-sm"
+            style={activeStyle ? { backgroundColor: "rgba(255,255,255,0.25)", color: activeStyle.color, border: "none" } : undefined}
+          >
+            {totalReactions}
+          </span>
         )}
       </button>
 
