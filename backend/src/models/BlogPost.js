@@ -217,6 +217,7 @@ const blogPostSchema = new mongoose.Schema(
 
 blogPostSchema.index({ published: 1, publishedAt: -1 });
 blogPostSchema.index({ postType: 1, status: 1, createdAt: -1 });
+blogPostSchema.index({ slug: 1 }, { unique: true });
 
 const BlogPost = mongoose.model("BlogPost", blogPostSchema);
 

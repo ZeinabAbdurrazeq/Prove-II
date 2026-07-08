@@ -128,19 +128,6 @@ const aiInterviewSessionSchema = new mongoose.Schema(
       type: [Object],
       default: [],
     },
-    // New fields for the mandatory problem solving stage
-    codingScore: {
-      type: Number,
-      default: 0,
-    },
-    communicationScore: {
-      type: Number,
-      default: 0,
-    },
-    codingProblems: {
-      type: [Object], // Store problem id, user code, passed tests
-      default: [],
-    },
   },
   { timestamps: true },
 );

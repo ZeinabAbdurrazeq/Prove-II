@@ -8,13 +8,10 @@ import AntiCheatingModal from "../components/interview/AntiCheatingModal";
 import useAntiCheating from "../hooks/useAntiCheating";
 import useSpeechRecognition from "../hooks/useSpeechRecognition";
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
-import InterviewControls from "../components/interview/InterviewControls";
-import CodingChallengeStage from "../components/interview/CodingChallengeStage";
 import { useSubmitAnswer } from "../hooks/useAiInterview";
 import { aiInterviewApi } from "../api/aiInterview";
 import { useLanguage } from "../context/LanguageContext";
 import { getTranslator } from "../lib/translations";
-import toast from "react-hot-toast";
 
 const STAGE_LABELS = {
   intro: "Interview setup",
@@ -69,7 +66,7 @@ function InterviewPage() {
   const [transitionMessage, setTransitionMessage] = useState(
     state?.transitionMessage || t("aiInterview.defaultTransition"),
   );
-  const interviewerName = state?.interviewerName || "Alex";
+  const interviewerName = state?.interviewerName || "Sarah";
 
   // Keep the latest elapsed seconds for the current question.
   const timeSpentRef = useRef(0);
@@ -117,34 +114,6 @@ function InterviewPage() {
     requestFullscreen();
   }, [requestFullscreen]);
 
-  // Show Interview Rules on mount
-  useEffect(() => {
-    if (!bootstrappedRef.current) {
-      toast(
-        (t) => (
-          <div className="flex flex-col gap-2 p-1">
-            <h3 className="font-bold text-lg">Interview Rules</h3>
-            <ul className="text-sm list-disc pl-4 space-y-1">
-              <li>Do not leave this tab.</li>
-              <li>Do not minimize the browser.</li>
-              <li>Do not copy/paste.</li>
-              <li>Stay in fullscreen.</li>
-              <li>Keep only one face visible.</li>
-            </ul>
-            <p className="text-xs text-error mt-1 font-semibold">
-              Repeated suspicious behavior will terminate the interview.
-            </p>
-          </div>
-        ),
-        {
-          duration: 8000,
-          position: "top-center",
-          style: { minWidth: "320px" }
-        }
-      );
-    }
-  }, []);
-
   // Submit the current answer text. Shared by voice auto-submit, the
   // "Done" button, and typing mode.
   const submitAnswer = useCallback(
@@ -181,7 +150,7 @@ function InterviewPage() {
             }
 
             if (data.isComplete) {
-              setStage("coding_challenge");
+              finishInterview();
               return;
             }
 
@@ -327,16 +296,6 @@ function InterviewPage() {
           </div>
         </div>
       </div>
-    );
-  }
-
-  if (stage === "coding_challenge") {
-    return (
-      <CodingChallengeStage
-        sessionId={sessionId}
-        onFinish={finishInterview}
-        t={t}
-      />
     );
   }
 

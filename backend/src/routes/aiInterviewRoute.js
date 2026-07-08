@@ -9,7 +9,6 @@ import {
   getResults,
   getHistory,
   getSession,
-  saveCodingScore,
 } from "../controllers/aiInterviewController.js";
 
 const router = express.Router();
@@ -55,7 +54,6 @@ router.post("/start", protectRoute, startInterview);
 router.get("/history", protectRoute, getHistory);
 
 router.post("/:sessionId/answer", protectRoute, submitAnswer);
-router.post("/:sessionId/coding-score", protectRoute, saveCodingScore);
 router.get("/:sessionId/results", protectRoute, getResults);
 
 // Read-only session fetch (resume / refresh). Declared after the more specific

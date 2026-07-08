@@ -1,67 +1,56 @@
-import { PauseIcon, PhoneOffIcon, SkipForwardIcon, KeyboardIcon, MicIcon } from "lucide-react";
-import { useState } from "react";
+import { CheckIcon, KeyboardIcon, MicIcon, SkipForwardIcon } from "lucide-react";
 
+// Interview action bar: Done Speaking, Skip Question, and a mute/type toggle.
 function InterviewControls({
-  isListening,
-  onEndInterview,
-  onSkip,
-  onToggleTypingMode,
   isTypingMode,
+  onToggleTypingMode,
+  onDoneSpeaking,
+  onSkip,
+  canSubmit,
   disabled,
   t = (key) => key,
 }) {
-  const [isPaused, setIsPaused] = useState(false);
+  const primaryLabel = isTypingMode
+    ? t("aiInterview.done")
+    : t("aiInterview.doneSpeaking");
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-6 rounded-full border border-base-300/30 bg-[#121216]/90 px-8 py-4 shadow-2xl backdrop-blur-xl">
-      {/* Type Instead / Speak Instead Button */}
+    <div className="flex flex-wrap items-center justify-center gap-3">
       <button
-        onClick={onToggleTypingMode}
-        className="flex flex-col items-center gap-2 text-base-content/70 hover:text-white transition-colors"
-        disabled={disabled}
+        className="btn btn-primary gap-2"
+        onClick={onDoneSpeaking}
+        disabled={disabled || !canSubmit}
       >
-        <div className="flex size-10 items-center justify-center rounded-full bg-base-300/30 hover:bg-base-300/50">
-          {isTypingMode ? <MicIcon className="size-5" /> : <KeyboardIcon className="size-5" />}
-        </div>
-        <span className="text-[10px] font-medium tracking-wide">
-          {isTypingMode ? "Speak Instead" : "Type Instead"}
-        </span>
+        <CheckIcon className="size-4" />
+        {primaryLabel}
       </button>
 
-      {/* Skip Button */}
       <button
+        className="btn btn-ghost gap-2"
         onClick={onSkip}
-        className="flex flex-col items-center gap-2 text-base-content/70 hover:text-white transition-colors"
         disabled={disabled}
       >
-        <div className="flex size-10 items-center justify-center rounded-full bg-base-300/30 hover:bg-base-300/50">
-          <SkipForwardIcon className="size-5" />
-        </div>
-        <span className="text-[10px] font-medium tracking-wide">Skip</span>
+        <SkipForwardIcon className="size-4" />
+        {t("aiInterview.skipQuestion")}
       </button>
 
-      {/* Pause Button */}
       <button
-        onClick={() => setIsPaused(!isPaused)}
-        className="flex flex-col items-center gap-2 text-base-content/70 hover:text-white transition-colors"
+        className="btn btn-outline gap-2"
+        onClick={onToggleTypingMode}
         disabled={disabled}
+        title={isTypingMode ? t("aiInterview.useVoice") : t("aiInterview.typeInstead")}
       >
-        <div className="flex size-10 items-center justify-center rounded-full bg-base-300/30 hover:bg-base-300/50">
-          <PauseIcon className="size-5" />
-        </div>
-        <span className="text-[10px] font-medium tracking-wide">Pause</span>
-      </button>
-
-      {/* End Interview Button */}
-      <button
-        onClick={onEndInterview}
-        className="flex flex-col items-center gap-2 text-base-content/70 hover:text-white transition-colors"
-        disabled={disabled}
-      >
-        <div className="flex size-10 items-center justify-center rounded-full bg-red-500/20 hover:bg-red-500/40">
-          <PhoneOffIcon className="size-4 text-red-500" />
-        </div>
-        <span className="text-[10px] font-medium tracking-wide">End Interview</span>
+        {isTypingMode ? (
+          <>
+            <MicIcon className="size-4" />
+            {t("aiInterview.useVoice")}
+          </>
+        ) : (
+          <>
+            <KeyboardIcon className="size-4" />
+            {t("aiInterview.typeInstead")}
+          </>
+        )}
       </button>
     </div>
   );

@@ -330,7 +330,7 @@ export async function startInterview(req, res) {
         stage: q.stage || "technical",
       })),
       language,
-      interviewerName: "Alex",
+      interviewerName: "Zara",
       currentStage: selected[0]?.stage || "intro",
       targetRole,
       jobDescription,
@@ -461,7 +461,7 @@ export async function submitAnswer(req, res) {
     return res.status(200).json({
       askFollowUp: false,
       isComplete: true,
-      interviewerName: "Alex",
+      interviewerName: "Zara",
       stage: "final_feedback",
       stageLabel: "Final feedback",
       transitionMessage:
@@ -494,32 +494,6 @@ export async function getSession(req, res) {
   }
 }
 
-// POST /api/ai-interview/:sessionId/coding-score
-// Saves the results of the Problem Solving stage before getting the final results.
-export async function saveCodingScore(req, res) {
-  try {
-    const { sessionId } = req.params;
-    const { codingScore, codingProblems } = req.body;
-
-    const session = await AIInterviewSession.findOne({
-      _id: sessionId,
-      userId: req.user._id,
-    });
-
-    if (!session) return res.status(404).json({ msg: "Session not found" });
-
-    session.codingScore = Number(codingScore) || 0;
-    session.codingProblems = codingProblems || [];
-    
-    await session.save();
-
-    res.status(200).json({ msg: "Coding score saved", session });
-  } catch (error) {
-    console.error("Error in saveCodingScore controller:", error.message);
-    res.status(500).json({ msg: "Failed to save coding score" });
-  }
-}
-
 // GET /api/ai-interview/:sessionId/results
 // Generates the overall scorecard, marks the session completed, fires the
 // progress-tracking Inngest event, and returns the full results.
@@ -549,18 +523,7 @@ export async function getResults(req, res) {
         ? scored.reduce((sum, q) => sum + q.score, 0) / scored.length
         : 0;
 
-    // Convert the 10-point average to the 70-point scale
-    const aiInterviewScore = Math.round(computedAverage * 7);
-    
-    // Calculate communication score out of 9 (derived from interview performance)
-    const communicationScore = Math.round((computedAverage / 10) * 9);
-    
-    // Problem solving score is already saved (out of 21)
-    const codingScore = session.codingScore || 0;
-
-    session.communicationScore = communicationScore;
-    session.overallScore = aiInterviewScore + codingScore + communicationScore;
-    
+    session.overallScore = Math.round(computedAverage * 10) / 10;
     session.overallFeedback = scorecard.overallFeedback || "";
     session.strengths = scorecard.strengths || [];
     session.weaknesses = scorecard.weaknesses || [];

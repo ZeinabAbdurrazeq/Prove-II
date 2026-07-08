@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import toast from "react-hot-toast";
 
 export default function useAntiCheating({ onTerminate }) {
   const [warnings, setWarnings] = useState(0);
@@ -28,13 +27,6 @@ export default function useAntiCheating({ onTerminate }) {
     const newWarnings = warningsRef.current + 1;
     setWarnings(newWarnings);
     console.warn(`Anti-Cheating Warning (${newWarnings}/${maxWarnings}): ${reason}`);
-
-    // Show professional toast for the warning
-    toast.error(reason, {
-      icon: "⚠️",
-      duration: 4000,
-      style: { border: "1px solid #ef4444", padding: "16px", color: "#fff", background: "#333" }
-    });
 
     if (newWarnings >= maxWarnings) {
       if (onTerminateRef.current) {

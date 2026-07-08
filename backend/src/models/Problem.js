@@ -65,6 +65,7 @@ const problemSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+problemSchema.index({ id: 1 }, { unique: true });
 problemSchema.index({ title: "text", category: "text", id: "text" });
 
 const Problem = mongoose.model("Problem", problemSchema);
