@@ -21,6 +21,8 @@ export const ENV = {
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   RESEND_FROM: process.env.RESEND_FROM,
   OPENAI_MOCK_MODE: process.env.OPENAI_MOCK_MODE,
+  AI_API_KEYS: process.env.AI_API_KEYS,
+  AI_API_KEY: process.env.AI_API_KEY,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   ITI_API_KEY: process.env.ITI_API_KEY,
   ITI_API_BASE_URL: process.env.ITI_API_BASE_URL,

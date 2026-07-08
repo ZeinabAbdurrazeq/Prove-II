@@ -7,6 +7,13 @@ export async function callWithFallback(messages, systemPrompt, options = {}) {
   try {
     return await callItiProvider(messages, systemPrompt, options);
   } catch (primaryError) {
+    if (
+      primaryError.message ===
+      "All AI providers are currently unavailable. Please try again later."
+    ) {
+      throw primaryError;
+    }
+
     const candidates = [
       ENV.ITI_FALLBACK_MODEL,
       ...FALLBACK_MODELS,

@@ -1,5 +1,6 @@
 import { OPENAI_MOCK_MODE } from "./env.js";
 import { callWithFallback } from "../ai/providers/fallbackProvider.js";
+import { AiProviderError } from "../ai/aiKeyManager.js";
 import {
   buildQuestionPlanPrompt,
   buildZaraSystemPrompt,
@@ -289,6 +290,8 @@ function parseJsonResponse(rawResponse, context) {
   let raw = "";
   if (typeof rawResponse === "string") {
     raw = rawResponse;
+  } else if (rawResponse?.message?.content) {
+    raw = rawResponse.message.content;
   } else if (rawResponse?.choices?.[0]?.message?.content) {
     raw = rawResponse.choices[0].message.content; // OpenAI format
   } else if (rawResponse?.content) {
@@ -307,16 +310,22 @@ function parseJsonResponse(rawResponse, context) {
     return JSON.parse(cleaned);
   } catch (error) {
     console.error(`Failed to parse ${context} JSON from ITI Gateway:`, raw);
-    throw new Error(`ITI Gateway returned invalid JSON while ${context}`);
+    throw new AiProviderError(`Invalid AI response while ${context}`, {
+      retryable: true,
+      cause: error,
+    });
   }
 }
 
 /**
  * Shared helper to call the ITI Bedrock Gateway
  */
-async function callITIModel(messages, systemPrompt, isVision = false) {
+async function callITIModel(messages, systemPrompt, isVision = false, options = {}) {
   try {
-    return await callWithFallback(messages, systemPrompt, { isVision });
+    return await callWithFallback(messages, systemPrompt, {
+      isVision,
+      ...options,
+    });
   } catch (error) {
     console.error("Network/Connection Error to ITI Gateway:", error.message);
     throw error;
@@ -352,8 +361,10 @@ export async function analyzeCv(cvText) {
       }
     ];
 
-    const responseData = await callITIModel(messages, systemPrompt, false);
-    return parseJsonResponse(responseData, "analyzing the CV");
+    return await callITIModel(messages, systemPrompt, false, {
+      transformResponse: (responseData) =>
+        parseJsonResponse(responseData, "analyzing the CV"),
+    });
   } catch (error) {
     console.error("analyzeCv error:", error.message);
     throw error;
@@ -405,8 +416,10 @@ export async function analyzeCvFromImages(imageBuffers) {
       }
     ];
 
-    const responseData = await callITIModel(messages, systemPrompt, true);
-    return parseJsonResponse(responseData, "analyzing the CV images");
+    return await callITIModel(messages, systemPrompt, true, {
+      transformResponse: (responseData) =>
+        parseJsonResponse(responseData, "analyzing the CV images"),
+    });
   } catch (error) {
     console.error("analyzeCvFromImages error:", error.message);
     throw error;
@@ -476,7 +489,7 @@ export async function generateInterviewQuestions({
       }
     ];
 
-    const responseData = await callITIModel(
+    const parsed = await callITIModel(
       [
         {
           role: "user",
@@ -492,8 +505,11 @@ export async function generateInterviewQuestions({
       ],
       buildZaraSystemPrompt(language),
       false,
+      {
+        transformResponse: (responseData) =>
+          parseJsonResponse(responseData, "generating interview questions"),
+      },
     );
-    const parsed = parseJsonResponse(responseData, "generating interview questions");
     const questions = Array.isArray(parsed) ? parsed : parsed.questions;
 
     const normalizedQuestions = (questions || [])
@@ -575,7 +591,7 @@ export async function evaluateAnswer(
       }
     ];
 
-    const responseData = await callITIModel(
+    return await callITIModel(
       [
         {
           role: "user",
@@ -592,8 +608,11 @@ export async function evaluateAnswer(
       ],
       buildEvaluationSystemPrompt(language),
       false,
+      {
+        transformResponse: (responseData) =>
+          parseJsonResponse(responseData, "evaluating the answer"),
+      },
     );
-    return parseJsonResponse(responseData, "evaluating the answer");
   } catch (error) {
     console.error("evaluateAnswer error:", error.message);
     throw error;
@@ -652,7 +671,7 @@ export async function generateInterviewFeedback(questions, cvSummary, language =
       }
     ];
 
-    const responseData = await callITIModel(
+    return await callITIModel(
       [
         {
           role: "user",
@@ -665,8 +684,11 @@ export async function generateInterviewFeedback(questions, cvSummary, language =
       ],
       buildZaraSystemPrompt(language),
       false,
+      {
+        transformResponse: (responseData) =>
+          parseJsonResponse(responseData, "generating interview feedback"),
+      },
     );
-    return parseJsonResponse(responseData, "generating interview feedback");
   } catch (error) {
     console.error("generateInterviewFeedback error:", error.message);
     throw error;
