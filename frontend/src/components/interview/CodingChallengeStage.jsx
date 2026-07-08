@@ -6,7 +6,7 @@ import OutputPanel from "../OutputPanel";
 import CodeEditorPanel from "../CodeEditorPanel";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import toast from "react-hot-toast";
-import api from "../../api/axios";
+import axiosInstance from "../../lib/axios";
 
 function CodingChallengeStage({ sessionId, onFinish, t }) {
   const [problems, setProblems] = useState([]);
@@ -112,7 +112,7 @@ function CodingChallengeStage({ sessionId, onFinish, t }) {
 
     // Save coding score
     try {
-      await api.post(`/ai-interview/${sessionId}/coding-score`, {
+      await axiosInstance.post(`/ai-interview/${sessionId}/coding-score`, {
         codingScore: score,
         codingProblems,
       });
