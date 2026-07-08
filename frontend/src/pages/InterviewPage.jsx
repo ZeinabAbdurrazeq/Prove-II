@@ -3,7 +3,9 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { Loader2Icon } from "lucide-react";
 import Navbar from "../components/Navbar";
 import BrowserUnsupportedNotice from "../components/interview/BrowserUnsupportedNotice";
-import ZaraInterviewWorkspace from "../components/interview/ZaraInterviewWorkspace";
+import SarahInterviewWorkspace from "../components/interview/SarahInterviewWorkspace";
+import AntiCheatingModal from "../components/interview/AntiCheatingModal";
+import useAntiCheating from "../hooks/useAntiCheating";
 import useSpeechRecognition from "../hooks/useSpeechRecognition";
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
 import { useSubmitAnswer } from "../hooks/useAiInterview";
@@ -64,7 +66,7 @@ function InterviewPage() {
   const [transitionMessage, setTransitionMessage] = useState(
     state?.transitionMessage || t("aiInterview.defaultTransition"),
   );
-  const interviewerName = state?.interviewerName || "Zara";
+  const interviewerName = state?.interviewerName || "Sarah";
 
   // Keep the latest elapsed seconds for the current question.
   const timeSpentRef = useRef(0);
@@ -95,6 +97,22 @@ function InterviewPage() {
       if (finalText && finalText.trim()) submitAnswer(finalText);
     },
   });
+
+  // Anti-cheating (Moved here to have access to stopListening)
+  const handleTerminate = useCallback(() => {
+    cancelSpeech();
+    stopListening();
+    navigate("/dashboard", { replace: true });
+  }, [cancelSpeech, stopListening, navigate]);
+
+  const { warnings, maxWarnings, requestFullscreen, triggerWarning } = useAntiCheating({
+    onTerminate: handleTerminate,
+  });
+
+  // Request fullscreen on mount
+  useEffect(() => {
+    requestFullscreen();
+  }, [requestFullscreen]);
 
   // Submit the current answer text. Shared by voice auto-submit, the
   // "Done" button, and typing mode.
@@ -285,8 +303,8 @@ function InterviewPage() {
 
   return (
     <div className="min-h-screen bg-base-300">
-      <Navbar />
-      <ZaraInterviewWorkspace
+      <AntiCheatingModal warnings={warnings} maxWarnings={maxWarnings} />
+      <SarahInterviewWorkspace
         currentQuestion={currentQuestion}
         disabled={status === "processing"}
         interviewerName={interviewerName}
@@ -310,6 +328,9 @@ function InterviewPage() {
         totalQuestions={totalQuestions}
         transcript={transcript}
         transitionMessage={transitionMessage}
+        warnings={warnings}
+        maxWarnings={maxWarnings}
+        triggerWarning={triggerWarning}
       />
     </div>
   );

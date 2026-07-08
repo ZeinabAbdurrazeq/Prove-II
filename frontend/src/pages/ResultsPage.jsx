@@ -62,148 +62,145 @@ function ResultsPage() {
   }
 
   const overall = Number(session.overallScore || 0);
+  const communicationScore = Number(session.communicationScore || overall);
+  const technicalScore = Number(session.technicalScore || overall);
+  const problemSolvingScore = Number(session.problemSolvingScore || overall);
+  const confidenceScore = Number(session.confidenceScore || overall);
 
   return (
     <div className="min-h-screen bg-base-300">
       <Navbar />
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        {/* OVERALL SCORE */}
-        <div className="card bg-base-100 border border-base-300">
-          <div className="card-body items-center text-center">
-            <div
-              className="radial-progress font-black text-3xl"
-              style={{
-                "--value": overall * 10,
-                "--size": "9rem",
-                "--thickness": "0.8rem",
-              }}
-              role="progressbar"
-            >
-              <span className={scoreColor(overall)}>{overall.toFixed(1)}</span>
-            </div>
-            <h1 className="text-2xl font-black mt-4">{t("aiInterview.interviewComplete")}</h1>
-            {session.overallFeedback && (
-              <p className="ai-message text-base-content/70 max-w-2xl mt-2">
-                {session.overallFeedback}
-              </p>
-            )}
-            {session.recommendation && (
-              <div className="mt-5 rounded-lg border border-base-300 bg-base-200 px-5 py-4 text-left">
-                <p className="text-xs font-semibold uppercase tracking-wide text-base-content/50">
-                  {t("aiInterview.recommendation")}
-                </p>
-                <p className="ai-message mt-2 text-sm text-base-content/80">
-                  {session.recommendation}
-                </p>
+      <div className="mx-auto max-w-5xl px-6 py-12">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-black text-base-content sm:text-5xl">
+            Interview Completed
+          </h1>
+          <p className="mt-3 text-lg text-base-content/60">
+            Great job! Here is the summary of your AI interview performance.
+          </p>
+        </div>
+
+        {/* OVERALL SCORE & SUMMARY */}
+        <div className="overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-xl">
+          <div className="grid md:grid-cols-[1fr_2fr]">
+            <div className="flex flex-col items-center justify-center border-b border-base-300 bg-base-200/50 p-10 md:border-b-0 md:border-r">
+              <div
+                className="radial-progress text-4xl font-black shadow-inner"
+                style={{
+                  "--value": overall * 10,
+                  "--size": "11rem",
+                  "--thickness": "1rem",
+                }}
+                role="progressbar"
+              >
+                <span className={scoreColor(overall)}>{overall.toFixed(1)}</span>
               </div>
-            )}
+              <p className="mt-4 text-sm font-bold uppercase tracking-widest text-base-content/60">
+                Overall Score
+              </p>
+            </div>
+            
+            <div className="p-10">
+              <h2 className="text-xl font-bold">AI Summary</h2>
+              <p className="ai-message mt-3 leading-relaxed text-base-content/80">
+                {session.overallFeedback || "Your responses have been processed and analyzed by Sarah."}
+              </p>
+              
+              {session.recommendation && (
+                <div className="mt-6 rounded-2xl bg-primary/10 p-5">
+                  <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                    Recommendation
+                  </p>
+                  <p className="ai-message mt-2 text-sm font-medium text-base-content/90">
+                    {session.recommendation}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* STRENGTHS / WEAKNESSES */}
-        <div className="grid sm:grid-cols-2 gap-6 mt-8">
-          <div className="card bg-base-100 border border-base-300">
-            <div className="card-body">
-              <div className="flex items-center gap-2 mb-2">
-                <ThumbsUpIcon className="size-5 text-success" />
-                <h2 className="font-bold">{t("aiInterview.strengths")}</h2>
+        {/* DETAILED BREAKDOWN */}
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "Communication", score: communicationScore },
+            { label: "Technical Knowledge", score: technicalScore },
+            { label: "Problem Solving", score: problemSolvingScore },
+            { label: "Confidence", score: confidenceScore },
+          ].map((cat, idx) => (
+            <div key={idx} className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm hover:shadow-md transition-shadow">
+              <p className="text-xs font-bold uppercase tracking-widest text-base-content/50">
+                {cat.label}
+              </p>
+              <div className="mt-4 flex items-end gap-2">
+                <span className={`text-3xl font-black ${scoreColor(cat.score)}`}>
+                  {cat.score.toFixed(1)}
+                </span>
+                <span className="mb-1 text-sm font-medium text-base-content/40">/ 10</span>
               </div>
+              <progress className={`progress mt-4 w-full ${scoreBadgeClass(cat.score).replace('badge', 'progress')}`} value={cat.score * 10} max="100"></progress>
+            </div>
+          ))}
+        </div>
+
+        {/* STRENGTHS / WEAKNESSES */}
+        <div className="mt-8 grid gap-6 sm:grid-cols-2">
+          <div className="rounded-3xl border border-base-300 bg-base-100 p-8 shadow-sm">
+            <div className="flex items-center gap-3 border-b border-base-200 pb-4">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-success/20 text-success">
+                <ThumbsUpIcon className="size-5" />
+              </div>
+              <h2 className="text-lg font-bold">Strengths</h2>
+            </div>
+            <div className="mt-6">
               {session.strengths?.length > 0 ? (
-                <ul className="space-y-2">
+                <ul className="space-y-4">
                   {session.strengths.map((s, i) => (
-                    <li key={i} className="flex gap-2 text-sm">
-                      <span className="text-success">•</span>
+                    <li key={i} className="flex gap-3 text-sm leading-relaxed text-base-content/80">
+                      <span className="text-success mt-0.5">✦</span>
                       <span>{s}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-base-content/50">{t("aiInterview.noneRecorded")}</p>
+                <p className="text-sm italic text-base-content/50">{t("aiInterview.noneRecorded")}</p>
               )}
             </div>
           </div>
 
-          <div className="card bg-base-100 border border-base-300">
-            <div className="card-body">
-              <div className="flex items-center gap-2 mb-2">
-                <TargetIcon className="size-5 text-warning" />
-                <h2 className="font-bold">{t("aiInterview.areasToImprove")}</h2>
+          <div className="rounded-3xl border border-base-300 bg-base-100 p-8 shadow-sm">
+            <div className="flex items-center gap-3 border-b border-base-200 pb-4">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-warning/20 text-warning">
+                <TargetIcon className="size-5" />
               </div>
+              <h2 className="text-lg font-bold">Areas to Improve</h2>
+            </div>
+            <div className="mt-6">
               {session.weaknesses?.length > 0 ? (
-                <ul className="space-y-2">
+                <ul className="space-y-4">
                   {session.weaknesses.map((w, i) => (
-                    <li key={i} className="flex gap-2 text-sm">
-                      <span className="text-warning">•</span>
+                    <li key={i} className="flex gap-3 text-sm leading-relaxed text-base-content/80">
+                      <span className="text-warning mt-0.5">✦</span>
                       <span>{w}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-base-content/50">{t("aiInterview.noneRecorded")}</p>
+                <p className="text-sm italic text-base-content/50">{t("aiInterview.noneRecorded")}</p>
               )}
             </div>
           </div>
         </div>
 
-        {/* PER-QUESTION BREAKDOWN */}
-        <div className="mt-8">
-          <h2 className="text-lg font-bold mb-4">{t("aiInterview.questionBreakdown")}</h2>
-          <div className="space-y-4">
-            {(session.questions || []).map((q, i) => (
-              <div key={i} className="card bg-base-100 border border-base-300">
-                <div className="card-body">
-                  <div className="flex items-start justify-between gap-4">
-                    <p className="ai-message font-medium">
-                      {i + 1}. {q.questionText}
-                    </p>
-                    <span
-                      className={`badge ${scoreBadgeClass(q.score)} shrink-0`}
-                    >
-                      {Number(q.score || 0)}/10
-                    </span>
-                  </div>
-
-                  <div className="mt-3">
-                    <p className="text-xs uppercase opacity-60 mb-1">
-                      {t("aiInterview.yourAnswer")}
-                    </p>
-                    <p className="ai-message text-sm text-base-content/80 whitespace-pre-wrap">
-                      {q.userAnswer || t("aiInterview.noneRecorded")}
-                    </p>
-                  </div>
-
-                  {q.aiFeedback && (
-                    <div className="mt-3">
-                      <p className="text-xs uppercase opacity-60 mb-1">
-                        {t("aiInterview.feedback")}
-                      </p>
-                      <p className="ai-message text-sm text-base-content/80">
-                        {q.aiFeedback}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* ACTIONS */}
-        <div className="flex flex-wrap justify-center gap-3 mt-10">
+        <div className="mt-12 flex justify-center pb-12">
           <button
-            className="btn btn-primary gap-2"
-            onClick={() => navigate("/ai-interview")}
-          >
-            <RefreshCwIcon className="size-4" />
-            {t("aiInterview.startAnother")}
-          </button>
-          <button
-            className="btn btn-ghost gap-2"
+            className="btn btn-primary btn-wide rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105"
             onClick={() => navigate("/dashboard")}
           >
-            <LayoutDashboardIcon className="size-4" />
-            {t("aiInterview.backToDashboard")}
+            <LayoutDashboardIcon className="size-4 mr-2" />
+            Return to Dashboard
           </button>
         </div>
       </div>
