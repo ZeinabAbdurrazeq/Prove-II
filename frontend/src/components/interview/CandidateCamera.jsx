@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { MicIcon, MicOffIcon, VideoIcon, VideoOffIcon } from "lucide-react";
+import useMicrophoneVolume from "../../hooks/useMicrophoneVolume";
 
 export default function CandidateCamera({ triggerWarning }) {
   const videoRef = useRef(null);
@@ -9,6 +10,9 @@ export default function CandidateCamera({ triggerWarning }) {
   const faceDetectorRef = useRef(null);
   const detectionIntervalRef = useRef(null);
   const suspiciousCountRef = useRef(0);
+
+  const volume = useMicrophoneVolume(!isAudioMuted);
+  const isTalking = volume > 0.05;
 
   // Initialize camera
   useEffect(() => {
@@ -132,7 +136,7 @@ export default function CandidateCamera({ triggerWarning }) {
             {isAudioMuted ? (
               <MicOffIcon className="size-4" />
             ) : (
-              <MicIcon className="size-4" />
+              <MicIcon className={`size-4 transition-colors ${isTalking ? "text-green-400" : ""}`} />
             )}
           </button>
           <button

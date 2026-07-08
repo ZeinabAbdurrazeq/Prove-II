@@ -242,6 +242,9 @@ export default function SarahInterviewWorkspace({
       <InterviewControls 
         isListening={isListening}
         onEndInterview={onEndInterview}
+        onSkip={onSkip}
+        onToggleTypingMode={onToggleTypingMode}
+        isTypingMode={isTypingMode}
         disabled={disabled || isSpeaking}
       />
     </div>
