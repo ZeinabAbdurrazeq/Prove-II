@@ -18,9 +18,9 @@ function scoreColor(score) {
   return "text-error";
 }
 
-function scoreBadgeClass(score) {
-  if (score >= 7) return "badge-success";
-  if (score >= 5) return "badge-warning";
+function scoreBadgeClass(percentage) {
+  if (percentage >= 70) return "badge-success";
+  if (percentage >= 50) return "badge-warning";
   return "badge-error";
 }
 
@@ -61,11 +61,18 @@ function ResultsPage() {
     );
   }
 
-  const overall = Number(session.overallScore || 0);
-  const communicationScore = Number(session.communicationScore || overall);
-  const technicalScore = Number(session.technicalScore || overall);
-  const problemSolvingScore = Number(session.problemSolvingScore || overall);
-  const confidenceScore = Number(session.confidenceScore || overall);
+  const overall = Number(session.overallScore || 0); // Out of 100
+  const codingScore = Number(session.codingScore || 0); // Out of 21
+  const communicationScore = Number(session.communicationScore || 0); // Out of 9
+  const aiInterviewScore = overall - codingScore - communicationScore; // Out of 70
+
+  // Helper to color based on percentage
+  const getScoreColor = (score, max) => {
+    const pct = (score / max) * 100;
+    if (pct >= 70) return "text-success";
+    if (pct >= 50) return "text-warning";
+    return "text-error";
+  };
 
   return (
     <div className="min-h-screen bg-base-300">
@@ -88,13 +95,13 @@ function ResultsPage() {
               <div
                 className="radial-progress text-4xl font-black shadow-inner"
                 style={{
-                  "--value": overall * 10,
+                  "--value": overall,
                   "--size": "11rem",
                   "--thickness": "1rem",
                 }}
                 role="progressbar"
               >
-                <span className={scoreColor(overall)}>{overall.toFixed(1)}</span>
+                <span className={getScoreColor(overall, 100)}>{overall}</span>
               </div>
               <p className="mt-4 text-sm font-bold uppercase tracking-widest text-base-content/60">
                 Overall Score
@@ -122,26 +129,28 @@ function ResultsPage() {
         </div>
 
         {/* DETAILED BREAKDOWN */}
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-6 sm:grid-cols-3">
           {[
-            { label: "Communication", score: communicationScore },
-            { label: "Technical Knowledge", score: technicalScore },
-            { label: "Problem Solving", score: problemSolvingScore },
-            { label: "Confidence", score: confidenceScore },
-          ].map((cat, idx) => (
-            <div key={idx} className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xs font-bold uppercase tracking-widest text-base-content/50">
-                {cat.label}
-              </p>
-              <div className="mt-4 flex items-end gap-2">
-                <span className={`text-3xl font-black ${scoreColor(cat.score)}`}>
-                  {cat.score.toFixed(1)}
-                </span>
-                <span className="mb-1 text-sm font-medium text-base-content/40">/ 10</span>
+            { label: "AI Interview", score: aiInterviewScore, max: 70 },
+            { label: "Problem Solving", score: codingScore, max: 21 },
+            { label: "Communication", score: communicationScore, max: 9 },
+          ].map((cat, idx) => {
+            const pct = (cat.score / cat.max) * 100;
+            return (
+              <div key={idx} className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm hover:shadow-md transition-shadow">
+                <p className="text-xs font-bold uppercase tracking-widest text-base-content/50">
+                  {cat.label}
+                </p>
+                <div className="mt-4 flex items-end gap-2">
+                  <span className={`text-3xl font-black ${getScoreColor(cat.score, cat.max)}`}>
+                    {cat.score}
+                  </span>
+                  <span className="mb-1 text-sm font-medium text-base-content/40">/ {cat.max}</span>
+                </div>
+                <progress className={`progress mt-4 w-full ${scoreBadgeClass(pct).replace('badge', 'progress')}`} value={pct} max="100"></progress>
               </div>
-              <progress className={`progress mt-4 w-full ${scoreBadgeClass(cat.score).replace('badge', 'progress')}`} value={cat.score * 10} max="100"></progress>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* STRENGTHS / WEAKNESSES */}

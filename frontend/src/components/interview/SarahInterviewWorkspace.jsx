@@ -18,6 +18,7 @@ export default function SarahInterviewWorkspace({
   isSupported,
   isTypingMode,
   onDoneSpeaking,
+  onEndInterview,
   onSkip,
   onTick, // Can still use it invisibly or omit from premium UI
   onToggleTypingMode,
@@ -42,12 +43,12 @@ export default function SarahInterviewWorkspace({
     if (currentQuestion) {
       setHistory((prev) => {
         const last = prev[prev.length - 1];
-        if (last && last.role === "sarah" && last.content === currentQuestion) {
+        if (last && last.role === "alex" && last.content === currentQuestion) {
           return prev;
         }
         return [
           ...prev,
-          { id: Date.now().toString(), role: "sarah", content: currentQuestion, time: new Date() },
+          { id: Date.now().toString(), role: "alex", content: currentQuestion, time: new Date() },
         ];
       });
     }
@@ -100,21 +101,29 @@ export default function SarahInterviewWorkspace({
         </div>
 
         {/* AI AVATAR */}
-        <div className="relative flex items-center justify-center">
-          {isSpeaking && (
-            <>
-              <div className="absolute inset-0 animate-ping rounded-full bg-primary/20 opacity-75" style={{ animationDuration: '3s' }}></div>
-              <div className="absolute inset-[-20%] animate-pulse rounded-full bg-gradient-to-tr from-primary/30 to-secondary/30 blur-2xl"></div>
-              <div className="absolute inset-[-40%] animate-pulse rounded-full bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 blur-3xl" style={{ animationDelay: '500ms' }}></div>
-            </>
-          )}
-          <div className={`relative z-10 flex size-40 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-2xl transition-transform duration-500 ${isSpeaking ? 'scale-105' : 'scale-100'}`}>
-            <span className="text-4xl font-black tracking-widest text-white shadow-black drop-shadow-md">
-              Sarah
-            </span>
+        <div className="relative flex flex-col items-center justify-center">
+          <div className="relative flex items-center justify-center">
+            {isSpeaking && (
+              <>
+                <div className="absolute inset-0 animate-ping rounded-full bg-primary/20 opacity-75" style={{ animationDuration: '3s' }}></div>
+                <div className="absolute inset-[-20%] animate-pulse rounded-full bg-gradient-to-tr from-primary/30 to-secondary/30 blur-2xl"></div>
+                <div className="absolute inset-[-40%] animate-pulse rounded-full bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 blur-3xl" style={{ animationDelay: '500ms' }}></div>
+                {/* Glowing ring matching wireframe */}
+                <div className="absolute inset-[-5%] rounded-full border-[4px] border-primary shadow-[0_0_20px_rgba(var(--p),0.5)]"></div>
+              </>
+            )}
+            <div className={`relative z-10 flex size-44 overflow-hidden items-center justify-center rounded-full bg-base-100 shadow-2xl transition-transform duration-500 ring-4 ring-base-100 ${isSpeaking ? 'scale-105' : 'scale-100'}`}>
+              {/* Using a professional photorealistic avatar placeholder */}
+              <img src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=400&h=400&fit=crop&q=80" alt="Alex AI Recruiter" className="h-full w-full object-cover" />
+            </div>
+          </div>
+          
+          <div className="mt-6 text-center">
+            <h3 className="text-3xl font-bold tracking-wide text-base-content">{interviewerName}</h3>
+            <p className="mt-1 text-sm text-base-content/60">AI Technical Recruiter</p>
           </div>
         </div>
-        <p className="mt-8 text-sm font-semibold uppercase tracking-widest text-base-content/50">
+        <p className="mt-8 text-xs font-semibold uppercase tracking-widest text-base-content/50">
           {isSpeaking ? "Speaking..." : status === "processing" ? "Analyzing..." : "Listening..."}
         </p>
       </div>
@@ -127,15 +136,6 @@ export default function SarahInterviewWorkspace({
             <h2 className="text-lg font-bold text-base-content">Interview Transcript</h2>
             <p className="text-xs text-base-content/60">Live synced</p>
           </div>
-          <InterviewControls
-            isTypingMode={isTypingMode}
-            onToggleTypingMode={onToggleTypingMode}
-            onDoneSpeaking={onDoneSpeaking}
-            onSkip={onSkip}
-            canSubmit={!!transcript.trim()}
-            disabled={disabled || isSpeaking}
-            t={t}
-          />
         </div>
 
         {/* Chat History */}
@@ -182,7 +182,7 @@ export default function SarahInterviewWorkspace({
             <div className="flex w-full justify-start">
               <div className="flex max-w-[85%] items-center gap-3 rounded-2xl bg-base-200 p-4 rounded-tl-sm shadow-sm text-base-content/70">
                 <Loader2Icon className="size-4 animate-spin" />
-                <p className="text-sm">Sarah is evaluating your answer...</p>
+                <p className="text-sm">{interviewerName} is evaluating your answer...</p>
               </div>
             </div>
           )}
@@ -224,7 +224,7 @@ export default function SarahInterviewWorkspace({
                 <div className={`flex size-10 items-center justify-center rounded-full transition-colors ${isListening ? 'bg-error/20 text-error animate-pulse' : 'bg-base-200'}`}>
                   <MicIcon className="size-5" />
                 </div>
-                {isListening ? "Listening continuously..." : isSpeaking ? "Sarah is speaking..." : "Microphone paused"}
+                {isListening ? "Listening continuously..." : isSpeaking ? `${interviewerName} is speaking...` : "Microphone paused"}
               </div>
               <button
                 disabled={!transcript.trim() || disabled || isSpeaking}
@@ -237,6 +237,13 @@ export default function SarahInterviewWorkspace({
           )}
         </div>
       </div>
+
+      {/* FLOATING CONTROLS */}
+      <InterviewControls 
+        isListening={isListening}
+        onEndInterview={onEndInterview}
+        disabled={disabled || isSpeaking}
+      />
     </div>
   );
 }
