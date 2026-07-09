@@ -45,12 +45,12 @@ export default function SarahInterviewWorkspace({
     if (currentQuestion) {
       setHistory((prev) => {
         const last = prev[prev.length - 1];
-        if (last && last.role === "sarah" && last.content === currentQuestion) {
+        if (last && last.role === "alex" && last.content === currentQuestion) {
           return prev;
         }
         return [
           ...prev,
-          { id: Date.now().toString(), role: "sarah", content: currentQuestion, time: new Date() },
+          { id: Date.now().toString(), role: "alex", content: currentQuestion, time: new Date() },
         ];
       });
     }
@@ -121,10 +121,8 @@ export default function SarahInterviewWorkspace({
               <div className="absolute inset-[-40%] animate-pulse rounded-full bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 blur-3xl" style={{ animationDelay: '500ms' }}></div>
             </>
           )}
-          <div className={`relative z-10 flex size-40 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-2xl transition-transform duration-500 ${isSpeaking ? 'scale-105' : 'scale-100'}`}>
-            <span className="text-4xl font-black tracking-widest text-white shadow-black drop-shadow-md">
-              Sarah
-            </span>
+          <div className={`relative z-10 flex size-40 items-center justify-center rounded-full shadow-2xl transition-transform duration-500 ${isSpeaking ? 'scale-105' : 'scale-100'} overflow-hidden border-4 border-base-100`}>
+            <img src="/alex.jpg" alt="Alex" className="w-full h-full object-cover" />
           </div>
         </div>
         <p className="mt-8 text-sm font-semibold uppercase tracking-widest text-base-content/50">
@@ -195,7 +193,7 @@ export default function SarahInterviewWorkspace({
             <div className="flex w-full justify-start">
               <div className="flex max-w-[85%] items-center gap-3 rounded-2xl bg-base-200 p-4 rounded-tl-sm shadow-sm text-base-content/70">
                 <Loader2Icon className="size-4 animate-spin" />
-                <p className="text-sm">Sarah is evaluating your answer...</p>
+                <p className="text-sm">Alex is evaluating your answer...</p>
               </div>
             </div>
           )}
@@ -237,7 +235,7 @@ export default function SarahInterviewWorkspace({
                 <div className={`flex size-10 items-center justify-center rounded-full transition-colors ${isListening ? 'bg-error/20 text-error animate-pulse' : 'bg-base-200'}`}>
                   <MicIcon className="size-5" />
                 </div>
-                {isListening ? "Listening continuously..." : isSpeaking ? "Sarah is speaking..." : "Microphone paused"}
+                {isListening ? "Listening continuously..." : isSpeaking ? "Alex is speaking..." : "Microphone paused"}
               </div>
               <button
                 disabled={!transcript.trim() || disabled || isSpeaking}

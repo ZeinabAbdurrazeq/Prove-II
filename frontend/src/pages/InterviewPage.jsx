@@ -66,7 +66,7 @@ function InterviewPage() {
   const [transitionMessage, setTransitionMessage] = useState(
     state?.transitionMessage || t("aiInterview.defaultTransition"),
   );
-  const interviewerName = state?.interviewerName || "Sarah";
+  const interviewerName = state?.interviewerName || "Alex";
 
   // Keep the latest elapsed seconds for the current question.
   const timeSpentRef = useRef(0);
@@ -78,6 +78,11 @@ function InterviewPage() {
 
   const finishInterview = useCallback(() => {
     cancelSpeech();
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    } catch (e) {}
     navigate(`/ai-interview/results/${sessionId}`);
   }, [cancelSpeech, navigate, sessionId]);
 

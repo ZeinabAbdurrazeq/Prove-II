@@ -104,7 +104,7 @@ function ResultsPage() {
             <div className="p-10">
               <h2 className="text-xl font-bold">AI Summary</h2>
               <p className="ai-message mt-3 leading-relaxed text-base-content/80">
-                {session.overallFeedback || "Your responses have been processed and analyzed by Sarah."}
+                {session.overallFeedback || "Your responses have been processed and analyzed by Alex."}
               </p>
               
               {session.recommendation && (
