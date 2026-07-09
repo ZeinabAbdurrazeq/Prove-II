@@ -4,6 +4,7 @@ import {
   MicIcon,
   SparklesIcon,
   SendIcon,
+  MaximizeIcon,
 } from "lucide-react";
 import InterviewControls from "./InterviewControls";
 import CandidateCamera from "./CandidateCamera";
@@ -19,6 +20,8 @@ export default function SarahInterviewWorkspace({
   isTypingMode,
   onDoneSpeaking,
   onSkip,
+  onEndInterview,
+  onRequestFullscreen,
   onTick, // Can still use it invisibly or omit from premium UI
   onToggleTypingMode,
   onTypedChange,
@@ -97,6 +100,16 @@ export default function SarahInterviewWorkspace({
               Warnings: {warnings} / {maxWarnings}
             </div>
           )}
+        </div>
+
+        {/* New Actions */}
+        <div className="absolute right-6 top-6 flex items-center gap-3 z-50">
+          <button className="btn btn-ghost btn-circle bg-base-100/50 backdrop-blur" onClick={onRequestFullscreen} title="Maximize Screen">
+            <MaximizeIcon className="size-5" />
+          </button>
+          <button className="btn btn-error btn-sm shadow-sm" onClick={onEndInterview}>
+            End Interview
+          </button>
         </div>
 
         {/* AI AVATAR */}

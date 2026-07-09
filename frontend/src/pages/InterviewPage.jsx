@@ -315,6 +315,8 @@ function InterviewPage() {
         isTypingMode={isTypingMode}
         onDoneSpeaking={handleDoneSpeaking}
         onSkip={handleSkip}
+        onEndInterview={finishInterview}
+        onRequestFullscreen={requestFullscreen}
         onTick={(seconds) => {
           timeSpentRef.current = seconds;
         }}

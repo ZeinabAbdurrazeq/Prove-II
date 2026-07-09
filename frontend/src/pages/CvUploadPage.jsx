@@ -196,7 +196,7 @@ function CvUploadPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="card bg-base-100 border border-base-300 shadow-sm sticky top-24">
+            <div className="card bg-base-100 border border-base-300 shadow-sm">
               <div className="card-body p-6">
                 <h2 className="text-lg font-bold">{t("aiInterview.whatWeExtract")}</h2>
                 <ul className="mt-4 space-y-3 text-sm text-base-content/70 list-disc pl-5">
