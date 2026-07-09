@@ -7,6 +7,7 @@ import {
   ArrowRightIcon,
   ClipboardListIcon,
   CalendarIcon,
+  RefreshCwIcon,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useLanguage } from "../context/LanguageContext";
@@ -248,7 +249,16 @@ function AiInterviewHubPage() {
           <div className="space-y-6">
             <div className="card bg-base-100 border border-base-300 shadow-sm lg:self-start">
               <div className="card-body p-6">
-                <h2 className="text-lg font-bold">{t("aiInterview.yourProfile")}</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold">{t("aiInterview.yourProfile")}</h2>
+                  <button 
+                    className="btn btn-outline btn-sm gap-2"
+                    onClick={() => navigate('/ai-interview/upload-cv')}
+                  >
+                    <RefreshCwIcon className="size-4" />
+                    {t("aiInterview.reUpload") || "Update CV"}
+                  </button>
+                </div>
                 {profile ? (
                   <div className="mt-4 space-y-5">
                     <div className="grid gap-3 sm:grid-cols-2">
