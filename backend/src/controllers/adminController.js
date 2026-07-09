@@ -532,11 +532,74 @@ export const getAllSubmissions = async (req, res) => {
 
 export const getTopCandidates = async (req, res) => {
   try {
-    const candidates = await CandidateProfile.find()
-      .populate({ path: "userId", select: "name email profileImage role clerkId" })
-      .sort({ overallAverageScore: -1, totalInterviewsCompleted: -1, createdAt: 1 })
-      .limit(10)
-      .lean();
+    const candidateStats = await AIInterviewSession.aggregate([
+      {
+        $match: {
+          status: "completed",
+          userId: { $ne: null },
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: "$userId",
+          totalInterviewsCompleted: { $sum: 1 },
+          overallAverageScore: { $avg: "$overallScore" },
+          latestCvAnalysis: { $first: "$cvAnalysis" },
+          lastInterviewAt: { $max: "$updatedAt" },
+        },
+      },
+      {
+        $sort: {
+          overallAverageScore: -1,
+          totalInterviewsCompleted: -1,
+          lastInterviewAt: -1,
+        },
+      },
+      { $limit: 10 },
+    ]);
+
+    const userIds = candidateStats.map((item) => item._id);
+
+    const [profiles, users] = await Promise.all([
+      CandidateProfile.find({ userId: { $in: userIds } })
+        .populate({ path: "userId", select: "name email profileImage role clerkId" })
+        .lean(),
+      User.find({ _id: { $in: userIds } })
+        .select("name email profileImage role clerkId")
+        .lean(),
+    ]);
+
+    const profilesByUserId = new Map(
+      profiles.map((profile) => [String(profile.userId?._id || profile.userId), profile]),
+    );
+    const usersById = new Map(users.map((user) => [String(user._id), user]));
+
+    const candidates = candidateStats.map((stat) => {
+      const userId = String(stat._id);
+      const profile = profilesByUserId.get(userId);
+      const latestCvAnalysis = stat.latestCvAnalysis || {};
+
+      return {
+        _id: profile?._id || userId,
+        userId: profile?.userId || usersById.get(userId) || null,
+        primaryField:
+          profile?.primaryField || latestCvAnalysis.primaryField || "general",
+        yearsOfExperience:
+          profile?.yearsOfExperience || latestCvAnalysis.yearsOfExperience || 0,
+        keySkills: profile?.keySkills || latestCvAnalysis.keySkills || [],
+        strongestAreas:
+          profile?.strongestAreas || latestCvAnalysis.strongestAreas || [],
+        notableTechnologies:
+          profile?.notableTechnologies || latestCvAnalysis.notableTechnologies || [],
+        cvSummary: profile?.cvSummary || latestCvAnalysis.cvSummary || "",
+        preferredDifficulty: profile?.preferredDifficulty || "medium",
+        totalInterviewsCompleted: stat.totalInterviewsCompleted,
+        overallAverageScore: roundToOne(stat.overallAverageScore),
+        createdAt: profile?.createdAt || stat.lastInterviewAt,
+        updatedAt: profile?.updatedAt || stat.lastInterviewAt,
+      };
+    });
 
     return res.status(200).json({
       candidates,
