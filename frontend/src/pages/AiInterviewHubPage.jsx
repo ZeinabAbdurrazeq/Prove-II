@@ -347,7 +347,7 @@ function AiInterviewHubPage() {
             <div className="card bg-base-100 border border-base-300 shadow-sm">
               <div className="card-body p-6">
                 <h2 className="text-lg font-bold">{t("aiInterview.betterResults")}</h2>
-                <ul className="mt-4 space-y-3 text-sm text-base-content/70">
+                <ul className="mt-4 space-y-3 text-sm text-base-content/70 list-disc pl-5">
                   <li>{t("aiInterview.betterResults1")}</li>
                   <li>{t("aiInterview.betterResults2")}</li>
                   <li>{t("aiInterview.betterResults3")}</li>

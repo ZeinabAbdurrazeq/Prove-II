@@ -199,7 +199,7 @@ function CvUploadPage() {
             <div className="card bg-base-100 border border-base-300 shadow-sm sticky top-24">
               <div className="card-body p-6">
                 <h2 className="text-lg font-bold">{t("aiInterview.whatWeExtract")}</h2>
-                <ul className="mt-4 space-y-3 text-sm text-base-content/70">
+                <ul className="mt-4 space-y-3 text-sm text-base-content/70 list-disc pl-5">
                   <li>{t("aiInterview.fieldLabel")} and {t("aiInterview.experienceLabel")}</li>
                   <li>{t("aiInterview.keySkills")} and {t("aiInterview.strongestAreas")}</li>
                   <li>{t("aiInterview.technologies")} mentioned in the CV</li>
@@ -210,7 +210,7 @@ function CvUploadPage() {
             <div className="card bg-base-100 border border-base-300 shadow-sm">
               <div className="card-body p-6">
                 <h2 className="text-lg font-bold">{t("aiInterview.bestResults")}</h2>
-                <ul className="mt-4 space-y-3 text-sm text-base-content/70">
+                <ul className="mt-4 space-y-3 text-sm text-base-content/70 list-disc pl-5">
                   <li>{t("aiInterview.bestResults1Upload")}</li>
                   <li>{t("aiInterview.bestResults2Upload")}</li>
                   <li>{t("aiInterview.bestResults3Upload")}</li>
