@@ -51,7 +51,7 @@ function TestimonialsSection() {
     {
       name: t("home.testimonials.nour.name"),
       role: t("home.testimonials.nour.role"),
-      avatar: "/nour.jpg",
+      avatar: "/nour-new.jpg",
       quote: t("home.testimonials.nour.quote"),
     },
     {
